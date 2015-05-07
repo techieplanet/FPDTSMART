@@ -1,0 +1,46 @@
+<form name="dashboardForm" id="consumptionForm" method="post" onsubmit=""> 
+
+<?php 
+require_once('views/helpers/Location.php');
+//require_once('views/helpers/ConsumptionLocation.php');
+require_once('views/helpers/ScriptContainer.php');
+
+$current_view = '/'.$path[1].'/'. $path[2]; 
+?>
+
+<?php  //file_put_contents('c:\wamp\logs\php_debug.log', 'top_buttons 1 >'.PHP_EOL, FILE_APPEND | LOCK_EX);	ob_start();   
+	   //var_dump("current_view=", $current_view, "END");
+	   //$result = ob_get_clean(); file_put_contents('c:\wamp\logs\php_debug.log', $result .PHP_EOL, FILE_APPEND | LOCK_EX); 
+?>
+
+<p3>
+    <div>
+        <?php 
+            $commsHtml = '';
+            foreach($this->comms as $comm)
+                $commsHtml .= '<option value="'. $comm['id'] . '">' . $comm['commodity_name'] . '</option>';
+        ?>
+        <select name="comm_id">
+                <option value="0">--Choose--</option>
+                <?php echo $commsHtml ?>
+        </select>
+    </div>
+    <br/>
+    
+    <div>
+        <?php region_filters_dropdown_db($this, $this->locations, $this->criteria, true, true); ?>
+    </div>
+    
+    <br/>
+    <input type="submit" value="Filter" class="dbbutton dbbutton_leftmenu">
+    
+</p3>
+
+
+ </form>
+
+
+					
+
+
+

@@ -24,6 +24,7 @@ class ReportsController extends ReportFilterHelpers {
 	}
 
 	public function indexAction() {
+
 $this->_forward ( 'allqueries' );
 
 	}
@@ -363,7 +364,9 @@ die ("OK");
 */
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 #		require_once ('models/table/TrainingTitleOption.php');
 #		$titleArray = TrainingTitleOption::suggestionList ( false, 10000 );
 #		$this->viewAssignEscaped ( 'courses', $titleArray );
@@ -504,7 +507,9 @@ die ("OK");
 			$this->viewAssignEscaped ( 'rss', $rss );
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		$qualificationsArray = OptionList::suggestionListHierarchical ( 'person_qualification_option', 'qualification_phrase', false, false );
 		$this->viewAssignEscaped ( 'qualifications', $qualificationsArray );
 		$rowArray = OptionList::suggestionList ( 'facility', array ('facility_name', 'id' ), false, 9999 );
@@ -864,7 +869,9 @@ echo $sql . "<br>";
 			}
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		require_once ('models/table/TrainingTitleOption.php');
 		$titleArray = TrainingTitleOption::suggestionList ( false, 10000 );
 		$this->viewAssignEscaped ( 'courses', $titleArray );
@@ -1124,7 +1131,9 @@ echo $sql . "<br>";
 			$this->viewAssignEscaped ( 'results', $rowArray );
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		$qualificationsArray = OptionList::suggestionListHierarchical ( 'person_qualification_option', 'qualification_phrase', false, false );
 		$this->viewAssignEscaped ( 'qualifications', $qualificationsArray );
 		$rowArray = OptionList::suggestionList ( 'facility', array ('facility_name', 'id' ), false, 9999 );
@@ -1967,7 +1976,9 @@ echo $sql . "<br>";
 		$this->view->assign ( 'count', $count );
 		$this->view->assign ( 'criteria', $criteria );
 
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped('locations', $locations);
 		//course
 		$courseArray = TrainingTitleOption::suggestionList ( false, 10000 );
@@ -2573,7 +2584,9 @@ echo $sql . "<br>";
 		$this->view->assign ( 'count', $count );
 		$this->view->assign ( 'criteria', $criteria );
 
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped('locations', $locations);
 		//course
 		//$courseArray = Course::suggestionList(false,10000);
@@ -2734,7 +2747,9 @@ echo $sql . "<br>";
 
 		// assign form drop downs
 		$this->viewAssignEscaped ( 'criteria',   $criteria );
+
 		$this->viewAssignEscaped ( 'locations',  Location::getAll("2"));
+
 		$this->viewAssignEscaped ( 'tlocations', TrainingLocation::selectAllLocations ($this->setting('num_location_tiers')));
 		$this->view->assign ( 'partners',    DropDown::generateHtml ( 'person_to_training_budget_option', 'budget_code_phrase',    $criteria['budget_code_option_id'], false, $this->view->viewonly, false ) ); //table, col, selected_value
 		$this->view->assign ( 'titles',      DropDown::generateHtml ( 'training_title_option',            'training_title_phrase', $criteria['training_title_option_id'], false, $this->view->viewonly, false ) ); //table, col, selected_value
@@ -3375,6 +3390,7 @@ echo $sql . "<br>";
 
 		//location
 		$locations = Location::getAll("2");
+                                        
 		$this->viewAssignEscaped ( 'locations', $locations );
 
 		//trainingTitle
@@ -3506,7 +3522,9 @@ echo $sql . "<br>";
           
             $sql = "SELECT facility_name, location_id from facility where id=" .$facility_id; 
             $facility_name = $db->fetchAll ( $sql );
+
 			$updatedRegions = Location::getCityandParentNames($facility_name[0]['location_id'], Location::getAll("2"), $this->setting('num_location_tiers'));
+
             
 			for($i=0; $i<count($rowArray); $i++){
 				$rowArray[$i]['province_name'] = $updatedRegions['province_name'];
@@ -3994,7 +4012,9 @@ echo $sql . "<br>";
 		$this->view->assign ( 'criteria', $criteria );
 
 		//locations
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped('locations',$locations);
 		//courses
 		$courseArray = TrainingTitleOption::suggestionList ( false, 10000 );
@@ -4169,7 +4189,9 @@ echo $sql . "<br>";
 		$this->view->assign ( 'criteria', $criteria );
 
 		//locations
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped ( 'locations', $locations );
 		//types
 		$trainerTypesArray = OptionList::suggestionList ( 'trainer_type_option', 'trainer_type_phrase', false, false, false );
@@ -4334,6 +4356,7 @@ echo $sql . "<br>";
 
 		//locations
 		$locations = Location::getAll("2");
+
 		$this->view->assign('locations', $locations);
 
 		list($criteria, $location_tier, $location_id) = $this->getLocationCriteriaValues($criteria);
@@ -4708,7 +4731,9 @@ echo $sql . "<br>";
 		$this->viewAssignEscaped ( 'facilities', $facilitiesArray );
 	
 		//locations
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped ( 'locations', $locations );
 		//facility types
 		$typesArray = OptionList::suggestionList ( 'facility_type_option', 'facility_type_phrase', false, false );
@@ -5103,7 +5128,9 @@ echo $sql . "<br>";
 		$this->viewAssignEscaped ( 'facilities', $facilitiesArray );
 
 		//locations
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped ( 'locations', $locations );
 		//facility types
 		$typesArray = OptionList::suggestionList ( 'facility_type_option', 'facility_type_phrase', false, false );
@@ -5615,7 +5642,9 @@ echo $sql . "<br>";
 		$districtArray = OptionList::suggestionList ( 'location_district', array ('district_name', 'parent_province_id' ), false, false, false );
 		$this->viewAssignEscaped ( 'districts', $districtArray );
 		*/
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped('locations',$locations);
 
 		//course
@@ -5988,6 +6017,7 @@ echo $sql . "<br>";
 			echo 'No trainings found.';
 
 			$locations = Location::getAll("2");
+
 			$answers = $db->fetchAll( 'SELECT * FROM evaluation_question_response' );
 			$responselist = $db->fetchAll( 'SELECT *,evaluation_response.id as evaluation_response_id FROM evaluation_response
 											LEFT JOIN evaluation_to_training ett ON ett.id = evaluation_response.evaluation_to_training_id ORDER BY training_id ASC');
@@ -6463,7 +6493,9 @@ echo $sql . "<br>";
 			}
 		}
 		$this->viewAssignEscaped ('pageTitle', t('Evaluation Report'));
+
 		$this->viewAssignEscaped ('locations', Location::getAll("2"));
+
 		$this->viewAssignEscaped ( 'evaluations', OptionList::suggestionList ( 'evaluation', 'title', false, false, false ) );
 		$this->view->assign ( 'criteria', $criteria );
 		//people
@@ -6791,7 +6823,9 @@ echo $sql . "<br>";
 			$trainersArray[$i]['fullname'] = $this->setting('display_middle_name_last') ? $row['first_name'].' '.$row['last_name'].' '.$row['middle_name'] :  $row['first_name'].' '.$row['middle_name'].' '.$row['last_name'];
 		$this->viewAssignEscaped ( 'trainers', $trainersArray );
 		//locations
+
 		$locations = Location::getAll("2");
+
 		$this->viewAssignEscaped('locations', $locations);
 		//course
 		$courseArray = TrainingTitleOption::suggestionList ( false, 10000 );
@@ -9827,6 +9861,7 @@ echo $sql . "<br>";
 		}
 	}
 
+
 public function facilitysummaryAction(){
     $this->_countrySettings = array();
 		$this->_countrySettings = System::getAll();
@@ -12146,7 +12181,9 @@ public function psFacilityReportAction() {
 			$this->viewAssignEscaped ( 'rss', $rss );
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		$qualificationsArray = OptionList::suggestionListHierarchical ( 'person_qualification_option', 'qualification_phrase', false, false );
 		$this->viewAssignEscaped ( 'qualifications', $qualificationsArray );
 		$rowArray = OptionList::suggestionList ( 'facility', array ('facility_name', 'id' ), false, 9999 );
@@ -12402,7 +12439,9 @@ public function psFacilityReportAction() {
 			$this->viewAssignEscaped ( 'results', $rowArray );
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+                                        
 		$qualificationsArray = OptionList::suggestionListHierarchical ( 'person_qualification_option', 'qualification_phrase', false, false );
 		$this->viewAssignEscaped ( 'qualifications', $qualificationsArray );
 		$rowArray = OptionList::suggestionList ( 'facility', array ('facility_name', 'id' ), false, 9999 );
@@ -12570,7 +12609,9 @@ public function psFacilityReportAction() {
 			$this->viewAssignEscaped ( 'rss', $rss );
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		require_once ('models/table/TrainingTitleOption.php');
 		$titleArray = TrainingTitleOption::suggestionList ( false, 10000 );
 		$this->viewAssignEscaped ( 'courses', $titleArray );
@@ -12856,7 +12897,9 @@ die (__LINE__ . " - " . $sql);
             }
 		}
 		$this->view->assign ( 'criteria', $criteria );
+
 		$this->viewAssignEscaped ( 'locations', Location::getAll("2") );
+
 		require_once ('models/table/TrainingTitleOption.php');
 		$titleArray = TrainingTitleOption::suggestionList ( false, 10000 );
 		$this->viewAssignEscaped ( 'courses', $titleArray );
@@ -13009,7 +13052,9 @@ die (__LINE__ . " - " . $sql);
 			$rowArray = $db->fetchAll( $sql );
 			$this->viewAssignEscaped ('results', $rowArray );
 
+
 			$locations = Location::getAll("2");
+
 			// hack #TODO - seems Region A -> ASDF, Region B-> *Multiple Province*, Region C->null Will not produce valid locations with Location::subquery
 			// the proper solution is to add "Default" districts under these subdistricts, not sure if i can at this point the table is 12000 rows, todo later
 			foreach ($rowArray as $i => $row) {

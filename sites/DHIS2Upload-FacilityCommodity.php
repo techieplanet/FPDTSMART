@@ -14,6 +14,7 @@
 	commodity data: [facility type - we do not need],[commodity name],[facility name],[consumption]
 */
 
+
 //$DB_NAME = 'dev_test'; // globals is being required down in the code. This file(globals) then overwrites any db connection that might have been established earlier
 
 //constants
@@ -27,6 +28,7 @@ $UPDATE_COMMODITY_DATA_MODE = true;
 $DEBUG_MODE = false;
 
 $PERIOD_LAST_MONTH = 'LAST_MONTH';
+
 $PERIOD_HISTORICAL = "201502";//"201103;201104;201105;201106;201107;201108;201109;201110;201111;201112;201201;201202;201203;201204;201205;201206;201207;201208;201209;201210;201211;201212;201301;201302;201303;201304;201305;201306;201307;201308;201309;201310;201311;201312;201401;201402;201403;201404;201405;201406;201407;201408;201409;201410";
 
 //$DATA_URL_START = "https://dhis2nigeria.org.ng/api/analytics.json?dimension=GvScnquL6Se:ornTXR1cYqs;rtZY2mEY1Sp&dimension=dx:DiXDJRmPwfh;EIHpURrBm7K;G5mKWErswJ0;GWxFtWFcEW1;H8A8xQ9gJ5b;J08AReLicRG;JyiR2cQ6DZT;OhtYDDvpHW8;QlroxgXpWTL;VrSopGk6j9I;c7T9iG1BVbo;eChiJMwaOqm;elD5WAUTvQ2;ibHR9NQ0bKL;krVqq8Vk5Kw;mvBO08ctlWw;oI4V3jXAWdB;pYhpegHDt4x;qQcxmSkuWsL;twQ4H0sl8lz;vDnxlrIQWUo;w92UxLIRNTl;wNT8GGBpXKL;yJSLjbC9Gnr&dimension=ou:LEVEL-3;LEVEL-5;s5DPBsdoE8b&filter=pe:";
@@ -54,6 +56,7 @@ $PASSWORD = "CHAI12345";
 
 //https://dhis2nigeria.org.ng/dhis/api/analytics.json?
 //dimension=pe:LAST_MONTH&dimension=dx:w92UxLIRNTl;H8A8xQ9gJ5b;ibHR9NQ0bKL;yJSLjbC9Gnr;DiXDJRmPwfh;vDnxlrIQWUo;krVqq8Vk5Kw;G5mKWErswJ0;mvBO08ctlWw;pYhpegHDt4x;wNT8GGBpXKL;JyiR2cQ6DZT&dimension=ou:s5DPBsdoE8b;LEVEL-5&hierarchyMeta=true&displayProperty=NAME&showHierarchy=true&outputIdScheme=CODE
+
 //format: [commodity UID];[name];[out of stock UID]
 $COMMODITY_NAMES_IDS_FILE = 'commodity-names-ids';
 
@@ -61,6 +64,7 @@ $COMMODITY_NAMES_IDS_FILE = 'commodity-names-ids';
 // separated by comma like: "'JyiR2cQ6DZT', 'jhgyg67cjd'"
 $STOCK_OUT_INDICATORS = "JyiR2cQ6DZT";
 $STOCK_OUT_IMPLANT = "wNT8GGBpXKL";
+
 //stock out commodities external id
 $STOCK_OUT_COMMODITIES = "'w92UxLIRNTl','DiXDJRmPwfh'";
 
@@ -125,7 +129,7 @@ if(sizeof($options) === 0){
  }
  if($PERIOD_LAST_MONTH_MODE){
  	print "\n\n ===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " START\n\n";
-     
+ 	     
  	$DATA_URL = $DATA_URL_START . $PERIOD_LAST_MONTH . $DATA_URL_END;
        // $DATA_URL = $DATA_URL_START .$DATA_URL_END;
         //echo $data_url;
@@ -140,8 +144,6 @@ if(sizeof($options) === 0){
  	echo fwrite($file,$all_errors);
  	fclose($file);
  }
- 
- 
  
  /**
   * Upload data
@@ -214,7 +216,9 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 	$file = fopen("DHIS2Upload-FacilityCommodity-". $date . ".json","w");
 	echo fwrite($file,$data_json);
 	fclose($file);
+
 	//echo 'This is the nrwwweopehfefhfej';
+
 	// commodity data: [facility type - we do not need],[commodity name],[facility name],[consumption]
 	if (sizeof ( $data_json_arr ["rows"] ) == 0) {
 		global $all_errors;
@@ -226,7 +230,8 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 	if ($UPDATE_FACILITY_MODE) {
 		// get DB facility info BEFORE update
 		// hash: key - external id, value - array(id, external_id, facility_name)
-            
+
+
 		$db_facility_info = getDBFacilitiesInfo ( $db );
 		
 		//hash:  key - [name], value - [id]
@@ -237,6 +242,7 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
                
         }
 	//exit;
+
 	// get DB facility info AFTER update
 	// hash: key - external id, value - array(id, external_id, facility_name)
 	$db_facility_info = getDBFacilitiesInfo ( $db );
@@ -244,6 +250,7 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 	// ******************* UPDATE COMMODITIES NAMES ***********************************************
 	if ($UPDATE_COMMODITY_NAMES_MODE) {
             
+
 		// read commodity names ids file - format [id1]\n[id2]\n...
 		print "=> Get commodities name ids from file\n\n";
 		//format: [commodity UID];[name];[out of stock UID]
@@ -255,13 +262,15 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 		
 		// take files with commodity names id and check if in DB, if not add new commodity name to DB 'commodity_name_option' table
 		updateCommoditiesNames ( $data_json_arr ["metaData"] ["names"], $commodity_names_ids, $db, $db_commodity_info, $date_year, $date_month );
- 
+
 	}
 	
 	// get DB commodities names info AFTER update
 	// hash: key - external id, value - array(id, external_id, facility_name)
 	$db_commodity_info = getDBCommodityNamesInfo ( $db );
+
 	//print_r($db_commodity_info);
+
 	// ******************* UPDATE COMMODITIES DATA ***********************************************
 	if ($UPDATE_COMMODITY_DATA_MODE) {
 		// get DB commodity data info BEFORE update
@@ -273,6 +282,7 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 	
                  
         }
+
 }
 
 // take files with commodity names id and check if in DB, if not add new commodity name to DB 'commodity_name_option' table
@@ -287,7 +297,9 @@ function updateCommoditiesNames($names, $commodity_name_ids, $db, $db_commodity_
 		$count++;
 		//format: [commodity UID];[name];[out of stock UID]
 		$commodity_info_arr = explode(";", $commodity_info);
+
                 //print_r($commodity_info_arr);
+
 		$commodity_external_id = $commodity_info_arr[0];
 		//find commodity name by external_id from WS 'names'
 		if(array_key_exists($commodity_external_id, $names)){
@@ -301,7 +313,9 @@ function updateCommoditiesNames($names, $commodity_name_ids, $db, $db_commodity_
 				// if commodity name are different then update
 				if($commodity_name !== $db_commodity_info[$commodity_external_id]['commodity_name']){
 					try{
+
 						$db->query("UPDATE commodity_name_option SET commodity_name='" . $commodity_name . "' WHERE external_id='" . addslashes($commodity_external_id). "'");
+
 						if($DEBUG_MODE)
 							print "EDIT COMMODITY: " . $commodity_external_id . "=>" . $commodity_name ."\n\n";
 					}catch(Exception $e){
@@ -314,7 +328,9 @@ function updateCommoditiesNames($names, $commodity_name_ids, $db, $db_commodity_
 					$bind = array(
 						'external_id'			=>	$commodity_external_id,
 						'commodity_name'		=>	$commodity_name,
+
 						'timestamp_created' => $date_year . "-" . $date_month . "-01"
+
 					);
 					//all value automatically will be removed white spaces at the END during insertion to DB
 					$db->insert("commodity_name_option", $bind);
@@ -333,6 +349,7 @@ function updateCommoditiesNames($names, $commodity_name_ids, $db, $db_commodity_
                  echo $commodity_external_id;
                  echo 'Na here the thing dey <br/>';
                  echo $commodity_info_arr[1];*/
+
 		if(!empty($commodity_info_arr[2])){
 			// array with out of stock info [out of stock UID]=>[commodity UID]
 			$commodity_names_out_of_stock_arr[$commodity_info_arr[2]] = $commodity_external_id;
@@ -382,10 +399,12 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 		array_push($db_commodity_names_ids_with_has_out_off_stock, $value['id']);
        // print_r($db_commodity_names_ids_with_has_out_off_stock);
 
+
 	//means that out of stock 'Y'
 	//format: [facility external id]=> array of commodity externals id for which out of stock 'Y'
 	$commodity_names_out_of_stock_arr_to_update = array();
 	$error = '';
+
         //echo '<br/><br/><br/>This is where we need to do the update commodity name thingy<br/><br/>';
          echo '<br/><br/>';
        // print_r($commodity_data);
@@ -424,6 +443,7 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 				$data_arr = array();
 				$facility_external_id = $commodity[2];
                                 // echo 'Commodity external id '.$commodity_external_id.' consumption '.$consumption.' facility_external id '.$facility_external_id.'<br/>';
+
 				if(array_key_exists($facility_external_id, $commodity_names_out_of_stock_arr_to_update)){
 					$data_arr = $commodity_names_out_of_stock_arr_to_update[$facility_external_id];
 				}
@@ -479,7 +499,6 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 					//if exist in database update
                                    /*
 					if(array_key_exists($facility_id, $db_commodity_data_info)){
-                                          
 						$db_commodity_facility = $db_commodity_data_info[$facility_id];
 						if(array_key_exists($commodity_id, $db_commodity_facility)){
 							$id = $db_commodity_facility[$commodity_id];
@@ -529,6 +548,7 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 				//continue;
                                           $db->insert("commodity", $bind);
                                  //  echo $degade.' This is the degade '.$degade.'<br/>';
+
 					if($DEBUG_MODE)
 						print "ADD COMMODITY DATA: " . $commodity_external_id . " to facility " . $facility_external_id . "=" . $consumption . "\n";
 					
@@ -557,6 +577,7 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
                         echo 'This is the facility info for us';
        // exit; 
         //echo '<br/><br/>';
+
 	print "\n=> UPDATE COMMODITIES DATA END:\n" .  $count . " commodities data have been processed.\n";
 
 	$db_commodity_info_count = $db->fetchAll ("select count(*) as count from commodity where date='" . $date . "'");
@@ -568,7 +589,9 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 	// update out of stock info
  	// update 'out_of_stock" = "Y" if this is in $commodity_names_out_of_stock_arr_to_update
  	//otherwise update to 'N'
+
 	/*
+
 	$all_add = array();
 	$count_out_of_stock = 0;
 	if($DEBUG_MODE)
@@ -635,12 +658,14 @@ $sql = "SELECT facility_id FROM facility_report_rate WHERE date='".$date."'";
 	
 	//Set stock out indicators if consumption 1 then stock out 'Y'
 	/*try{
+
 	$db->query("update commodity set commodity.stock_out='Y', commodity.consumption=0 where 
 			commodity.name_id = (select id from commodity_name_option where external_id in (" . $STOCK_OUT_INDICATORS . ") and consumption=1 and date='" . $date ."')");
 	print "\n=> UPDATE COMMODITIES DATA for stock out indicators: " . $STOCK_OUT_INDICATORS . "\n\n";
 	}catch(Exception $e){
 		$error = $error . "ERROR: UPDATE COMMODITY DATA for stock out indicators: " . $STOCK_OUT_INDICATORS . "\n";
 	}*/
+
 	
 	//clean dashboard_refresh table
 	try{
@@ -853,6 +878,7 @@ function help(){
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // comment later, it is for Windows only
 		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+
 		//echo 'This is the ch we loaded '.$ch;
 		$output = curl_exec($ch);
                 //echo 'THis is the output '.$output;
@@ -867,7 +893,6 @@ function help(){
 		curl_close($ch);
                 
 		return $output;
-                
 	}
 
 /**

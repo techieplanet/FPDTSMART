@@ -137,7 +137,10 @@ print ScriptContainer::$instance->renderJSHead();
 	<div class="clear" ></div>
 	
 	<!-- TA:17: 09/04/2014 START -->
-	<?php 
+
+	 
+	<?php if ( @$this->setting['display_facility_commodity'] ) { 
+
 	/************ Commodity table  ******************************************************************************/ ?>
 	<div class="clear"></div>
   <div class="hrGrey"></div>
@@ -188,6 +191,7 @@ print ScriptContainer::$instance->renderJSHead();
            addAjaxSubmit('submitFacility','edit','<?php echo $this->base_url;?>/facility/edit/outputType/json');
            
            /*
+
             jsonAdd.id = oCName.value;
             jsonAdd.name = $('#name option:selected').text();
             var month = oCDateMM.value;
@@ -203,6 +207,7 @@ print ScriptContainer::$instance->renderJSHead();
             oCCons.value = "";
             oCStockOut.value = "";
             */
+
           }
 
     	</script>
@@ -235,7 +240,7 @@ print ScriptContainer::$instance->renderJSHead();
      
 
   </div> <!-- table ends -->
-   <?php ?> 
+
 	<!-- TA:17: 09/04/2014 END -->
 
 	<button type="button" id="submitFacility" class="submitNoArrow"><?php tp('Save changes');?></button>

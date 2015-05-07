@@ -1071,6 +1071,7 @@ table {
     width:20px;
 }
 
+
 .mainformholder label {
 
 	display				: block;
@@ -1184,8 +1185,6 @@ table {
 .small.tsbutton, .small.tsbutton:visited { 
 
 	font-size: 11px; 
-
-	
 
 }
 
@@ -1378,6 +1377,7 @@ table {
 	width 					: 300px;
 	text-align 				: right;
 }
+
 .queryquestion {
     display:block;
     float:left;
@@ -1411,6 +1411,7 @@ table {
    
     min-width:49%;
 }
+
 .fieldshow {
 	display 				: block;
 	float 					: left;

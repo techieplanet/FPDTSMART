@@ -40,7 +40,7 @@ class PersonToTraining extends ITechTable
         ->where("ptt.training_id = $training_id and p.is_deleted=0") //TA:21: 09/29/2014
         ->group("ptt.id")
         ->order("last_name");
-    
+
     return $tableObj->fetchAll($select);
   }
 
@@ -71,7 +71,9 @@ class PersonToTraining extends ITechTable
   /**
    * Add person to training session
    */
+
   public function addPersonToTraining($person_id, $training_id,$certification) {
+
    	$select = $this->select()
                 ->from($this->_name, array('doesExist' => 'COUNT(*)'))
                 ->setIntegrityCheck(false)
@@ -94,6 +96,7 @@ class PersonToTraining extends ITechTable
 
       $data['person_id'] = $person_id;
       $data['training_id'] = $training_id;
+
       $data['certification'] = $certification;
 
       try {

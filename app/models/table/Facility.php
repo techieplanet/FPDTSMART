@@ -208,5 +208,87 @@ class Facility extends ITechTable {
 	}
 */
 
+        
+        
+/************************************** TP methods ****************************************/
+        public function getAllFacilityCount(){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            
+            $select = $db->select()->from(array('f'=>'facility'), 'COUNT(id) AS count');
+            $result = $db->fetchRow($select);
+            return $result['count'];
+        }
+        
+        /*
+         * Returns the count of all facilities returning for the currrent month
+         */
+        public function getAllCurrentReportingFacilityCount(){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            
+            $select = $db->select()
+                        ->from(array('f'=>'facility'), 'COUNT(f.id) AS count')
+                        ->joinInner(array('frr' => 'facility_report_rate'), 'f.external_id = frr.facility_external_id');
+            $result = $db->fetchRow($select);
+            return $result['count'];
+        }
+        
+        /*
+         * Returns the count of all facilities returning for the currrent month
+         * that have trained health worker in a cetain training type.
+         */
+        public function getCurrentReportingFacsWithTrainedHWCount($trainingTypeWhere, $dateWhere, $geoList, $tiertext, $tierFieldName, $national=false){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            $tiertext = !$national ? $tiertext : array();
+            
+            $select = $db->select()
+                        ->from(array('c'=>'commodity'), 'COUNT(DISTINCT(facility_id)) AS count')
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid')
+                        ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id')
+                        ->where($trainingTypeWhere . ' AND facility_reporting_status = 1')
+                        ->where($dateWhere)
+                        ->where($tierFieldName . ' IN (' . $geoList . ')')
+                        ->group($tiertext);
+            
+            
+            
+            $sql = $select->__toString();
+            $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+            $sql = str_replace('`f`.*,', '', $sql);	        
+            $sql = str_replace('`frr`.*,', '', $sql);	        
+            $sql = str_replace('`fwtc`.*', '', $sql);
+            
+            //echo 'sql: ' . $sql; exit;
+            $result = $db->fetchRow($select);
+            return $result['count'];
+        }        
+
+
+        /*
+         * Returns the count of all facilities returning for the currrent month
+         * from the commodity table
+         */
+        public function getAllCommodityReportingFacWithHWCount($trainingTypeWhere){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            
+            $select = $db->select()
+                        ->from(array('f'=>'facility'), 'COUNT(f.id) AS count')
+                        ->joinInner(array('c' => 'commodity'), 'f.id = c.facility_id')
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'f.id = fwtc.facid')
+                        ->where($trainingTypeWhere)
+                        ->where('( (MONTH(c.date)) = (SELECT MONTH(MAX(c.date)))  AND YEAR(c.date) = (SELECT YEAR(MAX(c.date))) )');
+            
+            $sql = $select->__toString();
+            $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+            $sql = str_replace('`f`.*,', '', $sql);	        
+            $sql = str_replace('`frr`.*,', '', $sql);	        
+            $sql = str_replace('`fwtc`.*', '', $sql);
+            
+            //echo 'sql: ' . $sql; exit;
+            $result = $db->fetchRow($select);
+            return $result['count'];
+       }
+       
+       
+       
+        
 }
- 

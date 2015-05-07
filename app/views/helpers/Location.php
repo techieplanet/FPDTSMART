@@ -19,6 +19,7 @@ function buildId($tier, &$locations, $id) {
 	return $parents.$id;
 }
 
+
 function renderFilter(&$locations, $tier, $widget_id, $default_val_id = false, $child_widget_id = false, $is_multiple = false, $readonly = false,$size="10") {
     $also_match_id = "";
     if ( $default_val_id === false) {
@@ -36,7 +37,7 @@ function renderFilter(&$locations, $tier, $widget_id, $default_val_id = false, $
 
 	?>
   <select size="<?php echo $size; ?>" id="<?php echo $widget_id;?>" name="<?php echo $widget_id;?><?php if ($is_multiple) echo '[]';?>" <?php if ($readonly) echo 'disabled="disabled"'?> <?php if ( $is_multiple) echo 'multiple="multiple" ';?>
-  <?php if ($child_widget_id ) { ?>onchange="setChildStatus_<?php echo str_replace('-', '_', $widget_id);?>();" <?php }?> class="mclass">
+  <?php if ($child_widget_id ) { ?> onchange="<?php echo 'setChildStatus_' . str_replace('-', '_', $widget_id) . '()';?>" <?php }?> class="mclass">
     <option value="">--<?php tp('choose');?>--</option>
     <?php
       foreach ( $locations as $val ) {
@@ -125,8 +126,7 @@ function renderCityAutocomplete($prefix, $container, $data_url, $num_tiers) {
        setChildStatus(selected,'<?php echo $prefix;?>region_i_id','<?php echo $prefix;?>region_h_id');
        selected = setSelected('<?php echo $prefix;?>region_i_id', elItem[2][<?php echo ($num_tiers)*2 - 9;?>], true);
       <?php } ?>
-          
-          
+
 
 
       var is_new_chk = YAHOO.util.Dom.get('is_new_<?php echo $prefix;?>city');

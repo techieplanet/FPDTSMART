@@ -86,6 +86,7 @@ if(sizeof($options) === 0){
  }
  exit;
  */
+
  //to run on server
  //  $db = getDB($DB_NAME);
  // print "USE DATABASE: " . $DB_NAME . "\n\n";
@@ -99,9 +100,11 @@ if(sizeof($options) === 0){
  	for($i=0; $i<sizeof($periods); $i++){
  		print "\n\n ===> UPLOAD PERIOD: " . $periods[$i] . " START\n\n";
  		$DATA_URL = $DATA_URL_START . $periods[$i] . $DATA_URL_END;
+
                 //$DATA_URL = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5; s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID";
                
                 //$DATA_URL = $DATA_URL_START . $DATA_URL_END;
+
  		upload($DATA_URL, $USERNAME, $PASSWORD, $db);
  		print "\n===> UPLOAD PERIOD: " . $periods[$i] . " END\n####################################################################################\n\n";
  	}
@@ -109,9 +112,11 @@ if(sizeof($options) === 0){
  if($PERIOD_LAST_MONTH_MODE){
  	print "\n\n ===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " START\n\n";
  	$DATA_URL = $DATA_URL_START . $PERIOD_LAST_MONTH . $DATA_URL_END;
+
        // $DATA_URL = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5; s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID";
                
         //$DATA_URL = $DATA_URL_START . $DATA_URL_END;
+
  	upload($DATA_URL, $USERNAME, $PASSWORD, $db);
  	print "\n===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " END\n\n";
  }
@@ -128,6 +133,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	global $date;
 	
 	// ******************* LOAD DATA FROM DHIS2 WEB SERVICE ***************************
+
 	//$date = "we are finally here 201503";
 	// read web service 
 	print "Load data: " . $DATA_URL . "\n\n";
@@ -154,6 +160,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
        //exit;
        //$data_json = json_encode($data_json_arr);
        */
+
 	$date = $data_json_arr ["metaData"] ["pe"] [0];
 	$date_year = substr ( $date, 0, 4 );
 	$date_month = substr ( $date, - 2 );
@@ -165,7 +172,9 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	fclose($file);
 	
 	unset($data_json_arr["metaData"]); // remove this huge object
+
 	//print_r($data_json_arr); exit;
+
 	// check if these date already loaded to database
 	$db_data_info_count = $db->fetchAll ("select count(*) as count from facility_report_rate where date='" . $date_year . "-" . $date_month . "-01'");
 	if($db_data_info_count[0]['count'] > 0){
@@ -176,6 +185,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	// ******************* PARSING DATA ***************************
 	
 	$count = 0;
+
         echo 'This is the length of the new array that is being created '.sizeof($data_json_arr ["rows"]).'<br/><br/><br/>';
 	foreach ( $data_json_arr ["rows"] as $row) {
            
@@ -205,6 +215,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 				'facility_external_id'			=>	$facility_external_id,
 				'date' => $date_year . "-" . $date_month . "-01",
                                 'facility_id'=>$id
+
 		);
 		try{
 			$db->insert("facility_report_rate", $bind);
@@ -212,7 +223,9 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 			$error = $error . "ERROR ADD DATA: " . $facility_external_id . " (" . $e->getMessage() . ")\n";
 		}
 		
+
 		 echo '<br/><br/>'; echo '<br/><br/>';
+
 	}
 	
 	print "\n=> REPORT RATE LOAD:\n" .  $count . " facilities have been processed.\n\n";

@@ -109,6 +109,7 @@ else{
 		//$tableObj = new Location();
 	
   //echo $select;
+
 		$output = array();
 		try {
 			$rows = $tableObj->fetchAll($select);

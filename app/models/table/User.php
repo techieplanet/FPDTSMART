@@ -48,10 +48,12 @@ class User extends ITechTable
             $identity->username = $userRow->username;
             $identity->first_name = $userRow->first_name;
             $identity->last_name = $userRow->last_name;
+
             $identity->role = $userRow->role;
             $identity->province_id = $userRow->province_id;
             $identity->district_id = $userRow->district_id;
             $identity->region_c_id = $userRow->region_c_id;
+
             $identity->email = $userRow->email;
             $identity->locale = $userRow->locale;
 

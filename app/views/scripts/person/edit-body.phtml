@@ -637,7 +637,9 @@ YAHOO.util.Event.onDOMReady(function() {
   <div class="clear"></div>
   <div class="fieldIndentNoMargin hidden" id="duplicateCheckLabel"><?php tp('Duplicate Check');?></div>
   <div id="dupecheck"></div>
+
   <?php if( $this->hasACL('import_person') && !$this->hasACL('import_person') ) : ?>
+
   <!-- import person button -->
   <span id="importperson" class="yui-button yui-push-button" style="float:left;">
     <span class="first-child">

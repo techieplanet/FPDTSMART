@@ -33,10 +33,12 @@ class UserController extends ReportFilterHelpers {
 		if ((! $user_id = $this->isLoggedIn ()) or (! $this->hasACL ( 'add_edit_users' ))) {
 			$this->doNoAccessError ();
 		}
+
                 //$auth = Zend_Auth::getInstance ();
 //$read = $auth->getStorage()->read();
 
 //vardump($read); exit;
+
 		$request = $this->getRequest ();
 		$validateOnly = $request->isXmlHttpRequest ();
 		if ($validateOnly)
@@ -49,6 +51,8 @@ class UserController extends ReportFilterHelpers {
 		$userArray = $userRow->toArray ();
 		$userArray ['acls'] = User::getACLs ( $user_id ); //set acls
 		$this->viewAssignEscaped ( 'user', $userArray );
+
+        
  $locations = Location::getAll();
 		$this->viewAssignEscaped('locations', $locations);
 		if ($request->isPost ()) {
@@ -56,6 +60,9 @@ class UserController extends ReportFilterHelpers {
     $district_id = $this->getSanParam('district_id');
     $region_c_id = $this->getSanParam('region_c_id');
     $role = $this->getSanParam('role');
+
+		//if ($request->isPost ()) {
+
 			//validate
 			$status->checkRequired ( $this, 'first_name', 'First name' );
 			$status->checkRequired ( $this, 'last_name', 'Last name' );
@@ -72,10 +79,12 @@ class UserController extends ReportFilterHelpers {
 			if (strlen ( $this->_getParam ( 'username' ) ) < 3) {
 				$status->addError ( 'username', 'Usernames should be at least 3 characters in length.' );
 			}
+
                         if($role==""){
                             $status->addError ( 'role', 'You need to select the role of the user you are about to create' );
 			
                         }
+
 			$status->checkRequired ( $this, 'password', 'Password' );
 			//check unique username and email
 			if ($uniqueArray = User::isUnique ( $this->getSanParam ( 'username' ), $this->_getParam ( 'email' ) )) {
@@ -88,24 +97,30 @@ class UserController extends ReportFilterHelpers {
 			if (strlen ( $this->_getParam ( 'password' ) ) < 6) {
 				$status->addError ( 'password', 'Passwords should be at least 6 characters in length.' );
 			}
-                        
+
+        
                         if($province_id=="" || empty($district_id) || empty($region_c_id)){
                             $status->addError ( 'province_id', 'The Location of the user must be completely filled' );
                         }
 			if ($status->hasError ()) {
 				$status->setStatusMessage ( 'The user could not be saved.' );
 			} else {
-$states = explode("_",$district_id);
-$state = $states[1];
-$zone = $province_id;
-$lgas = explode("_",$region_c_id);
-$lga = $lgas[2];
-$details = $this->_getAllParams ();
-$details['district_id'] = $state;
-$details['region_c_id'] = $lga;
-//print_r($details);
-//echo $zone.' state '.$details.' lga '.$lga;exit;
- //print_r($this->_getAllParams ());exit;
+                            $states = explode("_",$district_id);
+                            $state = $states[1];
+                            $zone = $province_id;
+                            $lgas = explode("_",$region_c_id);
+                            $lga = $lgas[2];
+                            $details = $this->_getAllParams ();
+                            $details['district_id'] = $state;
+                            $details['region_c_id'] = $lga;
+                            //print_r($details);
+                            //echo $zone.' state '.$details.' lga '.$lga;exit;
+                             //print_r($this->_getAllParams ());exit;
+
+//			if ($status->hasError ()) {
+//				$status->setStatusMessage ( 'The user could not be saved.' );
+//			} else {
+
 				if ($this->_getParam ( 'send_email' )) {
 
 					$view = new Zend_View ( );
@@ -113,7 +128,7 @@ $details['region_c_id'] = $lga;
 					$view->assign ( 'first_name', $this->_getParam ( 'first_name' ) );
 					$view->assign ( 'username', $this->_getParam ( 'username' ) );
 					$view->assign ( 'password', $this->_getParam ( 'password' ) );
-                                        
+
 					$text = $view->render ( 'text/new_account.phtml' );
 					$html = $view->render ( 'html/new_account.phtml' );
 
@@ -298,6 +313,7 @@ $details['region_c_id'] = $lga;
 		if ($this->view->mode == 'edit') {
 			$user_id = $this->getSanParam ( 'id' );
 		}
+
 $locations = Location::getAll();
 		$this->viewAssignEscaped('locations', $locations);
 		$request = $this->getRequest ();
@@ -502,8 +518,10 @@ $locations = Location::getAll();
 		if ($user_id = $this->getSanParam ( 'id' )) {
 			$this->view->assign ( 'mode', 'edit' );
 			//set template
-$locations = Location::getAll();
+
+                $locations = Location::getAll();
 		$this->viewAssignEscaped('locations', $locations);
+
 
 			return $this->myaccountAction ();
 		} else {

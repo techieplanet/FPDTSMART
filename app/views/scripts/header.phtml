@@ -63,6 +63,7 @@ if ($auth->hasIdentity()) {
 		$sql = "SELECT  role,province_id,district_id,region_c_id FROM user WHERE id ='".$user."'";
 		$result = $db->fetchAll($sql);
                $role = $result[0]['role'];
+
 		if ( $this->hasACL('edit_course') or $this->hasACL('edit_people') or $this->hasACL('view_people') ) {
 			$navMain['facility'] = array('index' => t('Places'));
 
@@ -71,7 +72,9 @@ if ($auth->hasIdentity()) {
 			} else if ($this->hasACL('view_people')) {
 				$navMain['facility']['search']  = t('View facility');
 			}
-			if (   $this->hasACL('edit_people') && $this->hasACL('add_new_facility') && $role="1") { //TA:17:12: 10/04/2014
+
+                        if (   $this->hasACL('edit_people') && $this->hasACL('add_new_facility') && $role="1") { //TA:17:12: 10/04/2014
+
 				$navMain['facility']['add']  = t('Add Facility');
 			}
 
@@ -89,6 +92,7 @@ if ($auth->hasIdentity()) {
 			$navMain['reports'] = array('index' => t('Queries'));
 
 			/*if ( $this->setting['display_mod_skillsmart'] ) {
+
 
 				$navMain['reports']['person->reports']               = t('Individual Report');
 				$navMain['reports']['comp']                          = t('Competence Overview Report');
@@ -113,6 +117,7 @@ if ($auth->hasIdentity()) {
                          $navMain['reports']['facilitysummary']				= t('Facility  Data');
                          $navMain['reports']['allqueries']				= t('All Data');
                          
+
 			//  '' =>
 
 			if ( !$this->setting['display_training_recommend'] ) {
@@ -136,6 +141,7 @@ if ($auth->hasIdentity()) {
                 $navMain['menu'] = array('index' => t('info'));
               $navMain['menu']['info'] = t('DHS Result');
               $navMain['menu']['rrate'] = t('Reporting Rates');
+
 		if ( $this->setting['module_evaluation_enabled']) {
 			$navMain['evaluation'] = array(
 			'index' => t('Evaluations')

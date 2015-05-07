@@ -1,6 +1,7 @@
 <?php
 
 require_once ('app/controllers/ITechController.php');
+require_once ('models/table/Helper2.php');
 
 class ReportFilterHelpers extends ITechController {
 
@@ -151,6 +152,84 @@ class ReportFilterHelpers extends ITechController {
 	{
 		return (! $this->_is_filter_all($arrOrStr));
 	}
+
+        
+        
+        /*TP:
+         * This method will operate on the post variable from form and 
+         * construct the right parameters to be used for calls to the model methods
+         * This method should be usable by all controllers
+         */
+        public function buildParameters(){
+            $selectionLimit = 6;
+            $geoList='';
+            $tierValue = 0;
+            $helper = new Helper2();
+                
+                
+            if( isset($_POST["region_c_id"]) && 
+                (count($_POST["region_c_id"])>1 ||
+                (count($_POST["region_c_id"])==1 AND !empty($_POST["region_c_id"][0]))))
+            { // CHAINigeria LGA: TP changing this if statement to be more robust
+                if(count($_POST['region_c_id']) > $selectionLimit) 
+                    $_POST['region_c_id'] = array_slice ($_POST['region_c_id'], 0, $selectionLimit);
+
+                foreach ($_POST['region_c_id'] as $i => $value){
+                    if($value == '') continue;
+                    $geo = explode('_',$value);
+                    $geoList .= '\'' . $geo[2]. '\', ';
+                }
+
+                $geoList = substr(trim($geoList), 0, -1);  //remove trailing comma
+                $tierValue = 3;
+
+            } else if( isset($_POST["district_id"]) && 
+                (count($_POST["district_id"])>1 || 
+                (count($_POST["district_id"])==1 AND !empty($_POST["district_id"][0]))))
+            {
+                if(count($_POST['district_id']) > $selectionLimit) 
+                    $_POST['district_id'] = array_slice ($_POST['district_id'], 0, $selectionLimit);
+
+                foreach ($_POST['district_id'] as $i => $value){
+                    if($value == '') continue;
+                    $geo = explode('_',$value);
+                    $geoList .= '\'' . $geo[1]. '\', ';
+                }
+
+                $geoList = substr(trim($geoList), 0, -1);  //remove trailing comma
+                $tierValue = 2;
+
+
+            } else if( isset($_POST["province_id"]) && 
+                (count($_POST["province_id"])>1 || 
+                (count($_POST["province_id"])==1 AND !empty($_POST["province_id"][0]))))
+            {
+                if(count($_POST['province_id']) > $selectionLimit) 
+                    $_POST['province_id'] = array_slice ($_POST['province_id'], 0, $selectionLimit);
+
+                //$where .= 'AND flv.geo_parent_id IN (';
+                foreach ($_POST['province_id'] as $i => $value){
+                    if($value == '') continue;
+                    $geo = explode('_',$value);
+                    $geoList .= '\'' . $geo[0]. '\', ';
+                }
+
+                $geoList = substr(trim($geoList), 0, -1);  //remove trailing comma
+                $tierValue = 1;
+            }
+            else { //no geo selection
+                $tierValue = 1;
+                $geoIDsArray = $helper->getLocationTierIDs($tierValue);
+                foreach($geoIDsArray as $key=>$geoid)
+                    $geoIDsArray[$key] = "'$geoid'";
+
+                //var_dump($geoIDsArray); exit;
+                $geoList = implode(',', $geoIDsArray);
+            }
+            
+            return array($geoList, $tierValue);
+      }
+
 }
 
 ?>

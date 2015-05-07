@@ -4,8 +4,9 @@ function hasACLEdit($requireACL, $linkURL, &$view)
 {
   if(! $view->hasACL('edit_country_options') && ! $view->hasACL($requireACL))
     return null;
-
+  
   return '<a href="'.$view->base_url.'/'.$linkURL.'" onclick="submitThenRedirect(\''.$view->base_url.'/'.$linkURL.'\');return false;">'.t('Edit').'</a>';
+
 }
 
 function implode_criteria_to_url (&$criteria)

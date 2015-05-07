@@ -265,7 +265,7 @@ class FacilityController extends ReportFilterHelpers {
 	public function listwithunknownAction() {
 		$this->listAction ();
 	}
-      
+
 	public function editAction() {
 		if (! $this->hasACL ( 'edit_people' )) {
 			$this->doNoAccessError ();
@@ -380,7 +380,6 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
                       }
 		}
                 
-                
 		require_once('models/table/Translation.php');
 		$translation = Translation::getAll();
  		$fieldDefs = array('name' => $translation['Facility Commodity Column Table Commodity Name'], 
@@ -392,6 +391,7 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
 // 		$elements = json_encode($elements); // yui data table will enjoy spending time with a json encoded array
 // 		$customColDefs['stock_out'] = "editor:'dropdown', editorOptions: {dropdownOptions: $elements }";
 		//use "commodity" here, but in phtml use in javascript ITECH.commodityTable.addRow(...) and html <div id="commodityTable"></div>
+
 		//$customColDefs = array();
                 //print_r($customColDefs);
                 $noDelete = array();

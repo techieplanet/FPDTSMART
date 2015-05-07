@@ -413,8 +413,10 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 																elCell.innerHTML = "<a href='<?php echo $this->base_url;?>/training/view/id/" + oRecord.getData("id") + "'>" + sData + "</a>";
 															};
 
+
 															
                                                                                                                         var trainingData = [
+
 															<?php $isFirstRow = true;
 															$cnt = 0;
 															foreach($this->results as $row) {
@@ -427,10 +429,12 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 																	echo ( $row['cnt'] ? $row['cnt'] : 0 ) ;
 																	if (isset($row['id'] ) )
 																	echo ((array_key_exists('cnt', $row) !== false )? ','.$row['id']: $row['id']);
+
 																	// print_r($row); 
 																	
 																	echo ',"'.$row['training_end_date'].'"';
                                                                                                                                         
+
 																	if ( $this->criteria['showProvince'] )
 																	echo ',"'.$row['province_name'].'"';
 																	if ( $this->criteria['showDistrict'] )
@@ -517,12 +521,16 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 																	echo ',"'.($row['location_phrases'] ? $row['location_phrases'] : '-').'"';
 																	if ( $this->criteria ['showQualPrim'] )
 																	echo ',"'.$row['qualification_phrase'].'"';
+
 																	
+
 																	echo ',"'.$row['qualification_secondary_phrase'].'"';
 																	echo "]";
 																	$cnt++;
 																}}
+
                                                                                                                                 
+
 																?>];
 
 																var trainingColumnDefs = [
@@ -532,12 +540,12 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 																//TA:17: 9/3/2014
 																<?php if (isset($this->results[0]['id'])) { ?> 
 																	<?php  if (isset($this->results[0]['cnt'])) echo ',';?>		
-																	{key:"id", label: "ID", sortable:true, resizeable:true, formatter: formatViewUrl}
-																	
+																	{key:"id", label: "ID", sortable:true, resizeable:true, formatter: formatViewUrl}																	
 																<?php } ?>
 																<?php ?>
 																	,{key:"training_end_date", label: "<?php tp('End Date');?>", sortable:true, resizeable:true}
 																<?php  ?>
+
 																<?php if ( $this->criteria['showProvince'] ) { ?>
 																	,{key:"province_name", label: "<?php echo (@$this->translation['Region A (Province)']); ?>", sortable:true, resizeable:true}
 																<?php } ?>

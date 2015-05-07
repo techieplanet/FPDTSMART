@@ -1109,6 +1109,7 @@ class PersonController extends ReportFilterHelpers {
 					// left join instead of inner for everyone
 					$sql = '
 					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email, f.facility_name, '.implode(',',$field_name).'
+
 					FROM person as p
 					LEFT JOIN person_qualification_option as q ON p.primary_qualification_option_id = q.id
 					LEFT JOIN facility as f ON p.facility_id = f.id
@@ -1118,13 +1119,14 @@ class PersonController extends ReportFilterHelpers {
 				} else {
 				$sql = '
 					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email,f.facility_name, '.implode(',',$field_name).'
+
 					FROM person AS p, person_qualification_option AS q, facility AS f, ('.$location_sub_query.') AS l';
 				}
 			} else {
 				if ($criteria ['person_type'] == 'is_everyone') {
 					// left join instead of inner for everyone
-					$sql = '
-					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender,p.phone_mobile,p.email, q.qualification_phrase, f.facility_name
+					$sql = 'SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender,p.phone_mobile,p.email, q.qualification_phrase, f.facility_name
+
 					FROM person as p
 					LEFT JOIN person_qualification_option as q ON p.primary_qualification_option_id = q.id
 					LEFT JOIN facility as f ON p.facility_id = f.id ';
@@ -1133,7 +1135,7 @@ class PersonController extends ReportFilterHelpers {
 					// Removed $field_name from SQL query. person table does
 				// not have province_name, district_name, or city_name columns. - its supposed to be from the facility
 				$sql = '
-					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email, f.facility_name
+                                        SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email, f.facility_name
 					FROM person AS p,
 					person_qualification_option AS q,
 					facility AS f';
@@ -1214,7 +1216,9 @@ class PersonController extends ReportFilterHelpers {
 
 			//print($sql);
 			$rowArray = $db->fetchAll ( $sql );
+
 //print_r($rowArray);
+
 			if ($criteria ['outputType']) {
 				$this->sendData ( $rowArray );
 			}
@@ -1963,6 +1967,7 @@ class PersonController extends ReportFilterHelpers {
 		//done, output a csv
 		if( $this->getSanParam('outputType') == 'csv' )
 			$this->sendData ( $this->reportHeaders ( false, $sorted ) );
+
 	}   
         
         
@@ -2218,4 +2223,5 @@ class PersonController extends ReportFilterHelpers {
 	}
 */
         
+
 }

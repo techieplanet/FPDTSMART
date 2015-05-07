@@ -98,7 +98,8 @@ if ($auth->hasIdentity()) {
 		} else if ($this->hasACL('view_people')) {
 			$navMain['psfacility']['search']	= t('View').' '.t('facility');
 		}
-		if (	$this->hasACL('edit_people') && $role="1" ) {
+
+                if (	$this->hasACL('edit_people') && $role="1" ) {
 			$navMain['psfacility']['add']	= t('Add').' '.t('Facility');
 		}
 
@@ -122,7 +123,8 @@ if ($auth->hasIdentity()) {
 		$navMain['reports']['psCohortByParticipantCount']	= t('Cohort Reports');
 		$navMain['reports']['psInstitutionInformation']		= $this->translation['ps institution']. t(' Reports');
 		$navMain['reports']['psTutorByName']				= $this->translation['ps tutor']. t(' Reports');
-		*/
+
+        */
                 $navMain['reports']['trainingrep'] = t('Training Data');
                          $navMain['reports']['facilitysummary']				= t('Facility  Data');
                          $navMain['reports']['allqueries']				= t('All Data');
@@ -131,6 +133,7 @@ if ($auth->hasIdentity()) {
          $navMain['menu'] = array('index' => t('info'));
               $navMain['menu']['info'] = t('DHS Result');
               $navMain['menu']['rrate'] = t('Reporting Rates');
+
 	// PRE-SERVICE LINK
 	if ($this->hasACL('in_service')) {
 		$navMain['index'] = array(

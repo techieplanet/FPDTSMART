@@ -923,11 +923,13 @@ class TrainingController extends ReportFilterHelpers {
 			$personsFields ['province_name'] = $this->tr ( 'Region A (Province)' );
 		}
 
+
                 //TP: restructuring the table of the participant
                  $personsFields['facility_name'] = t ( 'Facility' );
                  $personsFields['certification'] = t('Certification');
                 
                 //'facility_name' => t ( 'Facility' ),'certification'=>t('Certification')
+
 		$colStatic = array_keys ( $personsFields ); // static calumns (From field keys)
 		if ( $this->setting ( 'module_attendance_enabled' ) || $this->setting ( 'display_viewing_location' ) || $this->setting( 'display_budget_code' ) ) {
 			foreach( $colStatic as $i => $v )
@@ -1141,7 +1143,9 @@ class TrainingController extends ReportFilterHelpers {
 
 		$action = $this->_getParam ( 'a' );
 		$row_id = $this->_getParam ( 'row_id' );
+
                 //$certification = $this->_getParam('certification');
+
 		
 		if ($do == 'trainer') { // update trainer table
 			require_once ('models/table/Training.php');
@@ -1186,7 +1190,9 @@ class TrainingController extends ReportFilterHelpers {
 
 			if ($action == 'add') {
 
+
 				$result = $tableObj->addPersonToTraining ( $row_id, $training_id,$certification );
+
 				$sendRay ['insert'] = $result;
 				if ($result == - 1) {
 					$sendRay ['error'] = t ( 'This' ).' '.t( 'participant' ).' '.t( 'is already in this training session.' );
@@ -1312,6 +1318,7 @@ class TrainingController extends ReportFilterHelpers {
 
 			//TA:17:16:1 validate training type
 			$values['training_title_option_id'] = '';
+
 			for($i=13; $i<29; $i++){
 				if(! empty($rows[$i][3])){
 					$values['training_title_option_id'] = $rows[$i][2];
@@ -1353,6 +1360,7 @@ class TrainingController extends ReportFilterHelpers {
                                 
                         }
                       // print_r($rows);
+
 		if($status->hasError() === 0){ //contunue parse persons if required training info is validated
 			try{
 				if (isset($values['training_title_option_id'])){$values['training_title_option_id']= $this->_importHelperFindOrCreate('training_title_option','training_title_phrase',$values['training_title_option_id']); }
@@ -1375,12 +1383,14 @@ class TrainingController extends ReportFilterHelpers {
 				if ($training_id > 0) {
 					$db = $this->dbfunc();
 					$personObj = new Person (); //in case if we will need to add new persons
+
 					for($i=35; $i< sizeof($rows); $i++){
                                                
 							if(!empty($rows[$i][1]) || !empty($rows[$i][2])  || !empty($rows[$i][3])  || 
 									!empty($rows[$i][4]) || !empty($rows[$i][5]) || !empty($rows[$i][6]) || 
 									!empty($rows[$i][7]) || !empty($rows[$i][8]) || !empty($rows[$i][9]) ||
 							!empty($rows[$i][10]) || !empty($rows[$i][12])){
+
 								if(!trim($rows[$i][1])){
 									$errs[] = t("Could not add person to training. First name is required."). " Person #" . $rows[$i][0];
 									$to_fix = "to fix data";
@@ -1394,6 +1404,7 @@ class TrainingController extends ReportFilterHelpers {
 							
 								//first, middle, last
 								$trainer_id = Person::tryFind(trim($rows[$i][1]), trim($rows[$i][2]), trim($rows[$i][3]));
+
                                                                 $certification = $rows[$i][14];
                                                                 
                                                                      
@@ -1411,6 +1422,7 @@ class TrainingController extends ReportFilterHelpers {
 									$values_person['phone_mobile'] = trim($rows[$i][12]);
                                                                         $values_person['phone_home'] = trim($rows[$i][12]);
 									$values_person['email'] = trim($rows[$i][13]);
+
 									$values_person['middle_name'] = trim($rows[$i][2]);
 									
 									//required fields
@@ -1425,6 +1437,7 @@ class TrainingController extends ReportFilterHelpers {
 									$values_person['primary_qualification_option_id'] = '0';
 									if(trim($rows[$i][6])){
 										$cadre_id = $db->fetchOne ( "SELECT id FROM person_qualification_option WHERE qualification_phrase = '" . trim($rows[$i][6]) . "' LIMIT 1" );
+
 										if($cadre_id){
 											$values_person['primary_qualification_option_id'] = $cadre_id;
 										}
@@ -1452,6 +1465,7 @@ class TrainingController extends ReportFilterHelpers {
                                                                                 //echo $lga_name.'lga_ name'.$lga_id.' lga '.$state_id.' state id '.$facility_name;exit;
 									}
 									//prinr_r($values_person);
+
 									$mes_facility = '';
 									if($facility_name) $mes_facility .= $facility_name;
 									if($lga_name){
@@ -1488,7 +1502,7 @@ class TrainingController extends ReportFilterHelpers {
 									$personrow = $personObj->createRow();
 									$personrow = ITechController::fillFromArray($personrow, $values_person);
 									$trainer_id = $personrow->save();
-                                                                       
+
 									if(!$trainer_id){
 										$errs[] = t("Could not add person to training.").space.t('Training')." #$training_id, Person: #" . $rows[$i][0] . "'" . $mes_person . "'";
 										continue;
@@ -1498,6 +1512,7 @@ class TrainingController extends ReportFilterHelpers {
 								//TrainingToTrainer::addTrainerToTraining($trainer_id, $training_id, 0); 
                                                                
 								$personToTraining->addPersonToTraining($trainer_id, $training_id,$certification);
+
 							
 						}
 					}
@@ -1819,7 +1834,9 @@ class TrainingController extends ReportFilterHelpers {
 									$trainer_first  = trim($trainer_first);
 									$trainer_middle = trim($trainer_middle);
 									$trainer_last   = trim($trainer_last);
+
                                                                         $certification = trim($certification);
+
 	
 									#if (! $trainer_id) // id comes with exported data - todo if @search() matches Id ->
 									$trainer_id = Person::tryFind($trainer_first, $trainer_middle, $trainer_last);
@@ -1832,6 +1849,7 @@ class TrainingController extends ReportFilterHelpers {
 									// add them to training
 									if ($imode == 0) TrainingToTrainer::addTrainerToTraining($trainer_id, $training_id, 0); // todo days
 									elseif ($imode == 1) $personToTraining->addPersonToTraining($trainer_id, $training_id,$certification);
+
 								}
 								}
 								}

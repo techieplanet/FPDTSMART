@@ -1,94 +1,78 @@
 <?php
-require_once('ITechTable.php');
-require_once('Helper.php');
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
-class Dashboard extends ITechTable
-{
-	protected $_primary = 'id';
-	protected $_name = 'institution';
-
-	public function fetchdetails() {
-		$output = array();
-
-		$helper = new Helper();
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-
-		// GETTING CURRENT USER ID
-		$uid = $helper->myid();
-
-		// GETTING INSTITUTION IDS
-		$ids = $helper->getUserInstitutions($uid,false);
-		if (count ($ids) > 0){
-			// LIMITING INSTITUTIONS TO THE ONES ENABLED FOR THIS USER
-			$select = $db->select()
-				->from($this->_name)
-				->where("id IN (" . implode(",", $ids) . ")");
-		} else {
-			// SHOWING ALL INSTITUTIONS
-			$select = $db->select()
-				->from($this->_name);
-		}
-
-		$result = $db->fetchAll($select);
-		foreach ($result as $row){
-			$students	= $helper->getInstitutionStudents($row['id'],"all","count");
-			$grads		= $helper->getInstitutionStudents($row['id'],"graduated","count");
-			$dropped	= $helper->getInstitutionStudents($row['id'],"dropped","count");
-			$tutors		= $helper->getInstitutionTutorCount($row['id']);
-
-			$output[] = array(
-				"col1" => $row['institutionname'],
-				"col2" => $students,
-				"col3" => $tutors,
-				"col4" => ((is_numeric($tutors)) && ($tutors > 0) && (is_numeric($students)) && ($students > 0)) ? "1 : " . round(($students / $tutors),2) : "N/A",
-				"col5" => $grads,
-				"col6" => 0,
-				"link" => Settings::$COUNTRY_BASE_URL . "/institution/institutionedit/id/" . $row['id'],
-				"type" => 1
-			);
-			$cohorts = $this->fetchCohorts($row['id']);
-			foreach ($cohorts as $cohort){
-				$output[] = array(
-					"col1" => $cohort['name'],
-					"col2" => $cohort['count'],
-					"col3" => "",
-					"col4" => "",
-					"col5" => "",
-					"col6" => "",
-					"link" => Settings::$COUNTRY_BASE_URL . "/cohort/cohortedit/id/" . $cohort['id'],
-					"type" => 2
-				);
-			}
-		}
-		return $output;
-	}
-
-	public function fetchCohorts($iid){
-		$output = array();
-
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-		$select = $db->select()
-			->from("cohort")
-			->where("institutionid = ?",$iid);
-		$result = $db->fetchAll($select);
-		foreach ($result as $row){
-			$output[] = array(
-				"id" => $row['id'],
-				"name" => trim($row['cohortid'] . " " . $row['cohortname']),
-				"count" => $this->fetchCohortStudents($row['id'])
-			);
-		}
-		return $output;
-	}
-
-	public function fetchCohortStudents($cid){
-		$output = array();
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-		$select = $db->select()
-			->from("link_student_cohort")
-			->where("id_cohort = ?",$cid);
-		$result = $db->fetchAll($select);
-		return count($result);
-	}
+/**
+ * Description of Dashboard
+ *
+ * @author Swedge
+ */
+require_once 'Helper2.php';
+class Dashboard {
+    //put your code here
+    
+    public function fetchConsumptionByMethod(){
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+        $output = array ();
+        $helper = new Helper2();
+        
+        $latestDate = $helper->getLatestPullDate();
+        
+        $where = "(commodity_type='fp' OR commodity_type = 'larc') AND date = '$latestDate'";
+        $select = $db->select()
+                     ->from(array('c'=>'commodity'), array('SUM(consumption) as consumption'))
+                     ->joinRight(array('cno'=>'commodity_name_option'), 'cno.id = c.name_id', 
+                                                array('commodity_name as method'))
+                     ->where($where)
+                     ->group('commodity_name')
+                     ->order(array('display_order'));
+        $result = $db->fetchAll($select);
+        
+        return $result;               
+    }
+    
+    
+    /*TP: Rewriting the fetchCSDetails method
+       * This time we will modularize and make use of views that will already filter the date
+       * This method get the last DHIS2 download date and use it as argument for 
+       * the 3 categories of calls: 
+       */
+      public function fetchCoverageSummary(){          
+           //$output = $this->fetchCSDetails1(null);
+           //var_dump($output); 
+           
+           $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+	   $output = array(); $helper = new Helper2(); $params = array();
+            
+           $latestPullDate = $helper->getLatestPullDate();
+	    $params['last_date'] = $latestPullDate;
+            
+            //$result = $db->fetchAll($select);
+            $params['total_facility_count_month'] = $helper->getAllReportingFacsCount($latestPullDate);
+            
+            $params['larc_facility_count'] = $helper->getReportingFacilityWithTrainedHW($latestPullDate, 'larc');
+            $params['fp_facility_count'] = $helper->getReportingFacilityWithTrainedHW($latestPullDate, 'fp');
+            
+            $params['larc_consumption_facility_count'] = $helper->getReportingConsumptionFacilities($latestPullDate, 'larc');
+            $params['fp_consumption_facility_count'] = $helper->getReportingConsumptionFacilities($latestPullDate, 'fp');
+            
+            $params['larc_stock_out_facility_count'] = $helper->getReportingStockedOutFacilitiesWithTrainedHWCount($latestPullDate, 'larc');
+            $params['fp_stock_out_facility_count'] = $helper->getReportingStockedOutFacilitiesWithTrainedHWCount($latestPullDate, 'fp');
+            
+            //var_dump($params); exit;
+            
+            //do your calculations
+            $output = $helper->coverageCalculations($params);
+            
+            //var_dump($output); exit;
+            
+            return $output;
+            
+      }
+    
 }
+
+
 ?>

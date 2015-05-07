@@ -3,6 +3,7 @@
 <head>
 <title><?php echo $this->translation['Application Name'];?> | <?php tp('Edit Account');?></title>
 		<?php
+
                 require_once('views/helpers/Location.php');
 			require_once('views/helpers/ScriptContainer.php');
 			print ScriptContainer::$instance->renderCSSHead();
@@ -83,6 +84,7 @@
 							<div class="fieldselect"><?php renderFilter($this->locations, 3, 'region_c_id', $this->user['lga'],'', false, false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
+
 				<div class="clear"></div>
 
 				<fieldset>
