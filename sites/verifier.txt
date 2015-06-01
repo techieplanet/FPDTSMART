@@ -1,0 +1,11 @@
+For the file January to March 2015---------------------------> 149041
+  For the commodity for the period 201503-----------------------> 52215
+  For the commodity for the period 201502-----------------------> 57492
+  For the commodity for the period 201501-----------------------> 39334
+
+For the file January to December 2013------------------------> 406723
+  For the commodity for the period 201301--------------------> 24648
+  For the commodity for the period 201302--------------------> 25925
+  For the commodity for the period 201303--------------------> 25691
+  For the commodity for the period 201304--------------------> 28369
+  

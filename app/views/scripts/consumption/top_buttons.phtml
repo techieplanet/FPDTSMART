@@ -1,0 +1,53 @@
+<form name="dashboardForm" id="consumptionForm" method="post" onsubmit="return checkCommoditySelection();"> 
+
+<?php 
+require_once('views/helpers/Location.php');
+//require_once('views/helpers/ConsumptionLocation.php');
+require_once('views/helpers/ScriptContainer.php');
+
+$current_view = '/'.$path[1].'/'. $path[2]; 
+?>
+
+<?php  //file_put_contents('c:\wamp\logs\php_debug.log', 'top_buttons 1 >'.PHP_EOL, FILE_APPEND | LOCK_EX);	ob_start();   
+       //var_dump("current_view=", $current_view, "END");
+       //$result = ob_get_clean(); file_put_contents('c:\wamp\logs\php_debug.log', $result .PHP_EOL, FILE_APPEND | LOCK_EX); 
+?>
+
+<p3>
+    <div>
+        <?php 
+            $commsHtml = '';
+            //$commsHtml = '<option value="-1">ALL</option>';
+            foreach($this->comms as $comm)
+                $commsHtml .= '<option value="'. $comm['id'] . '">' . $comm['commodity_name'] . '</option>';
+        ?>
+        <label>Commodity: </label>
+        <select id="comm_id" name="comm_id">
+                <!--<option value="0">--Choose--</option>-->
+                <option value="0">ALL</option>
+                <?php echo $commsHtml ?>
+        </select>
+    </div>
+    <br/>
+    
+    <div>
+        <?php region_filters_dropdown_db($this, $this->locations, $this->criteria, true, true); ?>
+        <p>
+            <strong>Maximum of six (6) locations allowed per filter</strong><br/>
+            <strong>Only one (1) location allowed when filtering ALL commodities</strong>
+        </p>
+    </div>
+    
+    <br/>
+    <input type="submit" value="Filter" class="dbbutton dbbutton_leftmenu">
+    
+</p3>
+
+
+ </form>
+
+
+					
+
+
+
