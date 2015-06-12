@@ -62,6 +62,7 @@ class DashboardHelper {
             }//end for
         }
         
+        //var_dump($numerators); exit;
         return $numerators;
     }
     
@@ -73,7 +74,7 @@ class DashboardHelper {
         $monthlyDates = $helper->getPreviousMonthDates(12);
         
         
-        $commTypes = array('fp','larc');
+        $commTypes = array('fp', 'larc');
         $denominators = array();
         
         //koko

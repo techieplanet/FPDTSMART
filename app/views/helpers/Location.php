@@ -21,7 +21,18 @@ function buildId($tier, &$locations, $id) {
 
 
 function renderFilter(&$locations, $tier, $widget_id, $default_val_id = false, $child_widget_id = false, $is_multiple = false, $readonly = false,$size="10") {
-    $also_match_id = "";
+    //if($child_widget_id!=""){
+	//print_r($locations); exit;
+	$tieridarray =  array();
+	if(is_array($default_val_id)){
+	foreach ($default_val_id as $default_value){
+	$each_value = explode('_',$default_value);
+	$final_each_value = $each_value[$tier-1];
+	array_push($tieridarray,$final_each_value);
+	}
+	
+			}		 
+	$also_match_id = "";
     if ( $default_val_id === false) {
     foreach ( $locations as $val ) {
         if ( ($val['tier'] == $tier) && $val['is_default'])
@@ -38,16 +49,22 @@ function renderFilter(&$locations, $tier, $widget_id, $default_val_id = false, $
 	?>
   <select size="<?php echo $size; ?>" id="<?php echo $widget_id;?>" name="<?php echo $widget_id;?><?php if ($is_multiple) echo '[]';?>" <?php if ($readonly) echo 'disabled="disabled"'?> <?php if ( $is_multiple) echo 'multiple="multiple" ';?>
   <?php if ($child_widget_id ) { ?> onchange="<?php echo 'setChildStatus_' . str_replace('-', '_', $widget_id) . '()';?>" <?php }?> class="mclass">
-    <option value="">--<?php tp('choose');?>--</option>
+    <option value="" disabled>--<?php tp('choose');?>--</option>
     <?php
       foreach ( $locations as $val ) {
         if ( $val['tier'] == $tier) {
         	  $selected = '';
-        	  if ( is_array($default_val_id) && (@in_array($val['id'], $default_val_id) ) ) {
+			  	
+			  if(is_array($default_val_id) && (@in_array($val['id'], $tieridarray))){
+			$selected = 'selected="selected"';
+			}
+        	 else if ( is_array($default_val_id) && (@in_array($val['id'], $default_val_id) ) ) {
         	   $selected = 'selected="selected"';
             } else if ( !is_array($default_val_id) && $val['id'] === $default_val_id ) {
         	   $selected = 'selected="selected"';
-            } else if ( $also_match_id === $val['id'] ) {
+            } 
+			
+			else if ( $also_match_id === $val['id'] ) {
               $selected = 'selected="selected"';
         	  }
             echo '<option value="'.buildId($tier, $locations, $val['id']).'" '.$selected.'>'.$val['name'].'</option>';

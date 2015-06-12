@@ -49,8 +49,8 @@ $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 $current_month = "03";
 $current_year = date('Y');
 $date_format = $current_year.'-'.$current_month.'-'.'01';
-echo '<nav id="primary_nav_wrap">';
-echo '<ul>';
+echo '<div id="accordion">';
+
 $zones = $this->get_location_category_unique("zone");
 //print_r($zones);exit;
 foreach($zones as $zone){
@@ -61,19 +61,24 @@ foreach($zones as $zone){
     $facility_ids = implode(",",$facilities);
     
    $report_rates = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-    echo '<li><a href=#"><span></span>'.$zone_name.'::'.$report_rates.'</a>';
+  echo ' <h3 align="">'.$zone_name.'::'.$report_rates.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h3>
+<div class="accordion1">';
+  //  echo '<li><a href=#"><span></span>'.$zone_name.'::'.$report_rates.'</a>';
     $states = $this->get_location_category_unique("state",$zone_id);
-    echo '<ul>';
+   // echo '<ul>';
     foreach($states as $state){
         $state_name = $state['state'];
         $state_id = $state['state_id'];
         $facilities = $this->get_all_facilities_with_location("state",$state_id);
     $facility_ids = implode(",",$facilities);
     $report_rates_state = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-        echo '<li><a href="#"><span></span>'.$state_name.'::'.$report_rates_state.'</a>';
-        echo '<ul>';
-    
+    echo '<h3 align="">'.$state_name.'::'.$report_rates_state.'</h3>
    
+';
+        //echo '<li><a href="#"><span></span>'.$state_name.'::'.$report_rates_state.'</a>';
+       // echo '<ul>';
+    
+   echo '<div>';
     $lgas = $this->get_location_category_unique("lgs",$state_id);
     foreach($lgas as $lga){
         $lga_name = $lga['lga'];
@@ -81,19 +86,56 @@ foreach($zones as $zone){
        $facilities = $this->get_all_facilities_with_location("lga",$lga_id);
     $facility_ids = implode(",",$facilities);
     $report_rates_lga = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-        echo '<li><a href="#"><span></span>'.$lga_name.'::'.$report_rates_lga;echo '</a></li>'; 
+        echo '<p>'.$lga_name.'::'.$report_rates_lga.'</p>'; 
         
     }
-    echo '</ul>';
-      echo '</li>';  
+  echo '</div>';
+      
     }
-    echo '</ul>';
-    echo '</li>';
+    echo '</div>';
+    
 }
 
-echo '</ul>';
-echo '</nav>';
+
+echo '</div>';
             
+        }
+        public function importAction(){
+            $this->_countrySettings = array();
+		$this->_countrySettings = System::getAll();
+
+		$this->view->assign ( 'mode', 'search' );
+                require_once ('models/table/TrainingLocation.php');
+		require_once('views/helpers/TrainingViewHelper.php');
+                
+                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+                 $status = ValidationContainer::instance();
+            $filename = ($_FILES['upload']['tmp_name']);
+		if ( $filename ){
+			$rows = $this->_excel_parser($filename,1);
+                        $json = json_encode($rows);
+                       // $result = true;
+                       // print_r($json);
+   
+  //$result = true;
+                        
+                       $result =  $this->update_json_file($json);
+                       if($result){
+                         $stat = t ('Your changes have been saved. The new DHS Data has been uploaded to the database');
+                       }else{
+                          $stat =  t("Unable to update DHS database. Make sure file content is not the same as the one already in the database"); 
+                       }
+                }else{
+                $errs[] = "Select the DHS Static Excel File";
+                }
+                
+                foreach($errs as $errmsg){
+								$stat .= '<br>'.''.htmlspecialchars($errmsg, ENT_QUOTES);
+        }                                                          
+								$status->setStatusMessage($stat);
+								$this->view->assign('status',$status);
+                
+                
         }
 public function infoAction(){
     $this->_countrySettings = array();
@@ -103,8 +145,29 @@ public function infoAction(){
                 require_once ('models/table/TrainingLocation.php');
 		require_once('views/helpers/TrainingViewHelper.php');
 
+                $file = $this->get_json_file_from_db();
+                $json_array = json_decode($file,true);
+            //starting from index 5
+                $this->view->assign('json_array',$json_array);
 }
 
+public function update_json_file($json){
+    $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+   $data = array(
+    'json'      => $json
+  
+);
+ 
+$result = $db->update('dhs_static_data', $data, 'id = 1');
+return $result;
+}
+public function get_json_file_from_db(){
+    $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+ $sql = "SELECT * FROM `dhs_static_data` WHERE id='1'";
+ $result = $db->fetchAll($sql);
+ $file = $result[0]['json'];
+return $file;
+}
 public function get_location_category_unique($category,$condition=""){
       if($category=="zone"){
         $needle = "geo_parent_id,geo_zone";

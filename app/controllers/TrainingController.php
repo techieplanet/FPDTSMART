@@ -894,7 +894,11 @@ class TrainingController extends ReportFilterHelpers {
 		}
 
 
-
+                $personsFields ['district_name'] = $this->tr ( 'Region B (Health District)' );
+                $personsFields ['region_c_name'] = $this->tr ( 'Region C (Local Region)' );
+                
+                /*TP: This was commented out due to the fact that emphasis was laid on state and localgovernment in the requirement.
+                 *  They were made compulsory fields...
 		if ( $this->setting ( 'display_region_i' )) {
 			$personsFields ['region_i_name'] = $this->tr ( 'Region I' );
 		}
@@ -922,15 +926,17 @@ class TrainingController extends ReportFilterHelpers {
 		else {
 			$personsFields ['province_name'] = $this->tr ( 'Region A (Province)' );
 		}
-
-
+*/
+                 
                 //TP: restructuring the table of the participant
                  $personsFields['facility_name'] = t ( 'Facility' );
+                 $personsFields['qualification'] = t('Qualification');
                  $personsFields['certification'] = t('Certification');
+                 
+                //'facility$_name' => t ( 'Facility' ),'certification'=>t('Certification')
                 
-                //'facility_name' => t ( 'Facility' ),'certification'=>t('Certification')
-
 		$colStatic = array_keys ( $personsFields ); // static calumns (From field keys)
+                //print_r($colStatic);exit;
 		if ( $this->setting ( 'module_attendance_enabled' ) || $this->setting ( 'display_viewing_location' ) || $this->setting( 'display_budget_code' ) ) {
 			foreach( $colStatic as $i => $v )
 				if( $v == 'duration_days' || $v == 'award_phrase' || $v == 'budget_code_phrase' || $v == 'location_phrase')
@@ -969,7 +975,7 @@ class TrainingController extends ReportFilterHelpers {
 
 
 		}
-
+//print_r($persons);exit;
 		$html = EditTableHelper::generateHtmlTraining ( 'Persons', $persons, $personsFields, $colStatic, $linkInfo, $editLinkInfo, $customColDefs);
 		$this->view->assign ( 'tablePersons', $html );
 
@@ -1268,7 +1274,7 @@ class TrainingController extends ReportFilterHelpers {
 	* Import a training
 	*/
 	
-	public function importAction() {
+	public function  importAction() {
 		$status = ValidationContainer::instance();
 		$errs = array();
 		$this->view->assign('pageTitle', t( 'Import a training' ));
@@ -1336,6 +1342,7 @@ class TrainingController extends ReportFilterHelpers {
                             if(!empty($rows[$v][3])){
                                 $values['training_level_option_id'] = $rows[$v][2];
                                 //echo $v;
+                                //echo 'it is not empty brother';
                                 if($v==30){
                                     $id = '1';
                                 }else if($v==31){
@@ -1343,19 +1350,22 @@ class TrainingController extends ReportFilterHelpers {
                                 }else if($v==32){
                                     $id = '3';
                                 }
+                               
                                 if($rows[$v][2]=="Master training"){
-                                  $values['training_level_option__id'] = $id;
+                                  $values['training_level_option_id'] = $id;
 
                                 }else if($rows[$v][2]=="Training of trainer (TOT)"){
-                                    $values['training_level_option__id'] = $id;
+                                    $values['training_level_option_id'] = $id;
                                 }else if($rows[$v][2]=="Cascade training"){
-                                    $values['training_level_option__id'] = $id;
+                                    $values['training_level_option_id'] = $id;
                                 }
                                 break;
                             }
                         }
+                        $values_person['training_level_option_id'] = $values['training_level_option_id'];
+                        //echo $values['training_level_option__id'];exit;
                         if(!trim($values['training_level_option_id'])){
-				$status->addError ( 'training_level_option__id', t ( 'Your changes have been not saved: Level of training is required. is here'.$rows[33][2] ) );
+				$status->addError ( 'training_level_option_id', t ( 'Your changes have been not saved: Level of training is required. is here'.$rows[33][2] ) );
 			
                                 
                         }
@@ -1433,7 +1443,7 @@ class TrainingController extends ReportFilterHelpers {
                                                                         $values_person['certification'] = trim($rows[$i][14]);
                                                                        // echo 'Certification is '.$values_person['certification']." ";
                                                                         $values_person['certification'] = trim($rows[$i][14]);
-                                                                        $values_person['training_level_id'] = $values['training_level_id'];
+                                                                        $values_person['training_level_id'] = $values['training_level_option__id'];
 									$values_person['primary_qualification_option_id'] = '0';
 									if(trim($rows[$i][6])){
 										$cadre_id = $db->fetchOne ( "SELECT id FROM person_qualification_option WHERE qualification_phrase = '" . trim($rows[$i][6]) . "' LIMIT 1" );

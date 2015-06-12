@@ -5,6 +5,7 @@ require_once ('models/table/Helper2.php');
 
 class ReportFilterHelpers extends ITechController {
 
+
 	public function __construct($request, $response, $invokeArgs = array()) {
 		parent::__construct ( $request, $response, $invokeArgs = array () );
 
@@ -159,6 +160,9 @@ class ReportFilterHelpers extends ITechController {
          * This method will operate on the post variable from form and 
          * construct the right parameters to be used for calls to the model methods
          * This method should be usable by all controllers
+         * Region --> LGA
+         * District --> State
+         * Province --> Geo Zone
          */
         public function buildParameters(){
             $selectionLimit = 6;

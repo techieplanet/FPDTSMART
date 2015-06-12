@@ -6,6 +6,8 @@ require_once ('ReportFilterHelpers.php');
 require_once ('models/table/Facility.php');
 require_once ('models/ValidationContainer.php');
 require_once ('models/table/Location.php');
+require_once ('controllers/ReportsController.php');
+
 require_once ('models/table/OptionList.php');
 class FacilityController extends ReportFilterHelpers {
 	public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array()) {
@@ -274,6 +276,7 @@ class FacilityController extends ReportFilterHelpers {
 		require_once ('models/table/OptionList.php');
 		require_once ('views/helpers/TrainingViewHelper.php');
 		
+               
 		if ($id = $this->getSanParam ( 'id' )) {
 			$facility = new Facility ();
 			$facilityRow = $facility->fetchRow ( 'id = ' . $id );
@@ -287,6 +290,10 @@ class FacilityController extends ReportFilterHelpers {
 			$facilityArray = array ();
 			$facilityArray ['id'] = null;
 		}
+                
+                
+                
+                
 		
 		$request = $this->getRequest ();
 		$validateOnly = $request->isXmlHttpRequest ();
@@ -380,6 +387,63 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
                       }
 		}
                 
+                $month = time();
+$headers[] = "FP Commodity"; 
+$output = array();
+                $output = array();
+              
+$heading_date = array();
+$facility_id  = $this->getSanParam ( 'id' );
+if($id!=""){
+
+ $summary_details = array($larc_trained,$fp_trained);
+$csql = "SELECT * FROM commodity_name_option WHERE id!='38'AND id!='32'AND id!='36' AND id!='35' AND id!='37' AND id!='31' ORDER BY commodity_name ASC";
+                $commodity_name = $db->fetchAll($csql);
+//$outputs[] = $row['commodity_name'];
+                $month = strtotime('next month', $month);
+for ($i = 1; $i <= 12; $i++) {
+    $month = strtotime('last month', $month);
+    $heading_date[] = date("M, Y", $month);
+  
+  
+}
+$heading_date = array_reverse($heading_date);
+foreach($heading_date as $head_date){
+  $headers[] = $head_date;
+    
+}
+
+foreach($commodity_name as $row){
+    $outputs = array();
+    $sum_first = array();
+$outputs[] = $row['commodity_name'];
+$id = $row['id'];
+$month = time();
+ //$month = strtotime('last month', $month);
+$month = strtotime('next month', $month);
+for ($i = 1; $i <= 12; $i++) {
+   $month = strtotime('last month', $month);
+    $dates = date("Y-m",$month);
+    $start = $dates."-01";
+    $end = $dates."-31";
+   // $outputs[] = $start;
+  $sum = $this->get_commodity_consumption($start,$end,$facility_id,$id);
+  if($sum==""){
+      $sum = 0;
+  }
+     //$outputs[]  = $sum;
+     $sum_first[] = $sum;
+}
+$sum_first = array_reverse($sum_first);
+
+foreach($sum_first as $sum_first_date){
+    
+    $outputs[] = $sum_first_date;
+}
+array_push($output,$outputs);
+}
+        }
+
 		require_once('models/table/Translation.php');
 		$translation = Translation::getAll();
  		$fieldDefs = array('name' => $translation['Facility Commodity Column Table Commodity Name'], 
@@ -397,6 +461,8 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
                 $noDelete = array();
                 $html = EditTableHelper::generateHtml('commodity', $rows, $fieldDefs, $customColDefs, $noDelete, true);
 		$this->view->assign ( 'tableCommodities', $html );
+                $this->view->assign ( 'output', $output ); 
+                $this->view->assign ( 'headers', $headers );
 		$this->view->assign ( 'totalCommodities',  sizeof($rows));
 		
 		$this->view->assign('commodity_names',$facility->ListCommodityNames());
@@ -686,6 +752,17 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
 		// locations
 		$this->viewAssignEscaped ( 'locations', Location::getAll () );
 	}
+        
+         public function get_commodity_consumption($start,$end,$facility_id,$name_id){
+             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+             $sum = 0;
+           $consump_sum_sql = "SELECT SUM(consumption) as sums  FROM commodity WHERE (commodity.date>='".$start."' AND commodity.date<='".$end."') AND (facility_id ='$facility_id' )  AND (name_id='".$name_id."')";
+                               $res = $db->fetchAll($consump_sum_sql);
+                              //print_r($consump_sum_sql); exit;
+                              return $sum = $res[0]['sums'];
+           
+           
+       }
 	function viewlocationAction() {
 		if (! $this->hasACL ( 'edit_course' )) {
 			$this->view->assign ( 'viewonly', 'disabled="disabled"' );

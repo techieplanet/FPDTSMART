@@ -13,6 +13,9 @@
 require_once('Facility.php');
 require_once('Helper2.php');
 require_once('CoverageHelper.php');
+require_once('CoverageNationalHelper.php');
+require_once('Stockout.php');
+require_once 'CacheManager.php';
 
 class Coverage {
     //put your code here
@@ -44,7 +47,8 @@ class Coverage {
 
         for($i = $year_amount; $i > 0; $i--) {
             $data = array ();
-            $endDateWhere = "t.training_end_date like '" . $year . "%'";
+            //$endDateWhere = "t.training_end_date like '" . $year . "%'";
+            $endDateWhere = "YEAR(t.training_end_date) <= '" . $year . "'";
             
             foreach ($trainingTypesArray as $training_type){
                 $trainingTypeWhere = "tto.system_training_type = '" . $training_type . "'";
@@ -53,21 +57,16 @@ class Coverage {
                 
                 $select = $db->select ()
                         ->from ( array ('p' => 'person' ), array ('COUNT(DISTINCT(p.id)) as count'))
-                        ->joinInner(array('ptt'=>'person_to_training'), 'ptt.person_id=p.id')
-                        ->joinInner(array ('t' => "training" ), "t.id = ptt.training_id" )
-                        ->joinInner(array('tto' => 'training_title_option' ), 'tto.id = t.training_title_option_id')
+                        ->joinInner(array('ptt'=>'person_to_training'), 'ptt.person_id=p.id', array())
+                        ->joinInner(array ('t' => "training" ), "t.id = ptt.training_id", array())
+                        ->joinInner(array('tto' => 'training_title_option' ), 'tto.id = t.training_title_option_id', array())
                         ->joinInner(array ('flv' => "facility_location_view" ), 'flv.id = p.facility_id', array('flv.lga', 'flv.state', 'flv.geo_zone') )
                         ->where($longWhereClause)
-                        //->group($tierFieldName)
                         ->order(array($tierText));
                 
-                $sql = $select->__toString();
-                $sql = str_replace('`ptt`.*,', '', $sql); 
-                $sql = str_replace('`t`.*,', '', $sql);
-                $sql = str_replace('`tto`.*,', '', $sql);
-                //echo $sql; exit;
+                //echo $select->__toString(); exit;
 
-                $result = $db->fetchAll ( $sql );
+                $result = $db->fetchAll ( $select );
                 $data = $result [0] ['count'];
 
                 $output[$year][$training_type] = $data;
@@ -81,11 +80,11 @@ class Coverage {
         //accamulate data: add previous years to the current year
         $startYear = $year + 1; //set to lowest considered year after the loop above
 
-        foreach($output as $year => $value){
-            if($year == $startYear) continue;
-            $output[$year]['larc'] = $output[$year]['larc'] + $output[$year-1]['larc'];
-            $output[$year]['fp'] = $output[$year]['fp'] + $output[$year-1]['fp'];
-        }
+//        foreach($output as $year => $value){
+//            if($year == $startYear) continue;
+//            $output[$year]['larc'] = $output[$year]['larc'] + $output[$year-1]['larc'];
+//            $output[$year]['fp'] = $output[$year]['fp'] + $output[$year-1]['fp'];
+//        }
 
         //var_dump($output); exit;
         return $output;
@@ -100,7 +99,7 @@ class Coverage {
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
             $output = array (); 
             $helper = new Helper2();
-
+            
             $tierText = $helper->getLocationTierText($tierValue);
             $tierFieldName = $helper->getTierFieldName($tierText);
             $locationNames = $helper->getLocationNames($geoList);
@@ -125,44 +124,75 @@ class Coverage {
         }
 
         
-        public function fetchPercentFacHWTrained($training_type, $geoList, $tierValue){
+        public function fetchPercentFacHWTrained($training_type, $geoList, $tierValue, $freshVisit){
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-                
-                $output = array(array('location'=>'National', 'percent'=>0)); 
+                $output = array(array('location'=>'National', 'percent'=>0));
                 $helper = new Helper2();
                 
-                //needed variables
-                $tierText = $helper->getLocationTierText($tierValue);
-                $tierFieldName = $helper->getTierFieldName($tierText);
+                $cacheManager = new CacheManager();
+            
                 $latestDate = $helper->getLatestPullDate();
-                
-                //where clauses
                 if($training_type == 'fp')
-                    $tt_where = "fptrained > 0";
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_TRAINED_FP, $latestDate);
                 else if($training_type == 'larc')
-                    $tt_where = 'larctrained > 0';
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_TRAINED_LARC, $latestDate);
                 
-                //$dateWhere = 'c.date = (SELECT MAX(frr.date) FROM facility_report_rate';
-                //$reportingWhere = 'facility_reporting_status = 1';
-                $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
-                $longWhereClause = $tt_where . ' AND ' . $locationWhere;
-                
-                $coverageHelper = new CoverageHelper();                
-                $numerators = $coverageHelper->getFacWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
-                $denominators = $coverageHelper->getFacWithTrainedHWCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
-             
-                $nationalNumerator = 0; $nationalDenominator = 0; 
-                foreach ($numerators as $location=>$numer){
-                    $nationalNumerator += $numer;
-                    $nationalDenominator += $denominators[$location];
-                    
-                    $output[] = array(
-                                'location' => $location,
-                                'percent' => $numer / $denominators[$location]
-                    );
+                //check if page is just being loaded
+                //fresh session, month data already registered
+                //just retrieve registered data
+                if($cacheValue && $freshVisit){ 
+                    $output = json_decode($cacheValue, true);
                 }
-                
-                $output[0]['percent'] = $nationalNumerator / $nationalDenominator;
+                else {
+                    //needed variables
+                    $tierText = $helper->getLocationTierText($tierValue);
+                    $tierFieldName = $helper->getTierFieldName($tierText);
+                    $latestDate = $helper->getLatestPullDate();
+
+                    //where clauses
+                    if($training_type == 'fp')
+                        $tt_where = "fptrained > 0";
+                    else if($training_type == 'larc')
+                        $tt_where = 'larctrained > 0';
+
+                    $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+                    $longWhereClause = $tt_where . ' AND ' . $locationWhere;
+
+                    $coverageHelper = new CoverageHelper();                
+                    $facility = new Facility();
+                    
+                    $numerators = $coverageHelper->getFacWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+                    //$denominators = $coverageHelper->getFacWithTrainedHWCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
+                    $denominators = $facility->getFacilityCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
+                    
+                    
+                    $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
+                    $output = array_merge($output, $sumsArray['output']);
+                    $output[0]['percent'] = $sumsArray['nationalAvg'];
+                    
+                    //check if to save month national data
+                    if(!$cacheValue && $freshVisit){ //fresh in month
+                        //do cache insert
+                        if($training_type == 'fp')
+                            $alias = CacheManager::PERCENT_FACS_TRAINED_FP;
+                        else if($training_type == 'larc')
+                            $alias = CacheManager::PERCENT_FACS_TRAINED_LARC;
+                        
+                        $dataArray = array(
+                            'date_cached'=> $latestDate,
+                            'indicator' => 'Percent of facilities with a trained HW',
+                            'indicator_alias' => $alias,
+                            'value' => json_encode($output)
+                        );
+                        $cacheManager->setIndicator($dataArray);
+                    }
+                    else{
+                        //get month national data and put in first array element
+                        $cacheValue = json_decode($cacheValue, true);
+                        if($cacheValue)
+                            $output[0]['percent'] = $cacheValue[0]['percent'];
+                    }
+                }
                 
                 //var_dump($output); exit;
                 return $output;
@@ -173,50 +203,88 @@ class Coverage {
      /*
      * Percentage facilities providing FP, LARC and Injectables in the current month
      */
-      public function fetchPercentFacsProviding($commodity_type, $geoList, $tierValue){
+      public function fetchPercentFacsProviding($commodity_type, $geoList, $tierValue, $freshVisit){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 
             $output = array(array('location'=>'National', 'percent'=>0)); 
             $helper = new Helper2();
-            $tierText = $helper->getLocationTierText($tierValue);
-            $tierFieldName = $helper->getTierFieldName($tierText);
             $latestDate = $helper->getLatestPullDate();
-
-            //where clauses
+            
+            $cacheManager = new CacheManager();
+            
             if($commodity_type == 'fp')
-                $ct_where = "commodity_type = 'fp'";
+                $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_PROVIDING_FP, $latestDate);
             else if($commodity_type == 'larc')
-                $ct_where = "commodity_type = 'larc'";
-            else if ($commodity_type == 'injectables')
-                $ct_where = "commodity_alias = 'injectables'";
-
-            $dateWhere = "c.date = '$latestDate'";
-            $reportingWhere = 'facility_reporting_status = 1';
-            $consumptionWhere = 'consumption > 0';
-            $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+                $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_PROVIDING_LARC, $latestDate);
+            else if($commodity_type == 'injectables')
+                $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_PROVIDING_INJECTABLES, $latestDate);
             
             
-            $coverageHelper = new CoverageHelper();
-            $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
-                               $consumptionWhere . ' AND ' . $ct_where . ' AND ' . $locationWhere;
-            $numerators = $coverageHelper->getFacProvidingCount($longWhereClause, $geoList, $tierText, $tierFieldName);
-            
-            $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . $locationWhere;
-            $denominators = $coverageHelper->getFacProvidingCount($longWhereClause, $geoList, $tierText, $tierFieldName);
-
-            //set output
-            $nationalNumerator = 0; $nationalDenominator = 0; 
-            foreach ($numerators as $location=>$numer){
-                $nationalNumerator += $numer;
-                $nationalDenominator += $denominators[$location];
-
-                $output[] = array(
-                            'location' => $location,
-                            'percent' => $numer / $denominators[$location]
-                );
+            //check if page is just being loaded
+            //fresh session, month data already registered
+            //just retrieve registered data
+            if($cacheValue && $freshVisit){ 
+                $output = json_decode($cacheValue, true);
             }
+            else{
+                    $tierText = $helper->getLocationTierText($tierValue);
+                    $tierFieldName = $helper->getTierFieldName($tierText);
 
-            $output[0]['percent'] = $nationalNumerator / $nationalDenominator;
+                    //where clauses
+                    if($commodity_type == 'fp')
+                        $ct_where = "(commodity_type = 'fp' OR commodity_type = 'larc')";
+                    else if($commodity_type == 'larc')
+                        $ct_where = "commodity_type = 'larc'";
+                    else if ($commodity_type == 'injectables')
+                        $ct_where = "commodity_alias = 'injectables'";
+
+                    $dateWhere = "c.date = '$latestDate'";
+                    $reportingWhere = 'facility_reporting_status = 1';
+                    $consumptionWhere = 'consumption > 0';
+                    $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+
+                    $coverageHelper = new CoverageHelper();
+                    $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                                       $consumptionWhere . ' AND ' . $ct_where . ' AND ' . $locationWhere;
+                    $numerators = $coverageHelper->getFacProvidingCount($longWhereClause, $geoList, $tierText, $tierFieldName);
+
+                    $dateWhere = "frr.date = '$latestDate'";
+                    $longWhereClause = $dateWhere . ' AND ' . $locationWhere;
+                    
+                    //send only one month date range. 
+                    $denominators = $helper->getReportingFacsOvertimeByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+
+                    //set output                    
+                    $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
+                    $output = array_merge($output, $sumsArray['output']);
+                    $output[0]['percent'] = $sumsArray['nationalAvg'];
+
+                    //check if to save month national data
+                    if(!$cacheValue && $freshVisit){ //fresh in month
+                        //do cache insert
+                        if($commodity_type == 'fp')
+                            $alias = CacheManager::PERCENT_FACS_PROVIDING_FP;
+                        else if($commodity_type == 'larc')
+                            $alias = CacheManager::PERCENT_FACS_PROVIDING_LARC;
+                        else if($commodity_type == 'injectables')
+                            $alias = CacheManager::PERCENT_FACS_PROVIDING_INJECTABLES;
+                        
+                        $dataArray = array(
+                            'date_cached'=> $latestDate,
+                            'indicator' => 'Percent of facilities providing LARC, FP or injectables',
+                            'indicator_alias' => $alias,
+                            'value' => json_encode($output)
+                            //'timestamp_created' => date('');
+                        );
+                        $cacheManager->setIndicator($dataArray);
+                    }
+                    else{ //inner if
+                        //get month national data and put in first array element
+                        $cacheValue = json_decode($cacheValue, true);
+                        if($cacheValue)
+                            $output[0]['percent'] = $cacheValue[0]['percent'];
+                    }
+            }
 
             //set national ave
             //var_dump($output); exit;
@@ -225,76 +293,351 @@ class Coverage {
         }
 
 
-    //public function fetchPercentFacHWTrainedProvidingDetails($commodity_type, $training_type, &$locationNames, $where, $groupFieldName, $havingName, $geoList, $tierValue){
-      public function fetchFacsWithHWProviding($commodity_type, $training_type, $dateWhere, &$locationNames,$geoList, $tierValue){
+      //public function fetchPercentFacHWTrainedProvidingDetails($commodity_type, $training_type, &$locationNames, $where, $groupFieldName, $havingName, $geoList, $tierValue){
+      public function fetchFacsWithHWProviding($commodity_type, $training_type, $geoList, $tierValue, $freshVisit){
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter();
                 
-                $output = array (); 
+                $output = array(array('location'=>'National', 'percent'=>0));
                 $helper = new Helper2();
-                $tierText = $helper->getLocationTierText($tierValue);
-                $tierFieldName = $helper->getTierFieldName($tierText);
-                $consmptionWhere = 'consumption > 0';
-                $reportingWhere = 'facility_reporting_status = 1';
+                $latestDate = $helper->getLatestPullDate();
                 
-                //commodity type where
-                if($commodity_type == 'fp')
-                    $ct_where = "commodity_type = 'fp'";
-                else if($commodity_type == 'larc')
-                    $ct_where = "commodity_type = 'larc'";                    
-
-                //training type where
+                $cacheManager = new CacheManager();
+            
                 if($training_type == 'fp')
-                    $tt_where = "fptrained > 0";
-                else if($commodity_type == 'larc')
-                    $tt_where = "larctrained > 0";
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_HW_PROVIDING_FP, $latestDate);
+                else if($training_type == 'larc')
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_HW_PROVIDING_LARC, $latestDate);
 
-                //$facility = new Facility();
-                //$totalReportingFacsWithTrainedHW = $facility->getCurrentReportingFacsWithTrainedHWCount($tt_where, $dateWhere, $geoList, $tierText, $tierFieldName, true);
-                
-                //echo 'total: ' . $totalReportingFacsWithHWInTrainingCount; exit;
-                
-                $coverageHelper = new CoverageHelper();
-                
-                $longWhereClause = $consmptionWhere . ' AND ' . $reportingWhere . ' AND ' . 
-                                   $ct_where . ' AND ' . $tt_where . ' AND ' . $dateWhere ;
-                $nationalNumerator = $coverageHelper->getAllFacsProvidingWithTrainedHWCount($longWhereClause);
-                //var_dump($nationalNumerator); echo '<br/><br/>'; exit;
-                $longWhereClause = $reportingWhere . ' AND ' . 
-                                   $ct_where . ' AND ' . $tt_where . ' AND ' . $dateWhere ;
-                $nationalDenominator = $coverageHelper->getAllFacsProvidingWithTrainedHWCount($longWhereClause);
-                //var_dump($nationalDenominator); echo '<br/><br/>';
-                
-                //concatenate conditions for numerators
-                $longWhereClause = $consmptionWhere . ' AND ' . $reportingWhere . ' AND ' . 
-                                   $ct_where . ' AND ' . $tt_where . ' AND ' . $dateWhere ;
-                $numers = $coverageHelper->getCoverageCountFacWithHWProviding($longWhereClause, $locationNames, $geoList, $tierText, $tierFieldName);
-                //var_dump($numers); echo '<br/><br/>';
-                //var_dump($numers); 
-                
-                //concatenate conditions for denominators
-                $longWhereClause = $reportingWhere . ' AND ' . $ct_where . ' AND ' . $tt_where . ' AND ' . $dateWhere;
-                $denoms = $coverageHelper->getCoverageCountFacWithHWProviding($longWhereClause, $locationNames, $geoList, $tierText, $tierFieldName);
-                //var_dump($denoms); echo '<br/><br/>';
-                //echo '<br/><br/>';
-                //var_dump($denoms);
-                
-                //set the national value first
-                  $output[] = array(
-                        'location' => 'National',
-                        'percent' => $nationalDenominator > 0 ? $nationalNumerator / $nationalDenominator : 0
-                    );
 
-                //$percentSum = 0;
-                foreach ($numers as $location=>$numer){
-                    $output[] = array(
-                                'location' => $location,
-                                'percent' => $denoms[$location] > 0 ? $numer / $denoms[$location] : 0  //avoid division by 0
-                    );
+                //check if page is just being loaded
+                //fresh session, month data already registered
+                //just retrieve registered data
+                if($cacheValue && $freshVisit){ 
+                    $output = json_decode($cacheValue, true);
                 }
+                else{
+                    $tierText = $helper->getLocationTierText($tierValue);
+                    $tierFieldName = $helper->getTierFieldName($tierText);
+                    $locationNames = $helper->getLocationNames($geoList);
+                    $consumptionWhere = 'consumption > 0';
+                    $reportingWhere = 'facility_reporting_status = 1';
+
+                    $dateWhere = "c.date = '$latestDate'";
+
+                    //commodity type where
+                    if($commodity_type == 'fp')
+                        $ct_where = "(commodity_type = 'fp' OR commodity_type = 'larc')";
+                    else if($commodity_type == 'larc')
+                        $ct_where = "commodity_type = 'larc'";
+
+                    //training type where
+                    if($training_type == 'fp')
+                        $tt_where = "fptrained > 0";
+                    else if($commodity_type == 'larc')
+                        $tt_where = "larctrained > 0";
+
+                    $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+
+                    $coverageHelper = new CoverageHelper();
+
+                    //concatenate conditions for numerators
+                    $longWhereClause = $consumptionWhere . ' AND ' . $reportingWhere . ' AND ' . 
+                                       $ct_where . ' AND ' . $tt_where . ' AND ' . $locationWhere . ' AND ' .
+                                       $dateWhere;
+                    $numerators = $coverageHelper->getCoverageCountFacWithHWProviding($longWhereClause, $locationNames, $geoList, $tierText, $tierFieldName);
+
+                    //concatenate conditions for denominators
+                    $dateWhere = "frr.date = '$latestDate'";
+                    $longWhereClause = $tt_where . ' AND ' . $dateWhere . ' AND ' . $locationWhere;
+
+                    //send only one month date range. 
+                    $denominators = $helper->getReportingFacsWithTrainedHWOvertimeByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+
+                    //set output                    
+                    $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
+                    $output = array_merge($output, $sumsArray['output']);
+                    $output[0]['percent'] = $sumsArray['nationalAvg'];
+
+                    //check if to save month national data
+                    if(!$cacheValue && $freshVisit){ //fresh in month
+                        //do cache insert
+                        if($training_type == 'fp')
+                            $alias = CacheManager::PERCENT_FACS_HW_PROVIDING_FP;
+                        else if($training_type == 'larc')
+                            $alias = CacheManager::PERCENT_FACS_HW_PROVIDING_LARC;
+
+                        $dataArray = array(
+                            'date_cached'=> $latestDate,
+                            'indicator' => 'Percent of Facilities with a trained HW providing FP/LARC',
+                            'indicator_alias' => $alias,
+                            'value' => json_encode($output)
+                        );
+                        $cacheManager->setIndicator($dataArray);
+                    }
+                    else{ //inner if
+                        //get month national data and put in first array element
+                        $cacheValue = json_decode($cacheValue, true);
+                        if($cacheValue)
+                            $output[0]['percent'] = $cacheValue[0]['percent'];
+                    }
+                }
+                    
                 //echo '<br/><br/>';
                 //var_dump($output); exit;
                 return $output;
      }
+     
+     
+     
+ function fetchHWCoverageOvertime($training_type){
+         $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+        
+        $ouput = array();
+        $helper = new Helper2();
+        $latestDate = $helper->getLatestPullDate();
+                
+        $cacheManager = new CacheManager();
+
+        if($training_type == 'fp')
+            $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_COVERAGE_OVERTIME_FP, $latestDate);
+        else if($training_type == 'larc')
+            $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_COVERAGE_OVERTIME_LARC, $latestDate);
+
+        //check if page is just being loaded
+        //fresh session, month data already registered
+        //just retrieve registered data
+        if($cacheValue){ 
+            $output = json_decode($cacheValue, true);
+        }
+        else{
+            //where clauses
+            if($training_type == 'fp'){
+                $tt_where = "fptrained > 0";
+                $ct_where = "(commodity_type = 'fp' OR commodity_type = 'larc')";
+            }
+            else if($training_type == 'larc'){
+                $tt_where = 'larctrained > 0';
+                $ct_where = "commodity_type = 'larc'";
+            }
+
+            $coverageHelper = new CoverageHelper();                
+
+            $dateWhere = '(date <= (SELECT MAX(date) FROM facility_report_rate) AND date >= DATE_SUB((SELECT MAX(date) FROM facility_report_rate), INTERVAL 11 MONTH))';
+            $consmptionWhere = 'consumption > 0';
+            $reportingWhere = 'facility_reporting_status = 1';
+            $longWhereClause = $tt_where . ' AND ' . $dateWhere;
+
+            //hw                                        getCoverageCountFacWithHWProviding  
+            $facsWithTrainedHWNumers = $coverageHelper->getReportingFacsWithTrainedHWOvertime($longWhereClause);
+            $facsReporting = $helper->getReportingFacsOvertime($dateWhere);        
+
+            //providing
+            $longWhereClause = $reportingWhere . ' AND ' . $tt_where . ' AND ' . $ct_where . ' AND ' .
+                               $consmptionWhere . ' AND ' . $dateWhere;
+            $facsWithHWAndConsumptionNumers = $coverageHelper->getFacWithHWProvidingOverTime($longWhereClause);
+            $facsReportingWithHW = $facsWithTrainedHWNumers;
+
+            //stockout 
+            $stockout = new Stockout();
+            $facsWithHWStockOutNumers = $stockout->fetchStockOutFacsWithTrainedHWOverTime($training_type);
+            //$facsWithTrainedHWNumers is also denominator for this
+
+            $hwOverTime = $helper->doOverTimePercents($facsWithTrainedHWNumers, $facsReporting);
+            $providingOverTime = $helper->doOverTimePercents($facsWithHWAndConsumptionNumers, $facsWithTrainedHWNumers);
+            $stockoutOverTime = $helper->doOverTimePercents($facsWithHWStockOutNumers, $facsWithTrainedHWNumers);
+            
+            $output = array($hwOverTime, $providingOverTime, $stockoutOverTime);
+            
+            //check if to save month national data
+            if(!$cacheValue){ //fresh in month...this will be always true if execution gets here
+                //do cache insert
+                if($training_type == 'fp')
+                    $alias = CacheManager::PERCENT_COVERAGE_OVERTIME_FP;
+                else if($training_type == 'larc')
+                    $alias = CacheManager::PERCENT_COVERAGE_OVERTIME_LARC;
+
+                $dataArray = array(
+                    'date_cached'=> $latestDate,
+                    'indicator' => 'FP/LARC HR coverage over time',
+                    'indicator_alias' => $alias,
+                    'value' => json_encode($output)
+                );
+                $cacheManager->setIndicator($dataArray);
+            }
+        }
+        
+        return $output;
+  }
+          
+     
+  public function fetchProvidingOvertime($commodity_type, $geoList, $tierValue, $freshVisit){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+            
+            //$output = array(array('location'=>'National', 'percent'=>0)); 
+            $output = array();
+            $helper = new Helper2();
+            $latestDate = $helper->getLatestPullDate();
+                
+            $cacheManager = new CacheManager();
+
+            if($commodity_type == 'fp')
+                $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_PROVIDING_OVERTIME_FP, $latestDate);
+            else if($commodity_type == 'larc')
+                $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_PROVIDING_OVERTIME_LARC, $latestDate);
+
+
+            //check if page is just being loaded
+            //fresh session, month data already registered
+            //just retrieve registered data
+            if($cacheValue && $freshVisit){ 
+                $output = json_decode($cacheValue, true);
+            }
+            else{
+                //echo 'second'; exit;
+                $tierText = $helper->getLocationTierText($tierValue);
+                $tierFieldName = $helper->getTierFieldName($tierText);
+
+                //where clauses
+                if($commodity_type == 'fp')
+                    $ct_where = "(commodity_type = 'fp' OR commodity_type = 'larc')";
+                else if($commodity_type == 'larc')
+                    $ct_where = "commodity_type = 'larc'";
+
+                $dateWhere = '(date <= (SELECT MAX(date) FROM facility_report_rate) AND date >= DATE_SUB((SELECT MAX(date) FROM facility_report_rate), INTERVAL 11 MONTH))';
+                $reportingWhere = 'facility_reporting_status = 1';
+                $consumptionWhere = 'consumption > 0';
+                $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+
+                //use coverage helper for this functions even though they have variants in the 
+                //helper2 class but these do not filter and return more rows
+                //appropriate for what we are doing here
+                $coverageHelper = new CoverageHelper();
+                $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                                   $consumptionWhere . ' AND ' . $ct_where . ' AND ' . $locationWhere;
+                $numerators = $coverageHelper->getFacProvidingOverTime($longWhereClause, $geoList, $tierText, $tierFieldName);
+                //var_dump($numerators); exit;
+
+                $longWhereClause = $dateWhere . ' AND ' . $locationWhere;
+                $denominators = $coverageHelper->getReportingFacsOvertimeByLocationNoFilter($longWhereClause, $geoList, $tierText, $tierFieldName);                    
+                //echo 'denom<br/>';
+                //var_dump($denominators); exit;
+
+                  //get the month names
+                  $monthNames = array();  $i =0;
+                  $monthNames = $helper->getPreviousMonthDates(12);
+                  sort($monthNames);
+                  //convert to strings 
+                  foreach ($monthNames as $key=>$date){
+                      $monthNames[$key] = date('F', strtotime($date));
+                  }              
+
+                  $locationNames = $helper->getLocationNames($geoList);
+
+                  //add all missing months for each location in the numerator list
+                  $numerators = $this->addMissingMonths($numerators, $monthNames, $locationNames, $tierText);             
+                  $denominators = $this->addMissingMonths($denominators, $monthNames, $locationNames, $tierText);
+                  //echo 'numerator count: ' . count($numerators) . '<br/>'; 
+                  //echo 'denominators count: ' . count($denominators) . '<br/>'; 
+
+//                  var_dump($numerators); echo '<br><br>';
+//                  var_dump($denominators); echo '<br><br>';
+//                  exit;
+
+
+                  /*TP:
+                   * This routine will arrange location values into month arrays
+                   * Format:
+                   * $output['April']['North Central'] = 1234;
+                   * $output['April']['North East'] = 5678;
+                   * ...
+                   * $output['March']['North Central'] = 1234;
+                   * $output['March']['North East'] = 5678;
+                   */
+                  for($i=0; $i<count($monthNames); $i++){                
+                        $monthName = $monthNames[$i];
+                        $output[$monthName] = array();
+                        $j = $i;
+
+                        //$output = array();
+                        //$output[$monthName]['National'] = $nationalNumerator[$i]['fid_count'] / $nationalDenominator[$i]['fid_count'] * 100;
+                        $output[$monthName]['National'] = 0;
+                        foreach($locationNames as $location){                        
+                            $output[$monthName][$location] = $numerators[$j]['fid_count'] / $denominators[$j]['fid_count'] * 100;
+                            $j += 12;
+                        }
+                  }
+                    
+                    //check if to save month national data
+                    if(!$cacheValue && $freshVisit){ //fresh in month
+                        //do cache insert
+                        if($commodity_type == 'fp')
+                            $alias = CacheManager::PERCENT_PROVIDING_OVERTIME_FP;
+                        else if($commodity_type == 'larc')
+                            $alias = CacheManager::PERCENT_PROVIDING_OVERTIME_LARC;
+
+                        //get national figures
+                        $nationalHelper = new CoverageNationalHelper();
+                        $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                                           $consumptionWhere . ' AND ' . $ct_where;
+                        $nationalNumerator = $nationalHelper->getNationalFacProvidingOverTime($longWhereClause);
+                        $nationalDenominator = $nationalHelper->getNationalReportingFacsOvertime($dateWhere);
+
+                        for($i=0; $i<count($monthNames); $i++){
+                            $monthName = $monthNames[$i];
+                            $output[$monthName]['National'] = $nationalNumerator[$i]['fid_count'] / $nationalDenominator[$i]['fid_count'] * 100;
+                        }
+                        
+                        $dataArray = array(
+                            'date_cached'=> $latestDate,
+                            'indicator' => 'Percent of facilities providing FP/LARC over time',
+                            'indicator_alias' => $alias,
+                            'value' => json_encode($output)
+                        );
+                        $cacheManager->setIndicator($dataArray);
+                    }
+                    else{ //else for inner if
+                        //get national data for each month and put in national key for each month
+                        $cacheValue = json_decode($cacheValue, true);
+                        for($i=0; $i<count($monthNames); $i++){
+                            $monthName = $monthNames[$i];
+                            $output[$monthName]['National'] = $cacheValue[$monthName]['National'];
+                        }
+                    }
+            }
+            
+            
+            //set national ave
+            //var_dump($output); exit;
+            return $output;
+     }
+     
+     
+     //add all missing months for each location.
+     public  function addMissingMonths($numerators, $monthNames, $locationNames, $tierText ){
+         $helper = new Helper2();
+         $numeratorsArray = array();
+
+          //get all the records for  each location and set missing locations to 0
+          foreach($locationNames as $location){
+              $locationArray = array();
+              foreach ($numerators as $numer){
+                  if($numer[$tierText] == $location)
+                      $locationArray[] = $numer;
+                  else
+                      continue;
+              }
+
+              //now we have all the rows for the current location.
+              //we have to ensure it has all the location names represented
+              $monthArray = $helper->filterMonths($monthNames, $locationArray, $location, $tierText,  'month_name');
+              
+              //var_dump($monthArray); exit;
+              $numeratorsArray = array_merge($numeratorsArray, $monthArray);
+          }
+
+          return $numeratorsArray;
+     }
+     
 }
 
 ?>

@@ -10,7 +10,15 @@ require_once('views/helpers/FormHelper.php');
 print ScriptContainer::$instance->renderCSSHead();
 print ScriptContainer::$instance->renderJSHead();
 ?>
-
+<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+				/* Init the table */
+				oTable = $('.tablegrid').dataTable({
+					"bJQueryUI": true,
+					"sPaginationType": "full_numbers"
+				});
+			} );
+		</script>
 </head>
 <body class="yui-skin-sam" >
 <div id="pageHolder">
@@ -120,9 +128,9 @@ print ScriptContainer::$instance->renderJSHead();
 <?php if ( @$this->setting['display_sponsor_dates'] ) { ?>
 	<div class="fieldLabel" id="<?php if ($i==0) echo 'facility_sponsor_id_lbl'; ?>"><?php if( @$this->setting['require_sponsor_dates'] ) echo '<span class="required">*</span>'; ?><?php tp('Sponsor Date');?></div>
 	<div class="fieldInput sponsorDates" id="<?php if ($i==0) echo 'facility_sponsor_wrapper'; ?>">
-		<span><input class="datepicker" type="text" name="sponsor_start_date[]" value="<?php echo formhelperdate($sponsorRow['start_date']); ?>" /><a class="calendarbtn" href="#"><img src="<?php echo $this->base_url; ?>/js/yui/assets/calbtn.gif"></a></span>&nbsp;&nbsp;
+		<span><input class="datepicker" type="text" name="sponsor_start_date[]" value="<?php echo formhelperdate($sponsorRow['start_date']); ?>" /><a class="calendarbtn" href="#"><img src="<?php echo $this->base_url; ?>/js/yui/assets/calbtn.gif" /></a></span>&nbsp;&nbsp;
 		<?php if( @$this->setting['require_sponsor_dates'] ) echo '<span class="required">*</span>'; ?><label class="label"><?php tp('to'); ?></label>
-		<span><input class="datepicker" type="text" name="sponsor_end_date[]" value="<?php echo formhelperdate($sponsorRow['end_date']); ?>" /><a class="calendarbtn" href="#"><img src="<?php echo $this->base_url; ?>/js/yui/assets/calbtn.gif"></a></span>
+		<span><input class="datepicker" type="text" name="sponsor_end_date[]" value="<?php echo formhelperdate($sponsorRow['end_date']); ?>" /><a class="calendarbtn" href="#"><img src="<?php echo $this->base_url; ?>/js/yui/assets/calbtn.gif" /></a></span>
 	</div>
 <?php } ?>
 <?php } ?>
@@ -143,6 +151,59 @@ print ScriptContainer::$instance->renderJSHead();
 
 	/************ Commodity table  ******************************************************************************/ ?>
 	<div class="clear"></div>
+        <br/>
+        <?php
+ //print_r($this->tocktack);
+    
+if (isset($this->output)) {
+	if (count ($this->output) == 0){
+           echo '  <br/><h2><b>Commodity Summary: Monthly consumption by method for last 12 months</b></h2>';
+		echo "				<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display tablegrid\" id=\"\" style=\"width:100%\">\n";
+		echo "					<thead>\n";
+		echo "						<tr>\n";
+		echo "							<th>".t('Output')."</th>\n";
+		echo "						</tr>\n";
+		echo "					</thead>\n";
+		echo "					<tbody>\n";
+		echo "						<tr>\n";
+		echo "							<td>".t("Your search criteria returned no results")."</td>\n";
+		echo "						</tr>\n";
+		echo "					</tbody>\n";
+		echo "				</table>\n";
+	} else {
+?>
+
+				<br>
+                                    <h2><b>Commodity Summary: Monthly consumption by method for last 12 months</b></h2>
+                                    <table cellpadding="0" cellspacing="0" border="0" class="display tablegrid" id="" style="width:100%">
+					<thead>
+						<tr>
+<?php
+		foreach ($this->headers as $key=>$value){
+			
+                    echo "							<th>" . $value . "</th>\n";
+		}
+?>
+						</tr>
+					</thead>
+					<tbody>
+<?php
+		foreach ($this->output as $row){
+			echo "						<tr style=\"cursor : pointer;\" class=\"GradeA\">\n";
+			foreach ($row as $key=>$value){
+				echo "				   			<td>" . $value . "</td>\n";
+			}
+			echo "						</tr>\n";
+		}
+?>
+					</tbody>
+				</table>
+				
+<?php
+	}
+}
+?>
+        <br/><br/>
   <div class="hrGrey"></div>
   <div class="clear"></div>
   <!-- TA:17: rows count must have this format <span id="[label]_total">-->
@@ -240,7 +301,7 @@ print ScriptContainer::$instance->renderJSHead();
      
 
   </div> <!-- table ends -->
-
+<?php   } ?>
 	<!-- TA:17: 09/04/2014 END -->
 
 	<button type="button" id="submitFacility" class="submitNoArrow"><?php tp('Save changes');?></button>

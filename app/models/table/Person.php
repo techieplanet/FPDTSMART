@@ -54,6 +54,10 @@ class Person extends ITechTable
 
 	//TA:17:16:1 where should use 'and' for all parameters:
 	//find person by first and middle and last name 
+        
+        //TP:
+        //improved this method such that the the name search is done on actual names using = operator
+        //rather than the  like operator
 	public static function tryFind ($first, $middle, $last)
 	{
 		$first = trim($first);
@@ -61,14 +65,18 @@ class Person extends ITechTable
 		$last = trim ($last);
 
 		if ($first == '' && $middle == '' && $last == '')
-			return null;
+			return null; 
 
 		$p = new Person();
 		$select = $p->select()->from($p->_name, array('id', 'first_name', 'middle_name','last_name'));
 
-		  $select->where("first_name like ?", $first);
-		 $select->where("middle_name like ?", $middle);
-		   $select->where("last_name like ?", $last);
+//		$select->where("first_name like ?", $first);
+//		$select->where("middle_name like ?", $middle);
+//		$select->where("last_name like ?", $last);
+                
+                $select->where("first_name = ?", $first);
+		$select->where("middle_name = ?", $middle);
+		$select->where("last_name = ?", $last);
 
 		$res = $p->fetchRow($select);
 		return $res->id ? $res->id : null;

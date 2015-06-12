@@ -117,7 +117,7 @@ if ($auth->hasIdentity()) {
 	// REPORT LINK
 	if ( $this->hasACL('view_create_reports')) {
 		//TA: added 7/25/2014 : automatic label changes
-		$navMain['reports']['index']  =  t('Queries');
+		$navMain['reports'] = array('index' => t('Queries'));
 		/*$navMain['reports']['psStudentsTrained']			= t('Student Reports');
 		$navMain['reports']['psCourseByName']				= t('Course Reports');
 		$navMain['reports']['psCohortByParticipantCount']	= t('Cohort Reports');
@@ -127,7 +127,7 @@ if ($auth->hasIdentity()) {
         */
                 $navMain['reports']['trainingrep'] = t('Training Data');
                          $navMain['reports']['facilitysummary']				= t('Facility  Data');
-                         $navMain['reports']['allqueries']				= t('All Data');
+                       //  $navMain['reports']['allqueries']				= t('All Data');
 	}
 
          $navMain['menu'] = array('index' => t('info'));
@@ -266,7 +266,9 @@ if(isset(Settings::$CSS)) {
 
 		foreach($navMain as $dir => $navRay) {
 			$class = array();
-			if($dir == 'index') { $class[] = 'first'; $dir = '';	}  // special CSS
+			//if($dir == 'index') { $class[] = 'first'; $dir = '';	}  // special CSS // old line
+			//TP new line by Techie planet
+			if($dir == 'index') { $class[] = 'first'; 	}  // special CSS
 			if($dir == 'dash/dash')  { $class[] = 'first'; }           // special CSS
 			if($dir == 'dash/dash' && $path[1] == 'dash'){ $class[] = 'active'; }
  
@@ -280,8 +282,14 @@ if(isset(Settings::$CSS)) {
 			$href = Settings::$COUNTRY_BASE_URL.'/'.$dir;
 			if($dir == 'reports'){ $href = ''; }
 			
-			echo '<a href="'.$href.'"'.(!empty($class) ? ' class="'.implode(' ', $class).'"' : '').' id="nav'.$dir.'">' . $navRay['index'] . '</a>';
+			//echo '<a href="'.$href.'"'.(!empty($class) ? ' class="'.implode(' ', $class).'"' : '').' id="nav'.$dir.'">' . $navRay['index'] . '</a>';
 				
+				  if($dir == 'dash/dash' || $dir=='index') {
+                          echo '<a href="'.Settings::$COUNTRY_BASE_URL.'/'.$dir.'" id="nav'.$dir.'">' . $navRay['index'] . '</a>';  
+                        }
+				  else{
+                         echo '<a href="#" id="nav'.$dir.'">' . $navRay['index'] . '</a>';   
+                        }
 			// Fly-down menu items
 			if(count($navRay) > 1) {
 				echo '<div class="flydownItems">';

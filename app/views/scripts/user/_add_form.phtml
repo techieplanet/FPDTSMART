@@ -70,19 +70,19 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
                
                
             </select></div>
-	<div class="fieldLabel"><span class="required">*</span>Zone</div><br/>
+	<div class="fieldLabel"><span class="required"></span>Zone</div><br/>
 							
 							<div class="fieldselect"><?php renderFilter($this->locations, 1, 'province_id', $this->user['zone'], 'district_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
-							<div class="fieldLabel"><span class="required">*</span>State</div><br/>
+							<div class="fieldLabel"><span class="required"></span>State</div><br/>
 							
 							<div class="fieldselect"><?php renderFilter($this->locations, 2, 'district_id', $this->user['state'], 'region_c_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
-							<div class="fieldLabel"><span class="required">*</span>LGA </div><br/>
+							<div class="fieldLabel"><span class="required"></span>LGA </div><br/>
 							
 							<div class="fieldselect"><?php renderFilter($this->locations, 3, 'region_c_id', $this->user['lga'],'', false, false); ?></div>
 							
@@ -106,7 +106,7 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
 		<div class="fieldLabelThin"></div><div class="fieldInput float50"><input type="checkbox" id="duplicate_training" name="duplicate_training" CHECKED /><label for="duplicate_training"> <?php tp('Ability to duplicate Training');?></label></div>
 		<div class="fieldLabelThin"></div><div class="fieldInput float50"><input type="checkbox" id="use_offline_app" name="use_offline_app" CHECKED /><label for="use_offline_app"> <?php tp('Use Offline Application')?></label></div>
 		<div class="fieldLabelThin"> <?php tp('People');?></div><div class="fieldInput"><div class="float50"><label for="edit_people"><input type="radio" id="edit_people" name="edit_people" value="edit_people" CHECKED> <?php tp('Add/Edit/Delete');?></label></div><label for="view_people"><input type="radio" id="view_people" name="edit_people" value="view_people"> <?php tp('View only');?></label></div>
-		<div class="fieldLabelThin"> <?php tp('Facilities');?></div><div class="fieldInput"><div class="float50"><label for="edit_facility"><input type="radio" id="edit_facility" name="edit_facility" value="edit_facility" CHECKED> <?php tp('Add/Edit/Delete');?></label></div><label for="view_facility"><input type="radio" id="view_facility" name="edit_facility" value="view_facility"> <?php tp('View only');?></label></div>
+		<div class="fieldLabelThin"> <?php tp('Facilities');?></div><div class="fieldInput"><div class="float50"><label for="edit_facility"><input type="radio" id="edit_facility" name="edit_facility" value="edit_facility" > <?php tp('Add/Edit/Delete');?></label></div><label for="view_facility"><input type="radio" id="view_facility" name="edit_facility" value="view_facility" CHECKED> <?php tp('View only');?></label></div>
 		<div class="fieldLabelThin"> <?php tp('Training Location');?></div><div class="fieldInput"><div class="float50"><label for="edit_training_location"><input type="checkbox" id="edit_training_location" name="edit_training_location" value="edit_training_location" CHECKED> <?php tp('Add/Edit');?></label></div></div>
 		<div><div class="fieldLabelThin"> <?php tp('Files');?></div><div class="fieldInput width100"><div class="float50"><input type="checkbox" id="admin_files" name="admin_files" CHECKED /><label for="admin_files"> <?php tp('Upload and delete');?></label></div></div></div>
 		<div style="width:100%;height:auto;display:block;;">
@@ -207,12 +207,18 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
 	<div class="fieldLabelThin" for="spacer"></div>
 	<input type="submit" value="Next User" title="save and continue" class="submitArrow"/>
 	<div style="float:right;">&nbsp;</div>
+
+        <!--<input type="submit" value="Finished" title="save this record" class="submitArrow"/>-->
+
 	<button type="button" id="Finished" title="save this record" class="submitNoArrow" /><?php tp('Finished');?></button>
 	<div class="clear"></div>
 
 </form>
 <script type="text/javascript">
-addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add/outputType/json');
+
+//addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add/outputType/json');
+addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add');
+
 
 $(document).ready(function () {
 	$('#orgcheckall').click(function (e) { /* check all btn */

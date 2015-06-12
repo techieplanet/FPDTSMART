@@ -31,7 +31,9 @@ function addAjaxSubmit(buttonId,formId,postUrl) {
 				}
 			}
 			catch (x) {
-				alert("ITech script error: " + x);
+
+				alert("ajax ITech script error: " + x);
+
 				alert(response);
 				return;
 			}

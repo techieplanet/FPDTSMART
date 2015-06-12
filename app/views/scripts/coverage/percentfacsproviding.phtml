@@ -214,13 +214,20 @@ print ScriptContainer::$instance->renderJSHead();
 	  var chart11Options = {
 		      title: title_data,
 		      titleTextStyle: { fontSize: 15 },
+<<<<<<< HEAD
 		      vAxis: {format: '#\'%\'', minValue: 80},
+=======
+		      vAxis: {format: '#\'%\'', minValue: 4},
+>>>>>>> upstream/master
 		      legend: 'none',
 		      chartArea: {height: '50%', top: 55},
 		      is3D:true
 		};
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 	  var chart11 = new google.visualization.ColumnChart(document.getElementById('chart11_div'));	            
 	  chart11.draw(chart11Data, chart11Options);
     }
@@ -252,7 +259,11 @@ print ScriptContainer::$instance->renderJSHead();
 	  var chart12Options = {
                       title: title_data,
 		      titleTextStyle: { fontSize: 15 },
+<<<<<<< HEAD
 		      vAxis: {format: '#\'%\'', minValue: 80},
+=======
+		      vAxis: {format: '#\'%\'', minValue: 4},
+>>>>>>> upstream/master
 		      legend: 'none',
 		      chartArea: {height: '50%', top: 55},
 		      is3D:true
@@ -287,11 +298,19 @@ print ScriptContainer::$instance->renderJSHead();
 
 ]);		                                                     	  
 
+<<<<<<< HEAD
 	  <?php echo  " var title_data = 'Percent of Facilities Providing Injectables as of $this->date ' " ?>;
 	  var chart13Options = {
 		      title: title_data,
 		      titleTextStyle: { fontSize: 15 },
 		      vAxis: {format: '#\'%\'', minValue: 80},
+=======
+	  <?php echo  " var title_data = 'Percent of facilities providing injectables, $this->date ' " ?>;
+	  var chart13Options = {
+		      title: title_data,
+		      titleTextStyle: { fontSize: 15 },
+		      vAxis: {format: '#\'%\'', minValue: 4},
+>>>>>>> upstream/master
 		      legend: 'none',
 		      chartArea: {height: '50%', top: 55},
 		      is3D:true

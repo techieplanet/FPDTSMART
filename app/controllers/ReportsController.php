@@ -9898,7 +9898,7 @@ public function facilitysummaryAction(){
 		$this->viewAssignEscaped ( 'facilities', $facilitiesArray );
                 //exit;
               
-               
+               $output = array();
                
                 $locations = Location::getAll("2");
                 for($v=0; $v<$size; $v++){
@@ -9933,12 +9933,21 @@ public function facilitysummaryAction(){
                 $state  = $this->getSanParam('district_id');
                 $localgovernment  = $this->getSanParam('region_c_id');
                 $facilities_new  = $this->getSanParam('facility_id');
-                foreach($facilities_new as $facer){
+                //var_dump($facilities_new);exit;
+               /* foreach($facilities_new as $facer){
                 $facility_location = explode("_",$facer);
                 $facility[] = $facility_location[3];
                 }
+                * */
+                $facility = array();
+                $facility_location = explode("_",$facilities_new);
+                $facility[] = $facility_location[3];
+                $details = $this->facility_location_summary_details($facility_location[3]);
+               // print_r($details);exit;
+                
                 $error = array();
-                if(empty($facility)){
+                if($facilities_new==""){
+                    
     $outputs = array();
     $output = array();
     $headers = array();
@@ -9950,6 +9959,7 @@ $title_value = array();
 $error [] = "You need to select a facility";
    // continue;
 }else{
+    
   // $summary = $db->fetchAll("SELECT * FROM facility_worker_training_counts_view WHERE facid='".$facility_id."' LIMIT 1");            
    //print_r($summary);       exit;      
    //$larc_trained = $summary[0]['larctrained'];
@@ -9963,7 +9973,7 @@ $csql = "SELECT * FROM commodity_name_option WHERE id!='38'AND id!='32'AND id!='
 $month = time();
 $headers[] = "FP Commodity"; 
 $output = array();
-
+$details_facility = $details;
 $heading = array("Health Worker Name","Type of Training","Training Organizer");
 $outdetails = array();
 $facility_id = implode(",",$facility);
@@ -9997,22 +10007,32 @@ foreach($hw_details as $hw_det){
     
 
 //$outputs = array();
+$heading_date = array();
+$month = time();
 //$outputs[] = $row['commodity_name'];
+$month = strtotime('next month', $month);
+   
 for ($i = 1; $i <= 12; $i++) {
     $month = strtotime('last month', $month);
-  $headers[] = date("M, Y", $month);
+    $heading_date[] = date("M, Y", $month);
+  
   
 }
-
-
+$heading_date = array_reverse($heading_date);
+foreach($heading_date as $head_date){
+  $headers[] = $head_date;
+    
+}
 
 foreach($commodity_name as $row){
     $outputs = array();
+    $sum_first = array();
 $outputs[] = $row['commodity_name'];
 $id = $row['id'];
 $month = time();
  //$month = strtotime('last month', $month);
-for ($i = 12; $i >= 1; $i--) {
+ $month = strtotime('next month', $month);
+for ($i = 1; $i <= 12; $i++) {
    $month = strtotime('last month', $month);
     $dates = date("Y-m",$month);
     $start = $dates."-01";
@@ -10022,7 +10042,14 @@ for ($i = 12; $i >= 1; $i--) {
   if($sum==""){
       $sum = 0;
   }
-     $outputs[]  = $sum;
+     //$outputs[]  = $sum;
+     $sum_first[] = $sum;
+}
+$sum_first = array_reverse($sum_first);
+
+foreach($sum_first as $sum_first_date){
+    
+    $outputs[] = $sum_first_date;
 }
 array_push($output,$outputs);
 }
@@ -10031,24 +10058,32 @@ $name_ids = array("11,15,27,30","38","10,35","31");
 
 $fullname = array("Any FP Product","Implants","Female Condoms","Emergency Contraception");
 $length = sizeof($name_ids);
-
+$month = time();
+$month = strtotime('next month', $month);
 for($r=0;$r<$length;$r++){
     $out = array();
+    $out_first = array();
     $out[] = $fullname[$r];
     $name_id = $name_ids[$r];
     $month = time();
    // echo $name_id.' '.$fullname[$r].'<br/><br/>';
-    for ($i = 12; $i >= 1; $i--) {
+    for ($i = 1; $i <= 12; $i++) {
    $month = strtotime('last month', $month);
     $dates = date("Y-m",$month);
     $start = $dates."-01";
     $end = $dates."-31";
   
- $out[] = $this->get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id);
+ $out_first[] = $this->get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id);
  //echo $start.' end '.$end.'<br/>';
  //print_r($this->get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id)) ;
 }
 //echo '<br/><br/>';
+$out_first = array_reverse($out_first);
+
+foreach($out_first as $out_first_date){
+    
+    $out[] = $out_first_date;
+}
 array_push($outputs,$out);
 }
 }
@@ -10065,6 +10100,7 @@ $criteria['province_id'] = $zone;
  $criteria['region_c_id'] = $localgovernment;
 $criteria['facility_id'] = $this->getSanParam('facility_id');
 $criteria['error'] = $error;
+$criteria['details_facility'] = $details_facility;
 
  $this->viewAssignEscaped ( 'headers', $headers );
  $this->viewAssignEscaped ( 'output', $output );    
@@ -10150,7 +10186,7 @@ public function trainingrepAction(){
 ('num_location_tiers'));
 		$this->viewAssignEscaped ( 'tlocations', $tlocations );
 		
-                
+                $output = array();
                 
                 
                 //-----------------------------------------the query is here now.----------------------------------------------//
@@ -10199,8 +10235,24 @@ public function trainingrepAction(){
                 }
     
                 $filter = "parent_id";
+}
+
+else if(!empty($zone)){
+//print_r($locations); echo 'here inside ';exit;
+//array_push($locations,$zone);
+if(is_array($zone)){
+//print_r($zonal);
+foreach($zone as $zonal){
+
+$locations[] = $zonal;
+
+}
 }else{
-   
+$locations[] = $zone;
+}
+}
+else{
+   unset($locations);
 }
                 }else{
                     if(!empty($localgovernment)){
@@ -10231,18 +10283,33 @@ public function trainingrepAction(){
                 }
     
                 $filter = "parent_id";
+}
+else if(!empty($zone)){
+//print_r($locations); echo 'here inside ';exit;
+//array_push($locations,$zone);
+if(is_array($zone)){
+//print_r($zonal);
+foreach($zone as $zonal){
+
+$locations[] = $zonal;
+
+}
 }else{
+$locations[] = $zone;
+}
+}
+else{
     unset($locations);
 }
 
-                }
+                } 
                
 $consump_loc = array();
      foreach($locations as $loc){
         $consump_loc[$loc] = ""; 
          
      }    
-     
+     //print_r($locations);
     
                 $list = implode(',', $locations);
                 $trainingorganizer = $this->getSanParam('trainingorganizer');
@@ -10435,6 +10502,16 @@ $consump_loc = array();
          
          }
         
+		if($trainingorganizer==""){
+		$trainingorganizer = array();
+		//$training_organizer = implode(",",$trainingorganizer);
+	
+		$all_training_organizer = $this->select_all_from_training_organizer();
+		foreach($all_training_organizer as $id_s){
+		$trainingorganizer[] = $id_s['id'];
+		}
+		$training_organizer = implode(",",$trainingorganizer);
+		}
         //print_r($locations);exit;
          $size = sizeof($locations);
          $output = array();
@@ -10473,7 +10550,7 @@ $consump_loc = array();
                      //echo $trainingtype.'training type id is tis <br/>';
                      //echo $training_org.'training organizer id is <br/>';
                      $participants = 0;
-                     $all_participants = $this->all_particpants_with_this_location($facer,$trainingtype,$training_org);
+                     $all_participants = $this->all_particpants_with_this_location($facilityq,$trainingtype,$training_org);
                      $training_organizer_phrase = $this->get_training_organizer_phrase($training_org);
                     
                      $participants = sizeof($all_participants);
@@ -10504,7 +10581,7 @@ else if($agrregate_method=="view_part_names"){
            if(!isset($locations) || empty($locations)){
          $locations = $this->get_all_locations();
          }
-              $headers = array("First Name","Middle Name","Last Name","State","LGA","Facility","Cadre","Training Type","Training Organizer","Training Start Date","Training End Date","Gender","Certification");
+              $headers = array("First Name","Middle Name","Last Name","State","LGA","Facility","Professional Qualification","Training Type","Training Organizer","Training Start Date","Training End Date","Gender","Certification");
                $training_organizer = implode(",",$trainingorganizer);
                  $trainingtypes = implode(",",$training_type);
               if($cadre==""){
@@ -10559,7 +10636,7 @@ else if($agrregate_method=="view_part_names"){
               $locator = implode(',',$locations);
               
               $all_participants = $this->get_all_participants_with_all_conditions($locator,$cadrequery,$trainingorganizerquery,$trainingtypequery,$training_end_date,$genderq,$certificationq,$facilityq,$dob_query);
-        // print_r($all_participants);exit;
+        //print_r($all_participants);exit;
               $output = array();
               $total_participants = sizeof($all_participants);
               //print_r($all_participants);exit;
@@ -10573,7 +10650,7 @@ else if($agrregate_method=="view_part_names"){
               $facility_name = $persons['facility_name'];
               $cadre = $persons['qualification_phrase'];
               $training_types = $persons['training_title_phrase'];
-              $training_title_phrase = $persons['training_title_phrase'];
+              $training_title_phrase = $persons['training_organizer_phrase'];
               $training_start_date = $persons['training_start_date'];
               $training_end_date = $persons['training_end_date'];
               $certification = $persons['certification'];
@@ -10613,9 +10690,9 @@ $criteria['end_month'] = ($this->getSanParam('end-month')!="")?$this->check_leng
   $criteria['consumption']  = $this->getSanParam('consumption');
   $criteria['facility'] = $facility ;
   $criteria['certification'] = $this->getSanParam('certification');
-  $criteria['gender'] = $gender;
-  $criteria['training_type'] = $training_type ;
- $criteria['cumu'] = $training_type2 ;
+  $criteria['gender'] = $this->getSanParam('gender');
+  $criteria['training_type'] = $this->getSanParam('training_type') ;
+ $criteria['cumu'] = $this->getSanParam('cumu') ;
  $criteria['province_id'] = $this->getSanParam('province_id');
  $criteria['district_id'] = $this->getSanParam('district_id');
  $criteria['region_c_id'] = $this->getSanParam('region_c_id');
@@ -10753,6 +10830,7 @@ public function allqueriesAction() {
 		require_once('views/helpers/TrainingViewHelper.php');
 
 		$criteria = array ();
+		$output = array();
 		$where = array ();
 		$display_training_partner = ( isset($this->_countrySettings
 ['display_training_partner']) && $this->_countrySettings['display_training_partner'] == 1 ) 
@@ -10767,22 +10845,53 @@ public function allqueriesAction() {
                 $rowArray = $db->fetchAll($sql);
                 $number = $rowArray['COUNT(*)'];
 		//facilities list
-		$rowArray = OptionList::suggestionList ( 'facility', array ('facility_name', 
-'id' ), false, $number );
-                $output = array();
-		$facilitiesArray = array ();
-		foreach ( $rowArray as $key => $val ) {
-			if ($val ['id'] != 0)
-			$facilitiesArray [] = $val;
-		}
+		$csql = "SELECT id,facility_name as name,location_id as parent_id,tier FROM facility_location_view ORDER BY facility_name ASC";
+                $facilitiesArray = $db->fetchAll($csql);
+                $size = sizeof($facilitiesArray);
+                for($v=0; $v<$size; $v++){
+                    $facilitiesArray[$v]['tier'] = 4;
+                    $facilitiesArray[$v]['is_default'] = 0;
+                    $facilitiesArray[$v]['is_good'] = 1;
+                }
+                //print_r($facilitiesArray);exit;
 		$this->viewAssignEscaped ( 'facilities', $facilitiesArray );
-                
+                //exit;
               
-                $tsql = "SELECT * FROM `training_title_option` ORDER BY `training_title_phrase` ASC";
+               
+               
+                $locations = Location::getAll("2");
+                for($v=0; $v<$size; $v++){
+                    $id = $facilitiesArray[$v]['id'];
+                    //$id = 2592 + $v;
+                    $locations[$id] = $facilitiesArray[$v];
+                }
+                //print_r($locations);
+                foreach($locations as $location){
+                  // print_r($location);echo '<br/><br/>';
+                    
+                }
+               //exit;
+               //print_r($locations); exit;
+		$this->viewAssignEscaped('locations', $locations);
+		//course
+                //print_r($locations);exit;
+                //exit;
+		$courseArray = TrainingTitleOption::suggestionList ( false, 10000 );
+		$this->viewAssignEscaped ( 'courses', $courseArray );
+		//location
+		// location drop-down
+		$tlocations = TrainingLocation::selectAllLocations ($this->setting
+('num_location_tiers'));
+		$this->viewAssignEscaped ( 'tlocations', $tlocations );
+		
+		$tsql = "SELECT * FROM `training_title_option` ORDER BY `training_title_phrase` ASC";
                 
                 $trainingtypes = $db->fetchAll($tsql);
                 $this->viewAssignEscaped ( 'trainingtypes', $trainingtypes );
-                
+                $trainingtypes_unset = array();
+				 foreach($trainingtypes as $item){
+                    $trainingtypes_unset[] = $item['id'];
+                }
                  $tosql = "SELECT * FROM `training_organizer_option` ORDER BY `training_organizer_phrase` ASC";
                 
                 $trainingorg = $db->fetchAll($tosql);
@@ -10796,8 +10905,8 @@ public function allqueriesAction() {
                 $commodity_namedb = $db->fetchAll($csql);
                 $this->viewAssignEscaped ( 'commodity_name_option', $commodity_namedb );
                 
-                $locations = Location::getAll("2");
-		$this->viewAssignEscaped('locations', $locations);
+                //$locations = Location::getAll("2");
+		//$this->viewAssignEscaped('locations', $locations);
 		//course
 		$courseArray = TrainingTitleOption::suggestionList ( false, 10000 );
 		$this->viewAssignEscaped ( 'courses', $courseArray );
@@ -10814,8 +10923,26 @@ public function allqueriesAction() {
                 $zone = $this->getSanParam('province_id');
                 $state  = $this->getSanParam('district_id');
                 $localgovernment  = $this->getSanParam('region_c_id');
-                $facility  = $this->getSanParam('facility');
+                //$facility  = $this->getSanParam('facility');
+				 $facilities_new  = $this->getSanParam('facility_id');
+                //var_dump($facilities_new);exit;
+				$facility = array();
+				
+               foreach($facilities_new as $facesss){
+                $facility_location = explode("_",$facesss);
+                $facility[] = $facility_location[3];
+                }
+                $facilitators = implode(",",$facility);
+                
+                //$facility_location = explode("_",$facilities_new);
+                //$facility[] = $facility_location[3];
+				
+				
                 $training_type = $this->getSanParam('training_type');
+				if(empty($training_type)){
+				$training_type = $trainingtypes_unset;
+				}
+				//print_r($trainingtypes_unset);exit;
                 $training_type2 = $this->getSanParam('cumu');
                 $stock_out = $this->getSanParam('stock_out');
                 $providing = $this->getSanParam('providing');
@@ -10847,7 +10974,22 @@ public function allqueriesAction() {
                 }
                  
                 $filter = "parent_id";
+}
+else if(!empty($zone)){
+//print_r($locations); echo 'here inside ';exit;
+//array_push($locations,$zone);
+if(is_array($zone)){
+//print_r($zonal);
+foreach($zone as $zonal){
+
+$locations[] = $zonal;
+
+}
 }else{
+$locations[] = $zone;
+}
+}
+else{
    unset($locations);
 }
 
@@ -10882,6 +11024,7 @@ $consump_loc = array();
                 $period = $this->getSanParam('period');
                 $consumption = $this->getSanParam('consumption');
                 //$time = time();
+				
                 $current_month = date('m');
                 $current_day = date('d');
                 $current_year = date('Y');
@@ -10904,10 +11047,10 @@ $consump_loc = array();
       if($end_month==""){
           $end_month = $current_month;
       }
-       if($training_type2=="Cumulative"){
-                        $start_day = "01";
-                        $start_year = "2011";
-                        $start_month = "01";
+       if($training_type2=="Cumulative"  && $start_year==""){
+                       $start_day = "01";
+                       $start_year = "1910";
+                       $start_month = "01";
                     }
       $fac_types = array();
        $start_date = $start_year.'-'.$start_month.'-'.$start_day;
@@ -10921,11 +11064,11 @@ $consump_loc = array();
                      if(!isset($locations) || empty($locations)){
          $error[] = "Location is required (at least state)";
          }
-                      if($training_type2=="Cumulative"){
-                        $start_day = "01";
-                        $start_year = "2011";
-                        //$current_month = ;
-                        $start_month = "01";
+                      if($training_type2=="Cumulative" && $start_year==""){
+                        $start_day = "01"; 
+                        $start_year = "1950";
+                       //$current_month = ;
+                       $start_month = "01";
                         
                     }
                     
@@ -10943,8 +11086,18 @@ $consump_loc = array();
                     //$training_org = implode(',',$training_org);
                   // echo 'The location is '.$location_id;
                     //echo $trainingorganizer.'<br/><br/>';
+					//print_r($facilities_new);exit;
+					if(empty($facility)){
+					
                     $all_facilities_array = $this->get_all_facilities_with_location_id($location_id,$trainingorganizer);
-                  // $phrase = $this->get_training_organizer_phrase($trainingorganizer);
+                //  print_r($all_facilities_array);exit;
+				  }else {
+				  //echo 'Hello';exit;
+				  $facesss = "AND facility_id IN (".$facilitators.")";
+				     $all_facilities_array = $this->get_all_facilities_with_location_id($location_id,$trainingorganizer,$facesss);
+				  //print_r($all_facilities_array);exit;
+				  }
+				  // $phrase = $this->get_training_organizer_phrase($trainingorganizer);
                     $facility_names = array();
                     $facility_ids = array();
                      $output = array();
@@ -10988,10 +11141,11 @@ $consump_loc = array();
                     $consumptions = array();
                     $name_idsum = array(array());
                     //$star_month_name = 
+					
                   foreach($facility_ids as $facility_id ){
                       $end_date = $start_year."-".$start_month."-31";
                       $start_date = $start_year."-".$start_month."-01";
-                      echo $date;
+                    //  echo $date;
                       $hw_counter = array();
                        foreach($training_type as $ttype){
                       $hw_count = $this->get_hw_count_for_each_facility($start_date,$end_date,$facility_id,$small_value);
@@ -11000,7 +11154,7 @@ $consump_loc = array();
                       $hw_counts[$facility_id][$ttype] = $hw_count;
                        }
                        //print_r($hw_counter);
-                      
+                     
                       foreach($providing as $prov){
                           $small_value = $prov;
                            $all_name_ids = $this->get_the_name_ids($small_value);
@@ -11024,7 +11178,7 @@ $consump_loc = array();
                        }
                        $name_of_consump = $this->get_commodity_option_name($name_id);
                   }
-                  
+                     
                   foreach($consumption as $name_id){
                        //$consumptions[$facility_id][$name_id] = $this->get_consumption_for_unique_fac($start_date,$end_date,$facility_id,$name_id);
                       $name_of_consump = $this->get_commodity_option_name($name_id);
@@ -11051,6 +11205,7 @@ $consump_loc = array();
                  $hw_sum[$ttype] = array_sum($hw_countering[$ttype]);
                 
                   }
+				 
                  // print_r($hw_sum);echo'<br/><br/>';
                    //print_r($hw_countering);
                   //exit;
@@ -11130,7 +11285,7 @@ $consump_loc = array();
                            
                    // get_just_fac_with_type($all_name_ids,$beginning,$end,$location_id)
                    
-                      
+                    
                   
                 }else if($agrregate_method=="aggregate_facilities"){
                     if(!isset($locations) || empty($locations)){
@@ -11211,6 +11366,14 @@ $consump_loc = array();
                           }else{
                               $stockq = "";
                           }
+						  if(empty($facility)){
+					$facesss = "";
+                    
+				  }else {
+				  //echo 'Hello';exit;
+				  $facesss = "AND facility_id IN (".$facilitators.")";
+				     
+				  }
                            if($training_type!=""){
                            $sums = array();
                            $all_name_ids  = array();
@@ -11262,12 +11425,12 @@ $consump_loc = array();
                            //$sql = "SELECT * FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$beginning."' AND commodity.date<='".$end."') AND (facility_location_view.parent_id IN (".$list.") OR facility_location_view.location_id IN (".$list."))";
                      foreach($training_type as $ttype){
                            $small_value = $this->get_name_category($ttype);
-                           $hw_trained[$location][$i][$ttype] = $this->get_facility_with_hw_trained_in($small_value,$beginning,$end,$location,$training_type2,$stockq);
+                           $hw_trained[$location][$i][$ttype] = $this->get_facility_with_hw_trained_in($small_value,$beginning,$end,$location,$training_type2,$stockq,$facesss);
                      }  
                       
                       foreach($consumption as $values){
                                
-                               $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location);
+                               $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location,$facesss);
                                //$value = strtoupper($this->get_name_category($training_type));
                                $value  = $this->get_commodity_option_name($values);
                                $consump_loc[$value][$location.$i] = $sum;
@@ -11313,7 +11476,7 @@ $consump_loc = array();
                            foreach($providing as $prov){
                                $all_name_ids = $this->get_the_name_ids($prov);
                                $all_name_ids = implode(",",$all_name_ids);
-                          $fac_prov[$prov] = $this->get_just_fac_with_type($all_name_ids,$beginning,$end,$location,$stockq);
+                          $fac_prov[$prov] = $this->get_just_fac_with_type($all_name_ids,$beginning,$end,$location,$stockq,$facesss);
                            }
                           // $fac_prov = 
                           //echo 'THis is t'.
@@ -11365,18 +11528,27 @@ $consump_loc = array();
                           }else{
                               $cadreq = "";
                           }
+						   if(empty($facility)){
+					$facesss = "";
+                    
+				  }else {
+				  //echo 'Hello';exit;
+				    $facesss = "AND facility_id IN (".$facilitators.")";
+				     
+				  }
                             array_push($headers,"Geography");
                            
                              $beginning= $start_date;
                     $end = $end_date;
                   // echo $beginning.' '.$end;exit;
-                        $small_value = $this->get_name_category($training_type);
+                        //$small_value = $this->get_name_category($training_type);
                           $consump = array();
-                           $small_value = (($small_value=="")?"fp":$small_value);
+                          // $small_value = (($small_value=="")?"fp":$small_value);
                            $hw_result = array();
                             foreach($training_type as $ttype){
                                 $title = $this->get_name_category($ttype,"training_title_phrase");
-                                $search = strpos($title," ");
+                             
+							   $search = strpos($title," ");
                                 if($search===false){
                                          $title = strtoupper($title);
                                           }else{
@@ -11390,27 +11562,35 @@ $consump_loc = array();
                                             }
                             array_push($headers,"#HWs trained in ".$title."");
                             }
+							 
+							// 
                             foreach($consumption as $values){
-                                
+                              // var_dump($title);exit;
+							 
                               $value  = $this->get_commodity_option_name($values);
+							 
                               //$sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location_id,$stockq);
                               $display_start_month = substr($this->return_the_month_name($start_month),0,3);
                               $display_end_month = substr($this->return_the_month_name($end_month),0,3);
                               $word = "Consumption of ".$value." ".$start_day."-".$display_start_month."-".$start_year." to ".$end_day."-".$display_end_month."-".$end_year."";
                               array_push($headers,$word);
                            }
+						   
                         foreach($locations as $location_id){
                            // print_r($locations);exit;
                             if($location_id!="" && $location_id!=" "){
                                 
                             $data_manager = array();
+							//print_r($location_id);
+							//print_r($consumption);exit;
                             $location_name = $this->get_location_name($location_id);
+							 
                             array_push($data_manager,$location_name);
                             foreach($training_type as $ttype){
                                 $small_value = $this->get_name_category($ttype);
-                           $sql = "SELECT count(*) FROM `facility_summary_person_view` WHERE training_title_option_id='".$ttype."' AND  training_start_date>='".$beginning."' AND training_end_date<='".$end."' AND (facility_location_id='".$location_id."' OR parent_id='".$location_id."')  ".$cadreq."";
+                           $sql = "SELECT count(*) FROM `facility_summary_person_view` WHERE training_title_option_id='".$ttype."' AND  training_start_date>='".$beginning."' AND training_end_date<='".$end."' ".$facesss." AND (facility_location_id='".$location_id."' OR parent_id='".$location_id."')  ".$cadreq."";
                          //echo $sql;echo '<br/><br/>';continue;
-                           
+                          // echo $sql;exit;
                            $result = $db->fetchAll($sql);
                           array_push($hw_result, $result[0]['count(*)']);
                          array_push($data_manager,$result[0]['count(*)']);
@@ -11418,7 +11598,7 @@ $consump_loc = array();
                             foreach($consumption as $values){
                                 
                               $value  = $this->get_commodity_option_name($values);
-                              $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location_id,$stockq);
+                              $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location_id,$stockq,$facesss);
                                                   
                                $sum_values = (($sum=="")? 0 : $sum);
                               $consump[$location_id][$value] = $sum_values;
@@ -11470,18 +11650,23 @@ $criteria['end_month'] = ($this->getSanParam('end-month')!="")?$this->check_leng
   $criteria['trainingorganizer'] = $this->getSanParam('trainingorganizer');
   
   //print_r($criteria['trainingorganizer']);exit;
-  $criteria['cadre'] = $cadre;
-  $criteria['consumption']  = $consumption;
-  $criteria['facility'] = $facility ;
+  $criteria['cadre'] = $this->getSanParam('cadre');
+  
+  $criteria['consumption']  = $this->getSanParam('consumption');
+  $criteria['province_id'] = $this->getSanParam('province_id');
+ $criteria['district_id'] = $this->getSanParam('district_id');
+ $criteria['region_c_id'] = $this->getSanParam('region_c_id');
+                //$facility  = $this->getSanParam('facility');
+ $criteria['facility_id'] = $this->getSanParam('facility_id');
   $criteria['training_type'] = $this->getSanParam('training_type') ;
- $criteria['cumu'] = $training_type2 ;
+ $criteria['cumu'] = $this->getSanParam('cumu') ;
  $criteria['show'] = $show;
-  $criteria['province_id'] = $zone;
- $criteria['district_id'] = $state;
- $criteria['region_c_id'] = $localgovernment;
- $criteria['stock_out'] = $stock_out;
+  //$criteria['province_id'] = $zone;
+ //$criteria['district_id'] = $state;
+ //$criteria['region_c_id'] = $localgovernment;
+ $criteria['stock_out'] = $this->getSanParam('stock_out');
   $criteria['error'] = $error;
-  $criteria['providing'] = $providing;
+  $criteria['providing'] = $this->getSanParam('providing');
  //$criteria[''] = 
                // $results = array();
                 $end_date = $end_year.'-'.$end_month.'-'.$end_day;
@@ -11503,15 +11688,22 @@ $this->viewAssignEscaped ('output',$output);
 //$status->setStatusMessage($stat);
 $this->viewAssignEscaped('criteria',$criteria);
 	}
-       public function get_consumption_sum_for_them($beginning,$end,$values,$location="",$stock_out=""){
+       public function get_consumption_sum_for_them($beginning,$end,$values,$location="",$stock_out="",$facesss=""){
            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-           $consump_sum_sql = "SELECT SUM(consumption) as sums  FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$beginning."' AND commodity.date<='".$end."') ".$stock_out." AND (commodity.name_id = '".$values."') AND (facility_location_view.parent_id = ".$location." OR facility_location_view.location_id  = ".$location.")";
+           $consump_sum_sql = "SELECT SUM(consumption) as sums  FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$beginning."' AND commodity.date<='".$end."') ".$facesss." ".$stock_out." AND (commodity.name_id = '".$values."') AND (facility_location_view.parent_id = ".$location." OR facility_location_view.location_id  = ".$location.")";
           // echo $consump_sum_sql;exit;       
            $res = $db->fetchAll($consump_sum_sql);
                               
                               return $sum = $res[0]['sums'];
            
        }
+	   public function select_all_from_training_organizer(){
+	    $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+		$sql = "SELECT * FROM training_organizer_option";
+		$result = $db->fetchAll($sql);
+		return $result;
+		
+	   }
      public function arraycount($array, $value){
     $counter = 0;
     foreach($array as $thisvalue) /*go through every value in the array*/
@@ -11522,10 +11714,12 @@ $this->viewAssignEscaped('criteria',$criteria);
      }
      return $counter;
      }
-     public function all_particpants_with_this_location($all_facilities,$training_type,$training_org){
+     public function all_particpants_with_this_location($facilityq,$training_type,$training_org){
           $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-          $sql = "SELECT * FROM facility_summary_person_view WHERE facility_id IN (".$all_facilities.") AND training_title_option_id='".$training_type."' AND training_organizer_option_id='".$training_org."'";
+          $sql = "SELECT * FROM facility_summary_person_view WHERE  training_title_option_id='".$training_type."' AND training_organizer_option_id='".$training_org."' ".$facilityq."";
+  // echo $sql;exit;
    $res = $db->fetchAll($sql);
+   
                               //print_r($consump_sum_sql); exit;
                               return $res;
           }
@@ -11544,8 +11738,7 @@ $this->viewAssignEscaped('criteria',$criteria);
           $sql = "SELECT training.id, training_organizer_phrase,training_title_phrase,training_start_date,training_end_date FROM training left join training_organizer_option on training_organizer_option_id=training_organizer_option.id left join training_title_option on training_title_option.id=training_title_option_id WHERE training_start_date>='".$start_date."' AND training_end_date<='".$end_date."'  ".$trainingorganizerquery." ".$trainingtitleoptionquery."";
      
           $res = $db->fetchAll($sql);
-                             
-                              return $res;
+                                    return $res;
       }
       public function get_counter_person_trainings($training_id,$facilityq=""){
           $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
@@ -11638,9 +11831,9 @@ $this->viewAssignEscaped('criteria',$criteria);
                               
                               return $stock_out;
        }
-       public function get_just_fac_with_type($all_name_ids,$beginning,$end,$location_id,$stockq){
+       public function get_just_fac_with_type($all_name_ids,$beginning,$end,$location_id,$stockq,$facesss){
            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-           $sql = "SELECT count(*) FROM commodity left join facility_location_view on facility_id=facility_location_view.id WHERE  (commodity.date>='".$beginning."' AND commodity.date<='".$end."') AND (facility_location_view.parent_id = '".$location_id."' OR facility_location_view.location_id  = '".$location_id."') AND (name_id IN(".$all_name_ids."))  ".$stockq."  ";
+           $sql = "SELECT count(*) FROM commodity left join facility_location_view on facility_id=facility_location_view.id WHERE  (commodity.date>='".$beginning."' AND commodity.date<='".$end."') ".$facesss." AND (facility_location_view.parent_id = '".$location_id."' OR facility_location_view.location_id  = '".$location_id."') AND (name_id IN(".$all_name_ids."))  ".$stockq."  ";
        //echo $sql;exit;
            $res = $db->fetchAll($sql);
                               
@@ -11675,10 +11868,10 @@ $this->viewAssignEscaped('criteria',$criteria);
            }
            return $all_the_ids;
            }
-       public function get_all_facilities_with_location_id($location_id,$training_org){
+       public function get_all_facilities_with_location_id($location_id,$training_org,$facilities=""){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-           $sql = "SELECT * FROM facility_summary_person_view left join facility_location_view on facility_id=facility_location_view.id  WHERE (facility_location_view.parent_id='".$location_id."' OR facility_location_view.location_id='".$location_id."')  AND training_organizer_option_id IN (".$training_org.")";
-          
+           $sql = "SELECT * FROM facility_summary_person_view left join facility_location_view on facility_id=facility_location_view.id  WHERE (facility_location_view.parent_id='".$location_id."' OR facility_location_view.location_id='".$location_id."')  AND training_organizer_option_id IN (".$training_org.") ".$facilities."";
+         // echo $sql;exit;
            $new = array();
            $results = $db->fetchAll($sql);
            
@@ -11707,7 +11900,7 @@ $this->viewAssignEscaped('criteria',$criteria);
            $mons = array("01" => "January", "02" => "February", "03" => "March", "04" => "April", "05" => "May", "06" => "June", "07" => "July", "08" => "August", "09" => "September", "10" => "October", "11" => "November", "12" => "December");
 return $mons[$id];
        }
-      public function get_facility_with_hw_trained_in($training_type,$start_date,$end_date,$location_id,$training_type2,$stockq){
+      public function get_facility_with_hw_trained_in($training_type,$start_date,$end_date,$location_id,$training_type2,$stockq,$facess=""){
          $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
          if($training_type2=="trained_in"){
           if($training_type=="larc"){
@@ -11720,15 +11913,23 @@ return $mons[$id];
               $table_named = "factrainedhw";
               
           }
-          $sql = "SELECT count(*) FROM facility_worker_training_counts_view WHERE facid IN (  SELECT facility_id FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$start_date."' AND commodity.date<='".$end_date."'  ".$stockq.") AND (facility_location_view.parent_id = '".$location_id."' OR facility_location_view.location_id  = '".$location_id."')) AND ".$table_named.">=1";
+          $sql = "SELECT count(*) FROM facility_worker_training_counts_view WHERE facid IN (  SELECT facility_id FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$start_date."' AND commodity.date<='".$end_date."'  ".$stockq.") AND (facility_location_view.parent_id = '".$location_id."' OR facility_location_view.location_id  = '".$location_id."') ".$facess.") AND ".$table_named.">=1";
          //echo $sql;exit;
           $all_sql = $db->fetchAll($sql);
     return $all_sql[0]['count(*)'];
+      }
+      public function facility_location_summary_details($facility_id){
+          $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+    $sql = "SELECT * FROM facility_location_view WHERE `id`='$facility_id'";
+   $all_sql = $db->fetchAll($sql);
+    return $all_sql[0];
+          
       }
 public function get_name_category($name_id,$getter="system_training_type"){
     $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
     $sql = "SELECT `$getter` FROM training_title_option WHERE id='$name_id' LIMIT 1";
    $all_sql = $db->fetchAll($sql);
+   
     return $all_sql[0][''.$getter.''];
 }
 
@@ -11763,7 +11964,7 @@ public function get_location_name($location_id){
     
 }
         public function get_location($facid){
-            $sql = "SELECT location_id FROM facility WHERE id=$facid";
+            $sql = "SELECT location_id FROM facility WHERE id='$facid'";
             
             
         }

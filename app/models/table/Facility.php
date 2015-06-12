@@ -8,6 +8,7 @@
  */
 
 require_once ('ITechTable.php');
+require_once ('Helper2.php');
 
 class Facility extends ITechTable {
 	protected $_name = 'facility';
@@ -215,6 +216,7 @@ class Facility extends ITechTable {
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
             
             $select = $db->select()->from(array('f'=>'facility'), 'COUNT(id) AS count');
+            //echo $select->__toString(); exit;
             $result = $db->fetchRow($select);
             return $result['count'];
         }
@@ -288,6 +290,27 @@ class Facility extends ITechTable {
             return $result['count'];
        }
        
+       
+       public function getFacilityCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName){
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+                $helper = new Helper2();
+                
+                $select = $db->select()
+                            ->from(array('flv' => 'facility_location_view'), array('COUNT(id) AS fid_count','lga', 'state',  'geo_zone'))
+                            ->where($longWhereClause)
+                            ->group($tierFieldName)
+                            ->order(array($tierText));
+                
+              //echo 'FCL: ' . $sql . '<br/>'; exit;
+
+              $result = $db->fetchAll($select);
+              
+              $locationNames = $helper->getLocationNames($geoList);
+              $locationDataArray = $helper->filterLocations($locationNames, $result, $tierText);
+               
+            //var_dump($locationDataArray); exit;
+            return $locationDataArray;
+       }
        
        
         

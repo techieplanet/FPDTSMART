@@ -67,7 +67,7 @@ class Training extends ITechTable
 	/**
 	* Returns row with joins (for extended training info)
 	*/
-	public function getTrainingInfo($training_id) {
+	public function getTrainingInfo($training_id){
 
 		$select = $this->select()
 		->from($this->_name, array('*'))

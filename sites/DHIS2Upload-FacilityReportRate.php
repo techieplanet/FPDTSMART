@@ -19,7 +19,8 @@ $PERIOD_LAST_MONTH_MODE = false;
 $PERIOD_HISTORICAL_MODE = false;
 
 $PERIOD_LAST_MONTH = 'LAST_MONTH';
-$PERIOD_HISTORICAL = "201503;"; //"201101;201102;201103;201104;201105;201106;201107;201108;201109;201110;201111;201112;201201;201202;201203;201204;201205;201206;201207;201208;201209;201210;201211;201212;201301;201302;201303;201304;201305;201306;201307;201308;201309;201310;201311;201312;201401;201402;201403;201404;201405;201406;201407;201408;201409;201410";
+$PERIOD_HISTORICAL = "201503"; //"201101;201102;201103;201104;201105;201106;201107;201108;201109;201110;201111;201112;201201;201202;201203;201204;201205;201206;201207;201208;201209;201210;201211;201212;201301;201302;201303;201304;201305;201306;201307;201308;201309;201310;201311;201312;201401;201402;201403;201404;201405;201406;201407;201408;201409;201410";
+
 
 //$DATA_URL_START = "https://dhis2nigeria.org.ng/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=pe:";
 //$DATA_URL_END = "&dimension=ou:LEVEL-5;TFY8aaVkCtV;BmWTbiMgEai;Gq37IyyjUfj;jXngIDniC8t;Ym1fEhWFWYI;FmH4buccgqx;fBInDsbaQHO;r3IK5qdHsZ6;hfNPq5F4mjr;yx3QJHm86vWH2ZhSMudlMI;gzLOszDWdqM;RYEnw3sMDyE;tjLatcokcel;M689V9w3Gs3;cTIw3RXOLCQ;S7Vs7ifJKlh;uKlacgs9ykR;jReUW6NCPkL;HYCMnXqLDPV;bSfaEpPFa9Y;FmOhtDnhdwU;MJVVi73YayJ;tjLatcokcel;M689V9w3Gs3;cTIw3RXOLCQ;S7Vs7ifJKlh;m0rZG06GdPe;xWSEoKmrbBW;aMQcvAoEFh0;iilma7EajGc;Quac4RHRtaZ;HYCMnXqLDPV;bSfaEpPFa9Y;FmOhtDnhdwU;Nko8QFDmYmq;FHlOerryBjk;OgjFloqKoqk;qLiKWoddwFu;ziJ3yxfgb3m;MXrZyuS9E7A;RLySnRCE1Gy;ns3vF75Y0bF;caG44DzHu6F&displayProperty=NAME";
@@ -29,14 +30,24 @@ $PERIOD_HISTORICAL = "201503;"; //"201101;201102;201103;201104;201105;201106;201
 //$DATA_URL_END = "&displayProperty=NAME&ignoreLimit=true";
 //$USERNAME = "afadeyi";
 //$PASSWORD = "CHAI100F";
-$DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:";
-$DATA_URL_END = "&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID";
+
+//JOHN - BAD
+//$DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:";
+//$DATA_URL_END = "&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID";
+
+//TP 
+$DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;s5DPBsdoE8b&dimension=pe:";
+$DATA_URL_END   = "&displayProperty=NAME&outputIdScheme=ID";
+ 
 //https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:LAST_MONTH&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID
+
 $USERNAME = "FP_Dashboard";
 $PASSWORD = "CHAI12345";
 //get program input arguments
 //$options = getopt("m::p::h");
-$options = array('m'); 
+
+$options = array('p'); 
+
 if(sizeof($options) === 0){
 	help();
 }else{
@@ -96,22 +107,26 @@ if(sizeof($options) === 0){
  
  echo date(DATE_RFC2822);
  if($PERIOD_HISTORICAL_MODE){
+
+        //echo 'historical'; exit;
+
  	$periods = explode(";", $PERIOD_HISTORICAL);
  	for($i=0; $i<sizeof($periods); $i++){
  		print "\n\n ===> UPLOAD PERIOD: " . $periods[$i] . " START\n\n";
  		$DATA_URL = $DATA_URL_START . $periods[$i] . $DATA_URL_END;
 
-                //$DATA_URL = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5; s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID";
-               
-                //$DATA_URL = $DATA_URL_START . $DATA_URL_END;
-
+                //print '<br/><br/>' . $DATA_URL; exit;
+                
  		upload($DATA_URL, $USERNAME, $PASSWORD, $db);
  		print "\n===> UPLOAD PERIOD: " . $periods[$i] . " END\n####################################################################################\n\n";
  	}
- }
+}
  if($PERIOD_LAST_MONTH_MODE){
+        //echo 'last month'; exit;
  	print "\n\n ===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " START\n\n";
  	$DATA_URL = $DATA_URL_START . $PERIOD_LAST_MONTH . $DATA_URL_END;
+        //print '<br/><br/>' . $DATA_URL; exit;
+        
 
        // $DATA_URL = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5; s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID";
                
@@ -143,7 +158,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
  	//$data_json = file_get_contents ("FRR_Web_Service_analytics_2015_jan_to_march.json" ); // REMOVE: for test only
 	 //echo 'This is the anotheer aspect of t';                                                   
 	$data_json_arr = json_decode($data_json, true);
-        print_r($data_json_arr);echo '<br/><br/>';
+
         /*
        $date = "201503";
        $values = array();
@@ -163,9 +178,16 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 
 	$date = $data_json_arr ["metaData"] ["pe"] [0];
 	$date_year = substr ( $date, 0, 4 );
-	$date_month = substr ( $date, - 2 );
-	print "Data period: " . $date_year . "-" . $date_month . "-01\n\n";
+	$date_month = substr ( $date, -2 );
+	print "Data period: " . $date_year . "-" . $date_month . "-01\n\n"; 
 	
+        // check if these date already loaded to database before going any further to save time.
+	$db_data_info_count = $db->fetchAll ("select count(*) as count from facility_report_rate where date='" . $date_year . "-" . $date_month . "-01'");
+	if($db_data_info_count[0]['count'] > 0){
+		print "Data for this period had been loaded in database earlier.\n\n";
+		return;
+	}
+        
 	//save json output to file
 	$file = fopen("DHIS2Upload-FacilityReportRate-". $date . ".json","w");
 	echo fwrite($file,$data_json);
@@ -175,12 +197,6 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 
 	//print_r($data_json_arr); exit;
 
-	// check if these date already loaded to database
-	$db_data_info_count = $db->fetchAll ("select count(*) as count from facility_report_rate where date='" . $date_year . "-" . $date_month . "-01'");
-	if($db_data_info_count[0]['count'] > 0){
-		print "Data for this period were loaded in database earlier.\n\n";
-		return;
-	}
 	
 	// ******************* PARSING DATA ***************************
 	
@@ -290,7 +306,7 @@ function getDB($db_name){
 			'host'     => Settings::$DB_SERVER,
 			'username' => Settings::$DB_USERNAME,
 			'password' => Settings::$DB_PWD,
-			'dbname'   => $db_name
+			'dbname'   => empty($db_name) ? Settings::$DB_DATABASE : $db_name,
 	));
 
 	require_once 'Zend/Db/Table/Abstract.php';

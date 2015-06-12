@@ -457,11 +457,11 @@ protected function sendData($data) {
  	/*
  	 * TA:17: 10/08/2014
  	 */
- 	protected function _excel_parser($filepath){
+ 	protected function _excel_parser($filepath,$sheet=2){
  		//http://www.phpkode.com/scripts/item/simple-xlsx/
  		require_once "libs/simplexlsx.class.php";
  		$xlsx = new SimpleXLSX( $filepath);
-               return $xlsx->rows(2);
+               return $xlsx->rows($sheet);
  		//return $xlsx->rows(); //take all rows
  	}
 

@@ -22,41 +22,25 @@ class CoverageHelper {
                     
                     $locationDataArray = array();
                     for($i = $year_amount; $i > 0; $i--) {
-                        $endDateWhere = "t.training_end_date like '" . $year . "%'";
+                        $endDateWhere = "YEAR(t.training_end_date) <= '" . $year . "'";
                         $trainingTypeWhere = "tto.system_training_type = '" . $training_type . "'";
                         $longWhereClause = $endDateWhere . ' AND ' . $trainingTypeWhere . ' AND ' . 
                                    $tierFieldName . ' IN (' . $geoList . ')';
-//                        //LARC begins
-//                        $select = $db->select ()
-//                                ->from ( array ('ptt' => 'person_to_training' ), array('count' => 'COUNT(DISTINCT(ptt.person_id)) as count'))
-//                                ->joinInner(array ('t' => "training" ), 't.id = ptt.training_id' )
-//                                ->joinInner(array('tto' => 'training_title_option' ), 'tto.id = t.training_title_option_id AND system_training_type = \'' . $training_type . '\'')
-//                                ->joinInner(array('p' => 'person'), 'ptt.person_id = p.id')
-//                                ->joinInner(array('f' => 'facility'), 'f.id = p.facility_id')
-//                                ->joinInner(array('flv' => 'facility_location_view'), 'f.location_id = flv.location_id', array('lga', 'state',  'geo_zone'))
-//                                ->where($locationWhereClause)
-//                                ->where("t.training_end_date like '" . $year . "%'" )
-//                                ->group($groupFieldName)
-//                                ->having($havingName . ' IN (' . $geoList . ')')
-//                                ->order(array($tierText));
+//                      
                         
                         $select = $db->select ()
                         ->from ( array ('p' => 'person' ), array ('COUNT(DISTINCT(p.id)) as count'))
-                        ->joinInner(array('ptt'=>'person_to_training'), 'ptt.person_id=p.id')
-                        ->joinInner(array ('t' => "training" ), "t.id = ptt.training_id" )
-                        ->joinInner(array('tto' => 'training_title_option' ), 'tto.id = t.training_title_option_id')
+                        ->joinInner(array('ptt'=>'person_to_training'), 'ptt.person_id=p.id', array())
+                        ->joinInner(array ('t' => "training" ), "t.id = ptt.training_id", array() )
+                        ->joinInner(array('tto' => 'training_title_option' ), 'tto.id = t.training_title_option_id', array())
                         ->joinInner(array ('flv' => "facility_location_view" ), 'flv.id = p.facility_id', array('flv.lga', 'flv.state', 'flv.geo_zone') )
                         ->where($longWhereClause)
                         ->group($tierFieldName)
                         ->order(array($tierText));
-                
-                        $sql = $select->__toString();
-                        $sql = str_replace('`ptt`.*,', '', $sql); 
-                        $sql = str_replace('`t`.*,', '', $sql);
-                        $sql = str_replace('`tto`.*,', '', $sql);
-                        //echo $sql; exit;
 
-                        $result = $db->fetchAll ( $sql );                        
+                        //echo $select->__toString(); exit;
+
+                        $result = $db->fetchAll ( $select );  
                         
                         //filter for only valid values
                           if(!empty($result)){
@@ -89,21 +73,25 @@ class CoverageHelper {
                     
                     
                     //accamulate data: add previous years to the current year
-                    $start = $year + 1; //set to lowest considered year after the loop above
+//                    $start = $year + 1; //set to lowest considered year after the loop above
+//                    
+////                    echo '<br/><br/>accummulate<br/>';
+//                    foreach($locationNames as $location){
+//                        ksort($locationDataArray[$location]);
+//                        foreach ($locationDataArray[$location] as $year=>$value){
+//                            if($year == $start) continue;
+//                            //var_dump($locationDataArray[$location][$year]); exit;
+//                            //$locationDataArray[$location][$year][$training_type] += $locationDataArray[$location][$year-1][$training_type];
+//                            $locationDataArray[$location][$year] += $locationDataArray[$location][$year-1];
+//                        }
+//		    }
                     
-//                    echo '<br/><br/>accummulate<br/>';
-                    foreach($locationNames as $location){
-                        ksort($locationDataArray[$location]);
-                        foreach ($locationDataArray[$location] as $year=>$value){
-                            if($year == $start) continue;
-                            //var_dump($locationDataArray[$location][$year]); exit;
-                            //$locationDataArray[$location][$year][$training_type] += $locationDataArray[$location][$year-1][$training_type];
-                            $locationDataArray[$location][$year] += $locationDataArray[$location][$year-1];
-                        }
-		    }
-                    
-                //var_dump($locationDataArray); exit;
-                return $locationDataArray;
+                //sort the years
+                foreach($locationNames as $location)
+                    ksort($locationDataArray[$location]);
+                
+                //var_dump($locationDataArray); exit;    
+                return array_reverse($locationDataArray, true);
             }                
             
          
@@ -116,6 +104,7 @@ class CoverageHelper {
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
                 $helper = new Helper2();
                 
+                //if($nationalMode) $tierFieldName = '';
                 $select = $db->select()
                             ->from(array('fwtc' => 'facility_worker_training_counts_view'),
                               array('COUNT(facid) AS fid_count'))
@@ -123,15 +112,13 @@ class CoverageHelper {
                             ->where($longWhereClause)
                             ->group($tierFieldName)
                             ->order(array($tierText));
-                
-              $sql = $select->__toString();
-              //echo 'CS: ' . $sql . '<br/>'; exit;
 
-              $result = $db->fetchAll($sql);
-              
+              $result = $db->fetchAll($select);
+               
+              //filter for only valid values
               $locationNames = $helper->getLocationNames($geoList);
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
-               
+              
             //var_dump($locationDataArray); exit;
             return $locationDataArray;
        }
@@ -145,21 +132,15 @@ class CoverageHelper {
                 $select = $db->select()
                             ->from(array('c' => 'commodity'),
                               array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
-                            ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id')
+                            ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
                             ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
                             ->where($longWhereClause)
                             ->group($tierFieldName)
                             ->order(array($tierText));   
 
-                $sql = $select->__toString();
-                $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-                          $sql = str_replace('`frr`.*,', '', $sql);	        
-                          $sql = str_replace('`c`.*,', '', $sql);
-                          $sql = str_replace('`cno`.*,', '', $sql);
-                          $sql = str_replace('`flv`.*', '', $sql);
-              //echo 'Providing: ' . $sql . '<br/>'; exit;
+              //echo 'Providing: ' . $select->__toString() . '<br/>'; exit;
 
-               $result = $db->fetchAll($sql);
+               $result = $db->fetchAll($select);
                
               //filter for only valid values
               $locationNames = $helper->getLocationNames($geoList);
@@ -177,27 +158,17 @@ class CoverageHelper {
                 $select = $db->select()
                         ->from(array('c' => 'commodity'),
                           array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
-                        //->joinInner(array('c' => 'commodity'), 'f.id = c.facility_id AND consumption > 0 AND facility_reporting_status = 1')
-                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id')
+                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
                         ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
-                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid')
-                        //->where('consumption > 0 AND facility_reporting_status = 1')
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid', array())
                         ->where($longWhereClause)
-                        ->where($tierFieldName . ' IN (' . $geoList . ')')
                         ->group($tierFieldName)
                         ->order(array($tierText)); 
 
 
-                $sql = $select->__toString();
-                $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-                $sql = str_replace('`frr`.*,', '', $sql); 
-                $sql = str_replace('`c`.*,', '', $sql);
-                $sql = str_replace('`cno`.*,', '', $sql);
-                $sql = str_replace('`flv`.*,', '', $sql);
+                //echo $sql = $select->__toString(); exit;
                 
-                //echo 'THW Providing: ' . $sql . '<br/>'; exit;
-
-               $result = $db->fetchAll($sql);
+               $result = $db->fetchAll($select);
                
               //filter for only valid values
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
@@ -293,25 +264,106 @@ class CoverageHelper {
            $select = $db->select()
                         ->from(array('c' => 'commodity'),
                           array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
-                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id')
-                        ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id')
-                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid')
+                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
+                        ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state', 'geo_zone'))
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid', array())
                         ->where($longWhereClause);
-                                
-            $sql = $select->__toString();
-            $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-                      $sql = str_replace('`fid_count`,', 'fid_count', $sql);  
-                      $sql = str_replace('`frr`.*,', '', $sql);	        
-                      $sql = str_replace('`fwtc`.*,', '', $sql);
-                      $sql = str_replace('`c`.*,', '', $sql);
-                      $sql = str_replace('`cno`.*', '', $sql);
                       
-            //echo 'National Providing With trained: ' . $sql . '<br/>'; exit;
+            //echo 'National Providing With trained: ' . $select->__toString() . '<br/>'; exit;
            
            $result = $db->fetchRow($select);
            return $result['fid_count'];
       }
        
+
+      function getReportingFacsWithTrainedHWOvertime($longWhereClause){
+          $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+          
+          $select = $db->select()
+                       ->from(array('fwtc'=> 'facility_worker_training_counts_view'), 
+                               array('COUNT(DISTINCT(facid)) as fid_count'))
+                       ->joinInner(array('frr'=>'facility_report_rate'), 'facid = frr.facility_id', array('MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                       ->where($longWhereClause)
+                       ->group('date')
+                       ->order(array('date'));
+          
+          //echo $select->__toString(); exit;
+          
+          $result = $db->fetchAll($select);
+          return $result;
+          
+      }
+      
+      
+      public function getFacWithHWProvidingOverTime($longWhereClause){
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter();               
+                
+                $select = $db->select()
+                        ->from(array('c' => 'commodity'),
+                          array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
+                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array('MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid', array())
+                        ->where($longWhereClause)
+                        ->group('date')
+                        ->order(array('date')); 
+
+
+                //echo $sql = $select->__toString(); exit;
+
+               $result = $db->fetchAll($select);
+               
+              //var_dump($result); exit;
+              return $result;
+       }
+       
+       
+       public function getFacProvidingOverTime($longWhereClause, $geoList, $tierText, $tierFieldName){
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+                $helper = new Helper2();
+                
+                $select = $db->select()
+                            ->from(array('c' => 'commodity'),
+                              array('COUNT(DISTINCT(c.facility_id)) AS fid_count', 'MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                            ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
+                            ->joinRight(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
+                            ->where($longWhereClause)
+                            ->group(array($tierFieldName, 'date'))
+                            ->order(array($tierText, 'date'));   
+                
+              //echo 'Providing: ' . $select->__toString() . '<br/>'; exit;
+                
+              $result = $db->fetchAll($select);
+              
+              //$locationNames = $helper->getLocationNames($geoList);
+              //$locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
+              
+            //var_dump($locationDataArray); exit;
+            return $result;
+       }
+       
+       /* TP: 
+        * This method will return number of facilities that are 
+        * reporting in the months covered in the date range and locations provided arg
+        * IT DOES NOT MATTER IF THE FACILITIES DO NOT HAVE TRAINED HW
+        * NO LOCATION FILTERING.
+        */
+        public function getReportingFacsOvertimeByLocationNoFilter($longWhereClause, $geoList, $tierText, $tierFieldName){
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+
+                $select = $db->select()
+                              ->from(array('frr' => 'facility_report_rate'),
+                                  array('COUNT(DISTINCT(facility_id)) AS fid_count', 'MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                              ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = facility_id', array('lga', 'state', 'geo_zone'))
+                              ->where($longWhereClause)
+                              ->group(array($tierFieldName, 'date'))
+                              ->order(array($tierText, 'date'));   
+
+              //echo $sql = $select->__toString(); exit;
+
+              $result = $db->fetchAll($select);
+              return $result;
+        }
+        
        
        public function filterLocations($locationNames, $result, $tierText){
            $locationDataArray = array();

@@ -129,7 +129,7 @@
 	<div class="maintoucher" >
 							<div class="queryquestion">LGA </div><br/>
 							
-							<div class="queryquestion"><?php renderFilter($this->locations, 3, 'region_c_id', $this->criteria['region_c_id'],'', true, false); ?></div>
+							<div class="queryquestion"><?php renderFilter($this->locations, 3, 'region_c_id', $this->criteria['region_c_id'],'facility_id', true, false); ?></div>
         </div>
                                                                                                 <div class="space"></div>
                                                                                                
@@ -137,44 +137,22 @@
 
 							<!-- TA:17: 09/04/2014 START-->
 <?php ?>
-                                                         <div class="maintoucher" >
-                                                        <div class="queryquestion">Facility</div><br/>
+                                                       
+                                                      <div class="maintoucher">
+                                                        <div class="queryquestion"><span class="required">*</span> Facility</div><br/>
+							<div class="queryquestion">
 							
-							<div class="queryquestion"><select name="facility" id="facility"  size="1" style="width:190px;" >
-<?php
-echo "<option value=''>--choose--</option>";
-	foreach ($this->facilities as $item){
-            if($item['id'] == $this->criteria['facility']){
-                $selected = "selected='selected'";
-            }else{
-                $selected = "";
-            }
-		echo "<option value=\"" . $item['id'] . "\" ".$selected." title='".$item['facility_name']."'>" . $item['facility_name'] . "</option>\n";
-	}
-?>
-							</select></div>
-                                                                                               <br/><br/><br/>
-
-							<div class="queryquestion"><span class="required">*</span> <?php echo t('Training Type'); ?></div><br/>
-							
-							<div class="queryquestion"><select name="training_type[]" multiple="multiple" id="trainingtype" size="6" style="width:190px;">
-<?php
-echo "<option value=''>--choose--</option>";
-	foreach ($this->trainingtypes as $item){
-            if(in_array($item['id'], $this->criteria['training_type'])){
-                $selected = "selected='selected'";
-            }else{
-                $selected = "";
-            }
-           
-		echo "<option value=\"" . $item['id'] . "\" ".$selected." title='".$item['training_title_phrase']."'>" . $item['training_title_phrase'] . "</option>\n";
-	
-        }
-?>
-							</select></div></div>
-							
+<?php renderFilter($this->locations, 4, 'facility_id', $this->criteria['facility_id'],'', true, false,'10'); ?></div><br/>
+</div><br/>
+                                                                                            
+ 
+  <div class="maintoucher" >
+  </div>
+   
+							  <div class="maintoucher" >
+							<div class="space"></div>
 							<?php ?>
-	<div class="maintoucher">
+	
 
 							<div class="queryquestion"><?php echo 'Training Organizer'; ?></div><br/><br/>
 							
@@ -182,7 +160,7 @@ echo "<option value=''>--choose--</option>";
 	<?php
        // print_r($this->criteria['trainingorganizer']);
         //echo 'This is the thing '.$this->trainingorganizer;
-         echo "<option value=''>--choose--</option>";
+         echo "<option value='' disabled>--choose--</option>";
 		foreach ($this->trainingorganizer as $item){
                     
                    if(in_array($item['id'],$this->criteria['trainingorganizer'])){
@@ -203,7 +181,7 @@ echo "<option value=''>--choose--</option>";
 							
 							<div class="queryquestion"><select name="cadre"  size="1" style="width:190px;"/>
 	<?php
-        echo "<option value=''>--choose--</option>";
+        echo "<option value='' >--choose--</option>";
         
 		foreach ($this->qualifications as $item){
                     if($item['id']== $this->criteria['cadre']){
@@ -214,7 +192,28 @@ echo "<option value=''>--choose--</option>";
 			echo "<option value=\"" . $item['id'] . "\" ".$selected." title='".$item['qualification_phrase']."'>" . $item['qualification_phrase'] . "</option>\n";
 		}
 	?>
-							</select></div></div>
+							</select></div>
+							
+							<br/><br/><br/>
+							  
+							<div class="queryquestion"><span class="required"></span> <?php echo t('Training Type'); ?></div><br/>
+							
+							<div class="queryquestion"><select name="training_type[]" multiple="multiple" id="trainingtype" size="6" style="width:190px;">
+<?php
+echo "<option value='' disabled>--choose--</option>";
+	foreach ($this->trainingtypes as $item){
+            if(in_array($item['id'], $this->criteria['training_type'])){
+                $selected = "selected='selected'";
+            }else{
+                $selected = "";
+            }
+           
+		echo "<option value=\"" . $item['id'] . "\" ".$selected." title='".$item['training_title_phrase']."'>" . $item['training_title_phrase'] . "</option>\n";
+	
+        }
+?>
+							</select>
+							</div> </div>
 								<div class="maintoucher" >
 
 
@@ -230,7 +229,7 @@ echo "<option value=''>--choose--</option>";
 
                                                          <div class="queryquestion">Providing</div><br/>
                           <div class="queryquestion"><select name="providing[]"  size="1" multiple="mutliple" class="mclass">
-                                  <option value="">--choose--</option>
+                                  <option value="" disabled>--choose--</option>
                                 
                                   <option value="fp" <?php  if(in_array("fp",$this->criteria['providing'])){echo 'selected="selected"';}?>>Any FP</option>
                                   <option value="larc" <?php  if(in_array("larc",$this->criteria['providing'])){echo 'selected="selected"';}?>>Any LARC</option>
@@ -246,7 +245,7 @@ echo "<option value=''>--choose--</option>";
 	
                                                         <?php
                                                       //  $this->commodity_name_option = array_unique($this->commodity_name_option);
-        echo "<option value=''>--choose--</option>";
+        echo "<option value='' disabled>--choose--</option>";
         $exist  = array();
 		foreach ($this->commodity_name_option as $item){
                     
@@ -265,12 +264,12 @@ echo "<option value=''>--choose--</option>";
                 }
 	?>
 							</select></div></div>
-								<div class="maintoucher">
+								<div class="maintoucher" >
 
                                                         <div class="queryquestion">Stock Out</div><br/>
 							
 							<div class="queryquestion"><select name="stock_out" style="width:200px;"> 
-                                                                <option value="">--choose</option>
+                                                                <option value="" d>--choose</option>
                                                                 <option value="38" <?php if($this->criteria['stock_out']=="38") echo 'selected="selected"';?> title="Stocked Out of Implant">Stocked Out of Implant</option>
                                                                 <option value="31" <?php if($this->criteria['stock_out']=="31") echo 'selected="selected"';?> title="Stocked Out of emergency contraception">Stocked Out of emergency contraception</option>
                                                                 <option value="32" <?php if($this->criteria['stock_out']=="32") echo 'selected="selected"';?> title="Stocked Out of any commodity for 7 days">Stocked Out of any commodity for 7 days</option>
@@ -313,12 +312,18 @@ echo "<option value=''>--choose--</option>";
                                                       
                                                        
 
-						</div> </div></fieldset>
-                                                    
-                                                <fieldset style="width:100%;height:auto; margin:0 auto;">
- <div class="side_by_side" >
+						</div> <br/><br/><br/>
+						
+						
                                                       <span class="required">*</span>  <input type="radio" name="period" value="monthly"  <?php if($this->criteria['period']=="monthly"){ echo "checked='checked'";} ?>/> Monthly &nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="period" value="annual" <?php if($this->criteria['period']=="annual"){ echo "checked='checked'";} ?>/> Annual&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="period" value="total" <?php if($this->criteria['period']=="total"){ echo "checked='checked'";} ?>/> Total
                                 </div>
+						
+						
+						 
+						</fieldset>
+                                                    
+                                                <fieldset style="width:100%;height:auto; margin:0 auto;">
+
                                                       
 						
 
@@ -347,7 +352,7 @@ echo "<option value=''>--choose--</option>";
                                         </div>
 <?php
  //print_r($this->tocktack);
-
+ 
 if (isset($this->output)) {
 	if (count ($this->output) == 0){
 		echo "				<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display tablegrid\" id=\"\" style=\"width:100%\">\n";

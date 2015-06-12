@@ -87,9 +87,13 @@ if ($auth->hasIdentity()) {
       	$navMain['facility']['addLocation']  = t('Add').' '.t('Training').' '.t('Location');
 			}
 		}
-
+$navMain['reports'] = array('index' => t('Queries'));
+$navMain['reports']['trainingrep'] = t('Training Data');
+                         $navMain['reports']['facilitysummary']				= t('Facility  Data');
+                         //$navMain['reports']['allqueries']				= t('All Data');
+                         
 		if ( $this->hasACL('view_create_reports') && $this->setting['display_country_reports']) { //TA:17: 09/11/2014
-			$navMain['reports'] = array('index' => t('Queries'));
+			
 
 			/*if ( $this->setting['display_mod_skillsmart'] ) {
 
@@ -113,9 +117,6 @@ if ($auth->hasIdentity()) {
 			// TA:17:21 $navMain['reports']['roster']                            = t('Roster').space.t('Reports');
 			// TA:17:21 $navMain['reports']['evaluations']                       = t('Evaluations').space.t('Reports');
 			//$navMain['reports']['data']                              = t('Data Downloads');
-                         $navMain['reports']['trainingrep'] = t('Training Data');
-                         $navMain['reports']['facilitysummary']				= t('Facility  Data');
-                         $navMain['reports']['allqueries']				= t('All Data');
                          
 
 			//  '' =>
@@ -131,9 +132,9 @@ if ($auth->hasIdentity()) {
 				$navMain['reports']['psCohortByParticipantCount']	= t('Cohort Reports');
 				$navMain['reports']['psInstitutionInformation']		= t('Institution Reports');
 				$navMain['reports']['psTutorByName']				= t('Tutor Reports');
-				 $navMain['reports']['trainingrep'] = t('Training Reports');
-                         $navMain['reports']['facilitysummary']				= t('Facility  Reports');
-                         $navMain['reports']['allqueries']				= t('All Queries');
+				// $navMain['reports']['trainingrep'] = t('Training Reports');
+                         //$navMain['reports']['facilitysummary']				= t('Facility  Reports');
+                         //$navMain['reports']['allqueries']				= t('All Queries');
                                 //$navMain['reports']['allqueries']				= t('All Queries');
 			}
 		}
@@ -322,7 +323,12 @@ if(isset(Settings::$CSS)) {
 			echo '
 			<div class="flydown" '.($dir == 'user'? 'style="float:right;"':'').' onmouseover="fadeShow(this,\''.$dir.'\');" onmouseout="fadeOut(this,\''.$dir.'\');">
 			';
-			echo '<a href="'.Settings::$COUNTRY_BASE_URL.'/'.$dir.'"'.(!empty($class) ? ' class="'.implode(' ', $class).'"' : '').' id="nav'.$dir.'">' . $navRay['index'] . '</a>';
+                        if($dir == 'index' || $dir=='dash') {
+                          echo '<a href="'.Settings::$COUNTRY_BASE_URL.'/'.$dir.'" id="nav'.$dir.'">' . $navRay['index'] . '</a>';  
+                        }else{
+                         echo '<a href="#" id="nav'.$dir.'">' . $navRay['index'] . '</a>';   
+                        }
+			//echo '<a href="#" id="nav'.$dir.'">' . $navRay['index'] . '</a>';
 
 			// Fly-down menu items
 			if(count($navRay) > 1) {

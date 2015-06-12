@@ -175,170 +175,170 @@ class DashboardCHAI extends Dashboard
 	}
         
 
-	//TA:17:17 Coverage Summary chart
-	public function fetchCSDetails($date) {
-	    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	    $output = array();
-	
-	    // get last date where data were uploaded from DHIS2
-	    if($date === null || empty($date)){
-	        $result = $db->fetchAll("select max(date) as date from facility_report_rate");
-	        $date = $result[0]['date'];
-	    }
-	
-	    $output['last_date'] = $date;
-	
-	    $select = $db->select()
-	    -> from(array('facility_report_rate' => 'facility_report_rate'),
-	        array('count(*) as count'));
-	
-	            $result = $db->fetchAll($select);
-	            $output['total_facility_count'] = $result[0]['count'];
-	
-	            $select = $db->select()
-	            -> from(array('facility_report_rate' => 'facility_report_rate'),
-	            array('count(*) as count'))
-	            ->where("date='" . $date . "'");
-	
-	            $result = $db->fetchAll($select);
-	            $output['total_facility_count_month'] = $result[0]['count'];
-	
-	        $select = $db->select()
-	       -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-           ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-	       ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-	       ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-           ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	       ->where('training.training_title_option_id = 1');
-	        
-	        $sql = $select->__toString();
-	        $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-	        $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-	        $sql = str_replace('`person`.*,', '', $sql);
-	        $sql = str_replace('`person_to_training`.*,', '', $sql);
-	        $sql = str_replace('`training`.*', '', $sql);
-
-                //echo 'CS1: ' . $sql . '<br/>'; return;
-         $result = $db->fetchAll($sql);
-	     $output['larc_facility_count'] = $result[0]['count'];
-             
-             
-	        $select = $db->select()
-           -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-           ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-           ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-           ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-           ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	               ->where('training.training_title_option_id = 2');
-	        
-	        $sql = $select->__toString();
-	        $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-	        $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-	        $sql = str_replace('`person`.*,', '', $sql);
-	        $sql = str_replace('`person_to_training`.*,', '', $sql);
-	        $sql = str_replace('`training`.*', '', $sql);
-	
-         $result = $db->fetchAll($sql);
-	     $output['fp_facility_count'] = $result[0]['count'];
-	
-	
-	
-	     $select = $db->select()
-	     -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-	         ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-	         ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-	         ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-	         ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	         ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
-	         ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
-	         ->where('training.training_title_option_id = 1')
-             ->where("commodity_name_option.external_id='DiXDJRmPwfh'");
-	     
-	     $sql = $select->__toString();
-	     $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-	     $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-	     $sql = str_replace('`person`.*,', '', $sql);
-	     $sql = str_replace('`person_to_training`.*,', '', $sql);
-	     $sql = str_replace('`training`.*,', '', $sql);
-	     $sql = str_replace('`commodity`.*,', '', $sql);
-	     $sql = str_replace('`commodity_name_option`.*', '', $sql);
-	     
-     $result = $db->fetchAll($sql);
-	 $output['larc_consumption_facility_count'] = $result[0]['count'];
-	
-     $select = $db->select()
-             -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-	         ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-	         ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-             ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-	         ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	         ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
-	         ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
-	         ->where('training.training_title_option_id = 2')
-	         ->where("commodity_name_option.external_id='ibHR9NQ0bKL'");
-     
-     $sql = $select->__toString();
-     $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-     $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-     $sql = str_replace('`person`.*,', '', $sql);
-     $sql = str_replace('`person_to_training`.*,', '', $sql);
-     $sql = str_replace('`training`.*,', '', $sql);
-     $sql = str_replace('`commodity`.*,', '', $sql);
-     $sql = str_replace('`commodity_name_option`.*', '', $sql);
-      
-	 $result = $db->fetchAll($sql);
-	 $output['fp_consumption_facility_count'] = $result[0]['count'];
-	
-	 $select = $db->select()
-	 -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-	 ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-	 ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-	 ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-	 ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	 ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
-	 ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
-	 ->where('training.training_title_option_id = 1')
-	 ->where("commodity_name_option.external_id='DiXDJRmPwfh'")
-     ->where("stock_out='Y'");
-	 
-	 $sql = $select->__toString();
-	 $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-	 $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-	 $sql = str_replace('`person`.*,', '', $sql);
-	 $sql = str_replace('`person_to_training`.*,', '', $sql);
-	 $sql = str_replace('`training`.*,', '', $sql);
-	 $sql = str_replace('`commodity`.*,', '', $sql);
-	 $sql = str_replace('`commodity_name_option`.*', '', $sql);
-	
-	 $result = $db->fetchAll($sql);
-     $output['larc_stock_out_facility_count'] = $result[0]['count'];
-	
-	 $select = $db->select()
-     -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
-	 ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
-	 ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
-	 ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
-	 ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
-	 ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
-	 ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
-	 ->where('training.training_title_option_id = 2')
-	 ->where("commodity_name_option.external_id='JyiR2cQ6DZT'");
-	 
-	 $sql = $select->__toString();
-	 $sql = str_replace('AS `count`,', 'AS `count`', $sql);
-	 $sql = str_replace('`facility_report_rate`.*,', '', $sql);
-	 $sql = str_replace('`person`.*,', '', $sql);
-	 $sql = str_replace('`person_to_training`.*,', '', $sql);
-	 $sql = str_replace('`training`.*,', '', $sql);
-	 $sql = str_replace('`commodity`.*,', '', $sql);
-	 $sql = str_replace('`commodity_name_option`.*', '', $sql);
-	
-	 $result = $db->fetchAll($sql);
-	 $output['fp_stock_out_facility_count'] = $result[0]['count'];
-	
-	return $output;
-	
-    }
+//	//TA:17:17 Coverage Summary chart
+//	public function fetchCSDetails($date) {
+//	    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+//	    $output = array();
+//	
+//	    // get last date where data were uploaded from DHIS2
+//	    if($date === null || empty($date)){
+//	        $result = $db->fetchAll("select max(date) as date from facility_report_rate");
+//	        $date = $result[0]['date'];
+//	    }
+//	
+//	    $output['last_date'] = $date;
+//	
+//	    $select = $db->select()
+//	    -> from(array('facility_report_rate' => 'facility_report_rate'),
+//	        array('count(*) as count'));
+//	
+//	            $result = $db->fetchAll($select);
+//	            $output['total_facility_count'] = $result[0]['count'];
+//	
+//	            $select = $db->select()
+//	            -> from(array('facility_report_rate' => 'facility_report_rate'),
+//	            array('count(*) as count'))
+//	            ->where("date='" . $date . "'");
+//	
+//	            $result = $db->fetchAll($select);
+//	            $output['total_facility_count_month'] = $result[0]['count'];
+//	
+//	        $select = $db->select()
+//	       -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//           ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//	       ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//	       ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//           ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	       ->where('training.training_title_option_id = 1');
+//	        
+//	        $sql = $select->__toString();
+//	        $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//	        $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//	        $sql = str_replace('`person`.*,', '', $sql);
+//	        $sql = str_replace('`person_to_training`.*,', '', $sql);
+//	        $sql = str_replace('`training`.*', '', $sql);
+//
+//                //echo 'CS1: ' . $sql . '<br/>'; return;
+//         $result = $db->fetchAll($sql);
+//	     $output['larc_facility_count'] = $result[0]['count'];
+//             
+//             
+//	        $select = $db->select()
+//           -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//           ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//           ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//           ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//           ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	               ->where('training.training_title_option_id = 2');
+//	        
+//	        $sql = $select->__toString();
+//	        $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//	        $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//	        $sql = str_replace('`person`.*,', '', $sql);
+//	        $sql = str_replace('`person_to_training`.*,', '', $sql);
+//	        $sql = str_replace('`training`.*', '', $sql);
+//	
+//         $result = $db->fetchAll($sql);
+//	     $output['fp_facility_count'] = $result[0]['count'];
+//	
+//	
+//	
+//	     $select = $db->select()
+//	     -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//	         ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//	         ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//	         ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//	         ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	         ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
+//	         ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
+//	         ->where('training.training_title_option_id = 1')
+//             ->where("commodity_name_option.external_id='DiXDJRmPwfh'");
+//	     
+//	     $sql = $select->__toString();
+//	     $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//	     $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//	     $sql = str_replace('`person`.*,', '', $sql);
+//	     $sql = str_replace('`person_to_training`.*,', '', $sql);
+//	     $sql = str_replace('`training`.*,', '', $sql);
+//	     $sql = str_replace('`commodity`.*,', '', $sql);
+//	     $sql = str_replace('`commodity_name_option`.*', '', $sql);
+//	     
+//     $result = $db->fetchAll($sql);
+//	 $output['larc_consumption_facility_count'] = $result[0]['count'];
+//	
+//     $select = $db->select()
+//             -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//	         ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//	         ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//             ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//	         ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	         ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
+//	         ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
+//	         ->where('training.training_title_option_id = 2')
+//	         ->where("commodity_name_option.external_id='ibHR9NQ0bKL'");
+//     
+//     $sql = $select->__toString();
+//     $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//     $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//     $sql = str_replace('`person`.*,', '', $sql);
+//     $sql = str_replace('`person_to_training`.*,', '', $sql);
+//     $sql = str_replace('`training`.*,', '', $sql);
+//     $sql = str_replace('`commodity`.*,', '', $sql);
+//     $sql = str_replace('`commodity_name_option`.*', '', $sql);
+//      
+//	 $result = $db->fetchAll($sql);
+//	 $output['fp_consumption_facility_count'] = $result[0]['count'];
+//	
+//	 $select = $db->select()
+//	 -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//	 ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//	 ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//	 ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//	 ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	 ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
+//	 ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
+//	 ->where('training.training_title_option_id = 1')
+//	 ->where("commodity_name_option.external_id='DiXDJRmPwfh'")
+//     ->where("stock_out='Y'");
+//	 
+//	 $sql = $select->__toString();
+//	 $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//	 $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//	 $sql = str_replace('`person`.*,', '', $sql);
+//	 $sql = str_replace('`person_to_training`.*,', '', $sql);
+//	 $sql = str_replace('`training`.*,', '', $sql);
+//	 $sql = str_replace('`commodity`.*,', '', $sql);
+//	 $sql = str_replace('`commodity_name_option`.*', '', $sql);
+//	
+//	 $result = $db->fetchAll($sql);
+//     $output['larc_stock_out_facility_count'] = $result[0]['count'];
+//	
+//	 $select = $db->select()
+//     -> from(array('facility' => 'facility'), array('count(distinct facility.id) as count'))
+//	 ->joinLeft(array('facility_report_rate' => "facility_report_rate"), 'facility.external_id = facility_report_rate.facility_external_id')
+//	 ->joinLeft(array('person' => "person"), 'facility.id = person.facility_id')
+//	 ->joinLeft(array('person_to_training' => "person_to_training"), 'person.id = person_to_training.person_id')
+//	 ->joinLeft(array('training' => "training"), 'training.id = person_to_training.training_id')
+//	 ->joinLeft(array('commodity' => "commodity"), 'facility.id = commodity.facility_id')
+//	 ->joinLeft(array('commodity_name_option' => "commodity_name_option"), 'commodity.name_id = commodity_name_option.id')
+//	 ->where('training.training_title_option_id = 2')
+//	 ->where("commodity_name_option.external_id='JyiR2cQ6DZT'");
+//	 
+//	 $sql = $select->__toString();
+//	 $sql = str_replace('AS `count`,', 'AS `count`', $sql);
+//	 $sql = str_replace('`facility_report_rate`.*,', '', $sql);
+//	 $sql = str_replace('`person`.*,', '', $sql);
+//	 $sql = str_replace('`person_to_training`.*,', '', $sql);
+//	 $sql = str_replace('`training`.*,', '', $sql);
+//	 $sql = str_replace('`commodity`.*,', '', $sql);
+//	 $sql = str_replace('`commodity_name_option`.*', '', $sql);
+//	
+//	 $result = $db->fetchAll($sql);
+//	 $output['fp_stock_out_facility_count'] = $result[0]['count'];
+//	
+//	return $output;
+//	
+//    }
 	
 
         

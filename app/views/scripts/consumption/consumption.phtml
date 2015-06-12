@@ -72,10 +72,17 @@ print ScriptContainer::$instance->renderJSHead();
 
 <script>
     function checkCommoditySelection(){
-        console.log('inside check');
-        var combo = document.getElementById("comm_id");
-        console.log(combo.selectedIndex);
-        return false;
+//        console.log(combo.options);
+//        console.log(combo.options[combo.selectedIndex]);
+//        console.log(combo.options[combo.selectedIndex].value);
+
+        //var combo = document.getElementById("comm_id");
+        //var selectedValue = combo.options[combo.selectedIndex].value;
+        //alert('submitting: ' + selectedValue); 
+        
+        //if(selectedValue != 0) return true;
+                
+        //return false;
     }
 </script>
 
@@ -85,7 +92,7 @@ print ScriptContainer::$instance->renderJSHead();
     <?php   
             //echo 'high<br/><br/>' ;
             //var_dump($this->consumption_by_method); 
-            //var_dump($this->consumption_overtime); exit; 
+            //var_dump($this->consumption_bsmandlocation_first); 
     ?>
     
 	<div id="pageHolder">
@@ -122,7 +129,7 @@ print ScriptContainer::$instance->renderJSHead();
 
 				<div id="allCharts" class="container">
 				
-				<div class="hrNav"></div>
+				<div class="hrNav" id="hrr"></div>
 				<div class="hrNav"></div>
 				
 				
@@ -186,23 +193,34 @@ print ScriptContainer::$instance->renderJSHead();
   function apiLoaded() {
 	  document.getElementById("allCharts").style.marginLeft="130px";
 
-	drawChart11();
-        <?php if(isset($this->consumption_overtime)) { ?>
+        //drawTest();
+	<?php if(isset($this->consumption_by_method) && !empty($this->consumption_by_method)) { ?>
+                drawChart11();
+        <?php } ?>
+            
+        <?php if(isset($this->consumption_overtime) && !empty($this->consumption_overtime)) { ?>
             drawChart13();
         <?php } ?>
+            
+        <?php if(isset($this->cons_all_BSL_overtime) && !empty($this->cons_all_BSL_overtime)) { ?>
+            drawChartAllConsumptionBySingleLocationOvertime();
+        <?php } ?>
+            
+        <?php if(isset($this->consumption_bsm) && !empty($this->consumption_bsm)) { ?>
+                drawChartConsumptionBSM_First();
+                drawChartConsumptionBSM();
+        <?php } ?>
+            
+        <?php if(isset($this->consumption_bsmandlocation) && !empty($this->consumption_bsmandlocation)) { ?>
+                drawChartConsumption_BSMAndLocation_First();
+                drawChartConsumption_BSMAndLocation();
+        <?php } ?>
+            
         
 	//var currentLevel;
 	//currentLevel = <?php //echo '\'' . $this->location_data[0][name] . '\''; ?>;
-
-<?php  //file_put_contents('c:\wamp\logs\php_debug.log', 'dash3 193 >'.PHP_EOL, FILE_APPEND | LOCK_EX);	ob_start();
-	   //var_dump("latest_consumption_data=", $this->latest_consumption_data,"END");
-	   //var_dump("facility_data=",$this->facility_data[0],"END");
-	   //$result = ob_get_clean(); file_put_contents('c:\wamp\logs\php_debug.log', $result .PHP_EOL, FILE_APPEND | LOCK_EX); 
-?>
 		 
   }
-
-  
   
 function drawChart11() {
 	  // Create and populate the data table.
@@ -227,12 +245,16 @@ function drawChart11() {
   		}
   	?>
 ]);
-	    
 
 	  <?php //echo  " var title_date = 'Monthly Consumption by Method$this->title_date ' " ?>;
           
-          var title_data = <?php echo "'Consumption by Method, $this->date'"; ?>;
-	  
+          var title_data = '';
+          <?php if(empty($this->cons_all_BSL_overtime)){ ?>
+              title_data = <?php echo "'Consumption by Method, $this->date'"; ?>;
+          <?php } else { ?>
+              title_data = <?php echo "'Consumption by Method in $this->single_location, $this->date'"; ?>;
+          <?php } ?>
+              
 	  var chart11Options = {  
                       title: title_data,
                       titleTextStyle: { fontSize: 16 },
@@ -250,41 +272,49 @@ function drawChart11() {
 
 
 function drawChart13() {
+        //console.log('inside 13');
         <?php 
+                //if(isset($this->consumption_overtime) && !empty($this->consumption_overtime)) 
+                    //return;
+                    
+                //first get all the commodtiy names from the first element/month
                 $commNames = '';
                 reset($this->consumption_overtime);
                 $firstElement = current($this->consumption_overtime);
                 
-                foreach($firstElement as $key=>$commodity){                    
-                    if($key == "Male Condoms"){
-                        $commNames .= "'$key (unit x10)',";
-                    } 
-                    else{
-                        $commNames .= "'$key',";
+                if(!empty($firstElement)){
+                    foreach($firstElement as $key=>$commodity){                    
+                        if($key == "Male Condoms"){
+                            $commNames .= "'$key (unit x10)',";
+                        } 
+                        else{
+                            $commNames .= "'$key',";
+                        }
                     }
+
+                    $commNames = substr($commNames, 0, -1);
+                    $legend = "'Month'," . "$commNames";
+                    //echo $legend;
                 }
-                
-                $commNames = substr($commNames, 0, -1);
-                $legend = "'Month'," . "$commNames";
-                //echo $legend;
          ?>                        
-         console.log('legend: ' + <?php echo $legend; ?>);
+         //console.log('legend: ' + <?php //echo $legend; ?>);
          
         var chart13Data = google.visualization.arrayToDataTable([
-                            [<?php echo $legend; ?>],
+                            [<?php echo !empty($legend) ? $legend : ''; ?>],
             <?php 
-                foreach ($this->consumption_overtime as $key=>$commValues){ 
-                    $month = $key; 
-                    $female_condoms = $commValues['Female Condoms'];
-                    $male_condoms = round($commValues['Male Condoms']/10,0);
-                    $injectables = $commValues["Injectables"];
-                    $implants = $commValues["Implants"];
-                    $iucds = $commValues["IUCDs"];
-                    $oral_pills = $commValues["Oral Pills"];
-                    $sterilization = $commValues["Sterilization"]; 
+                if(!empty($this->consumption_overtime)){
+                    foreach ($this->consumption_overtime as $key=>$commValues){ 
+                        $month = $key; 
+                        $female_condoms = $commValues['Female Condoms'];
+                        $male_condoms = round($commValues['Male Condoms']/10,0);
+                        $injectables = $commValues["Injectables"];
+                        $implants = $commValues["Implants"];
+                        $iucds = $commValues["IUCDs"];
+                        $oral_pills = $commValues["Oral Pills"];
+                        $sterilization = $commValues["Sterilization"]; 
             ?>
                 <?php 
-                    $consString ='';
+                        $consString ='';
                     //foreach ($commValues as $consValue){ 
                         //$consString .= "'" . $consValue . "',";
                     
@@ -293,13 +323,88 @@ function drawChart13() {
                     [<?php echo "'$month', $female_condoms, $male_condoms, $injectables, $implants, $iucds, $oral_pills, $sterilization"; ?>],
                      
             <?php
-                    //}
-                } 
+                    }//emd foreach
+                } //end if
+            ?>
+       ]);
+        
+       
+        
+        <?php echo  " var title_data = 'Consumption of FP Commodities, $this->start_date to $this->end_date ' " ?>;
+                
+        var chart13Options = {
+		      title: title_data,
+		      titleTextStyle: { fontSize: 15 },
+		      vAxis: {format: '#', minValue: 4},
+		      legend: {fontSize: 14},
+		      chartArea: {width: '65%', height: '70%', top: 55},
+		      is3D:true
+		};
+
+    
+              var chart13 = new google.visualization.LineChart(document.getElementById('chart13_div'));
+              chart13.draw(chart13Data, chart13Options);
+    }
+    
+    
+    
+    
+    function drawChartAllConsumptionBySingleLocationOvertime() {
+        <?php 
+        
+                //first get all the commodtiy names from the first element/month
+                $commNames = '';
+                reset($this->cons_all_BSL_overtime);
+                $firstElement = current($this->cons_all_BSL_overtime);
+                
+                if(!empty($firstElement)){
+                    foreach($firstElement as $key=>$commodity){                    
+                        if($key == "Male Condoms"){
+                            $commNames .= "'$key (unit x10)',";
+                        } 
+                        else{
+                            $commNames .= "'$key',";
+                        }
+                    }
+
+                    $commNames = substr($commNames, 0, -1);
+                    $legend = "'Month'," . "$commNames";
+                    //echo $legend;
+                }
+         ?>                        
+         //console.log('legend: ' + <?php //echo $legend; ?>);
+         
+        var chart13Data = google.visualization.arrayToDataTable([
+                            [<?php echo !empty($legend) ? $legend : ''; ?>],
+            <?php 
+                if(!empty($this->cons_all_BSL_overtime)){
+                    foreach ($this->cons_all_BSL_overtime as $key=>$commValues){ 
+                        $month = $key; 
+                        $female_condoms = $commValues['Female Condoms'] != null ? $commValues['Female Condoms'] : 0;
+                        $male_condoms = $commValues['Male Condoms'] != null ? round($commValues['Male Condoms']/10,0) : 0;
+                        $injectables = $commValues["Injectables"] != null ? $commValues["Injectables"] : 0;
+                        $implants = $commValues["Implants"] != null ? $commValues["Implants"] : 0;
+                        $iucds = $commValues["IUCDs"] != null ? $commValues["IUCDs"] : 0;
+                        $oral_pills = $commValues["Oral Pills"] != null ? $commValues["Oral Pills"] : 0;
+                        $sterilization = $commValues["Sterilization"] != null ? $commValues["Sterilization"] : 0; 
+            ?>
+                <?php 
+                        $consString ='';
+                    //foreach ($commValues as $consValue){ 
+                        //$consString .= "'" . $consValue . "',";
+                    
+                    //$consString = substr($consString, 0, -1);
+                ?>
+                    [<?php echo "'$month', $female_condoms, $male_condoms, $injectables, $implants, $iucds, $oral_pills, $sterilization"; ?>],
+                     
+            <?php
+                    }//emd foreach
+                } //end if
             ?>
        ]);
         
         
-        <?php echo  " var title_data = 'Consumption of FP Commodities $this->start_date to $this->end_date ' " ?>;
+        <?php echo  " var title_data = 'Consumption of FP Commodities in $this->single_location, $this->start_date to $this->end_date ' " ?>;
                 
         var chart13Options = {
 		      title: title_data,
@@ -314,8 +419,169 @@ function drawChart13() {
 	  chart13.draw(chart13Data, chart13Options);
 
     }
-  
+    
+    
+    
+    function drawChartConsumptionBSM_First(){
+        console.log('drawChartConsumptionBSM_First');
+        // Create and populate the data table.
+          //,{ role: 'style' }
+	var chart11Data = google.visualization.arrayToDataTable([
+            ['', ''],
+        <?php
+                $method = $this->consumption_bsm_first_element['method'];
+                $consumption = $this->consumption_bsm_first_element['consumption'];
+                
+                ?>
+                        [<?php echo  "'$method', $consumption"; ?>],
+        ]);
 
+                  <?php //echo  " var title_date = 'Monthly Consumption by Method$this->title_date ' " ?>;
+
+                  var title_data = <?php echo "'Consumption of $this->method, $this->date'"; ?>;
+
+                  var chart11Options = {  
+                              title: title_data,
+                              titleTextStyle: { fontSize: 16 },
+                              is3D:true,
+                              legend: 'none',
+                              groupWidth : 10,
+                              hAxis : {textStyle: {fontSize: 12}},
+                              chartArea: {width: '70%', height: '70%', top: 55}
+                        };
+
+                  var chart11 = new google.visualization.ColumnChart(document.getElementById('chart11_div'));
+                  chart11.draw(chart11Data, chart11Options);
+    }
+  
+    function drawChartConsumptionBSM(){
+         console.log('drawChartConsumptionBSM');
+        var chart13Data = google.visualization.arrayToDataTable([
+                            ['Month', 'National'],
+            <?php 
+                if(!empty($this->consumption_bsm)){
+                    foreach ($this->consumption_bsm as $month=>$consumption){ 
+            ?>
+                    [<?php echo "'$month', $consumption"; ?>],
+                     
+            <?php
+                    }//emd foreach
+                } //end if
+            ?>
+       ]);
+        
+        <?php echo  "var title_data = 'Consumption of $this->method, $this->start_date to $this->end_date ' " ?>;
+                
+        var chart13Options = {
+		      title: title_data,
+		      titleTextStyle: { fontSize: 15 },
+		      vAxis: {format: '#', minValue: 4},
+		      legend: {fontSize: 14},
+		      chartArea: {width: '65%', height: '70%', top: 55},
+		      is3D:true
+		};
+
+          var chart13 = new google.visualization.LineChart(document.getElementById('chart13_div'));
+	  chart13.draw(chart13Data, chart13Options);
+      
+    }
+    
+    
+    function drawChartConsumption_BSMAndLocation_First(){           
+        <?php $firstConsumption = $this->consumption_bsmandlocation_first['consumption']; ?>
+        
+	var chart11Data = google.visualization.arrayToDataTable([
+            ['', ''],
+        <?php
+                foreach($firstConsumption as $location=>$consumption){
+         ?>
+                        [<?php echo  "'$location', $consumption"; ?>],
+                <?php
+                }
+                ?>
+        ]);
+        
+                  var title_data = <?php echo "'Consumption of $this->method in selected location(s), $this->date'"; ?>;
+
+                  var chart11Options = {  
+                          title: title_data,
+                          titleTextStyle: { fontSize: 16 },
+                          is3D:true,
+                          legend: 'none',
+                          groupWidth : 10,
+                          hAxis : {textStyle: {fontSize: 12}},
+                          vAxis : {minValue: 4},
+                          chartArea: {width: '70%', height: '70%', top: 55}
+                    };
+
+                  var chart11 = new google.visualization.ColumnChart(document.getElementById('chart11_div'));
+                  chart11.draw(chart11Data, chart11Options);
+    }
+    
+    
+    function drawChartConsumption_BSMAndLocation(){
+        console.log('drawChartConsumption_BSMAndLocation');
+        <?php 
+                //if(isset($this->consumption_overtime) && !empty($this->consumption_overtime)) 
+                    //return;
+                
+                $locationNames = '';
+                reset($this->consumption_bsmandlocation);
+                $firstElement = current($this->consumption_bsmandlocation);
+                
+                if(!empty($firstElement)){
+                    foreach($firstElement as $location=>$consumption){                    
+                            $locationNames .= "'$location',";
+                    }
+
+                    $locationNames = substr($locationNames, 0, -1);
+                    $legend = "'Month'," . "$locationNames";
+                    //echo $legend;
+                }
+         ?>                        
+         //console.log('legend: ' + <?php //echo $legend; ?>);
+         
+        var chart13Data = google.visualization.arrayToDataTable([
+                            [<?php echo !empty($legend) ? $legend : ''; ?>],
+            <?php 
+                //$locationNamesArray = explode(',', $locationNames);
+                
+                if(!empty($this->consumption_bsmandlocation)){
+                    foreach ($this->consumption_bsmandlocation as $month=>$locationValues){ 
+                        $rowValues = '';
+                        foreach ($locationValues as $value){
+                            $rowValues .= "$value,";
+                        }
+                        $rowValues = substr($rowValues, 0, -1);
+                        
+            ?>
+                    [<?php echo "'$month', $rowValues"; ?>],
+                     
+            <?php
+                    }//end foreach
+                } //end if
+            ?>
+       ]);
+        
+        
+        <?php echo  " var title_data = 'Consumption of $this->method in selected location(s), $this->start_date to $this->end_date ' " ?>;
+                
+        var chart13Options = {
+		      title: title_data,
+		      titleTextStyle: { fontSize: 15 },
+		      vAxis: {format: '#', minValue: 4},
+		      legend: {fontSize: 14},
+		      chartArea: {width: '65%', height: '70%', top: 55},
+		      is3D:true
+		};
+
+
+              var chart13 = new google.visualization.LineChart(document.getElementById('chart13_div'));
+              chart13.draw(chart13Data, chart13Options);
+          
+    }
+    
+    
 </script>
 
 

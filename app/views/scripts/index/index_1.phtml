@@ -178,7 +178,15 @@ print ScriptContainer::$instance->renderJSHead();
 
 		<!-------   /////////////////////////// main gnr ////////////////////// -->
 
-		<script type="text/javascript">
+
+<?php 
+    var_dump($this->csummary);  
+    $this->national_percent_facilities_providing = array();
+    $this->national_percent_facilities_stock_out = array();
+?>
+                
+<script type="text/javascript">
+
 		
   google.load('visualization', '1.1', {'packages':['corechart', 'table', 'gauge', 'controls']});
   google.load('visualization', '1.1', {'packages':['bar']});
@@ -191,8 +199,10 @@ print ScriptContainer::$instance->renderJSHead();
 	//drawChart13();
 	//drawChart14();
 		
-	var currentLevel;
-	currentLevel = <?php echo '\'' . $this->location_data[0][name] . '\''; ?>;
+
+	//var currentLevel;
+	//currentLevel = <?php //echo '\'' . $this->location_data[0][name] . '\''; ?>;
+
 
 <?php  //file_put_contents('c:\wamp\logs\php_debug.log', 'dash3 193 >'.PHP_EOL, FILE_APPEND | LOCK_EX);	ob_start();
 	   //var_dump("location_data=", $this->location_data[0],"END");
@@ -201,79 +211,9 @@ print ScriptContainer::$instance->renderJSHead();
 ?>
 		 
   }
+  
 
-  <!-------   /////////////////////////// script 1,1 ////////////////////// -->
-  
-//  function drawChart11_demo() {
-//        // Create and populate the data table.
-//        var data = new google.visualization.DataTable();
-//        data.addColumn('string', 'x');
-//        data.addColumn('number', 'Cats');
-//        data.addColumn('number', 'Blanket 1');
-//        data.addColumn('number', 'Blanket 2');
-//        data.addRow(["A", 1, 1, 0.5]);
-//        data.addRow(["B", 2, 0.5, 1]);
-//        data.addRow(["C", 4, 1, 0.5]);
-//        data.addRow(["D", 8, 0.5, 1]);
-//        data.addRow(["E", 7, 1, 0.5]);
-//        data.addRow(["F", 7, 0.5, 1]);
-//        data.addRow(["G", 8, 1, 0.5]);
-//        data.addRow(["H", 4, 0.5, 1]);
-//        data.addRow(["I", 2, 1, 0.5]);
-//        data.addRow(["J", 3.5, 0.5, 1]);
-//        data.addRow(["K", 3, 1, 0.5]);
-//        data.addRow(["L", 3.5, 0.5, 1]);
-//        data.addRow(["M", 1, 1, 0.5]);
-//        data.addRow(["N", 1, 0.5, 1]);
-//
-//
-//        // Create and draw the visualization.
-//        new google.visualization.LineChart(document.getElementById('chart11_div')).
-//            draw(data, {curveType: "function",width: 500, height: 400,
-//          vAxes: {0: {logScale: false},
-//                  1: {logScale: false, maxValue: 2}},
-//          series:{
-//             0:{targetAxisIndex:0},
-//             1:{targetAxisIndex:1},
-//             2:{targetAxisIndex:1}}}
-//           );
-//  }
-//  
-//  function drawChart11_demo2(){
-//      //google.load("visualization", "1.1", {packages:["bar"]});
-//      //google.setOnLoadCallback(drawStuff);
-//
-////        var data = new google.visualization.arrayToDataTable([
-////          ['Galaxy', 'Distance', 'Brightness'],
-////          ['Canis Major Dwarf', 8000, 23.3],
-////          ['Sagittarius Dwarf', 24000, 4.5],
-////          ['Ursa Major II Dwarf', 30000, 14.3],
-////          ['Lg. Magellanic Cloud', 50000, 0.9],
-////          ['Bootes I', 60000, 13.1]
-////        ]);
-//
-//        var options = {
-//          width: 450,
-//          chart: {
-//            title: 'Nearby galaxies',
-//            subtitle: 'distance on the left, brightness on the right'
-//          },
-//          series: {
-//            0: { axis: 'distance' }, // Bind series 0 to an axis named 'distance'.
-//            1: { axis: 'brightness' } // Bind series 1 to an axis named 'brightness'.
-//          },
-//          axes: {
-//            y: {
-//              distance: {label: 'parsecs'}, // Left y-axis.
-//              brightness: {side: 'right', label: 'apparent magnitude'} // Right y-axis.
-//            }
-//          }
-//        };
-//
-//      var chart = new google.charts.Bar(document.getElementById('chart11_div'));
-//      chart.draw(data, options);
-//  }
-  
+
 //TA:17:17 landing page chart: Monthly Consumption by method
 function drawChart11() {
 	  // Create and populate the data table.
@@ -281,8 +221,10 @@ function drawChart11() {
 	var chart11Data = google.visualization.arrayToDataTable([
             ['', ''],
 <?php
-     foreach ($this->national_consumption_by_method as $key=>$row){
-                $consumption = $row[consumption];
+
+     foreach ($this->consumption_by_method as $key=>$row){
+                $consumption = $row['consumption'];
+
                 $malecondoms = 0;
                 $method = $row['method'];
                 $color = 'blue';
@@ -302,38 +244,19 @@ function drawChart11() {
 
 	  <?php //echo  " var title_date = 'Monthly Consumption by Method$this->title_date ' " ?>;
           
-          var title_date = <?php echo "'Consumption by Method$this->title_date'"; ?>;
+
+          var title_data = <?php echo "'Consumption by Method, $this->title_date'"; ?>;
 	  
 	  var chart11Options = {  
-                      title: title_date,
+                      title: title_data,
+
                       titleTextStyle: { fontSize: 16 },
 		      is3D:true,
 		      legend: 'none',
                       groupWidth : 10,
-                      //fontSize: 12
-                      hAxis : {textStyle: {fontSize: 12}}
-//                      series:{
-//                            0:{targetAxisIndex:0},
-//                            1:{targetAxisIndex:1},
-//                            2:{targetAxisIndex:0},
-//                            3:{targetAxisIndex:0},
-//                            4:{targetAxisIndex:0},
-//                            5:{targetAxisIndex:0},
-//                            6:{targetAxisIndex:0}
-//                        },
-//                      vAxes:{
-//                          0:{title:'Consumption'
-//                             //textStyle:{color: 'green'}
-//                             //ticks: [{v:20000}, {v:40000}, {v:60000}]
-//                          },
-//                          1:{title:'Male Condoms',
-//                             textStyle:{}
-//                             //ticks: [{v:40000}, {v:80000}, {v:120000}, {v:160000}, {v:200000}],
-//                             //gridlines: {color:'#fff'}
-//                             //ticks: [{v:1, f:40000}, {v:2, f:80000}, {v:3, f:120000}, {v:4, f:160000}, {v:4, f:200000}]
-//                            }
-//                      }
-                      
+
+                      hAxis : {textStyle: {fontSize: 12}}                      
+
 		};
 
 	  var chart11 = new google.visualization.ColumnChart(document.getElementById('chart11_div'));
@@ -347,8 +270,10 @@ function drawChart11() {
          '% of facilities with FP or LARC-trained HW', 
          '% of FP or LARC trained facilities providing FP or LARC', 
          '% of FP or LARC trained facilities stocked out of FP or implants'],
-        [ 'FP', <?php echo $this->cs_fp_facility_count*100;?> , <?php echo $this->cs_fp_consumption_facility_count*100;?>,<?php echo $this->cs_fp_stock_out_facility_count*100;?> ],
-        [ 'LARC', <?php echo $this->cs_larc_facility_count*100?>,<?php echo $this->cs_larc_consumption_facility_count*100?>,<?php echo $this->cs_larc_stock_out_facility_count*100?> ],	        
+
+        [ 'FP', <?php echo $this->csummary['cs_fp_trained_facility_count']*100;?> , <?php echo $this->csummary['cs_fp_consumption_facility_count']*100;?>,<?php echo $this->csummary['cs_fp_stock_out_facility_count']*100;?> ],
+        [ 'LARC', <?php echo $this->csummary['cs_larc_trained_facility_count']*100?>,<?php echo $this->csummary['cs_larc_consumption_facility_count']*100?>,<?php echo $this->csummary['cs_larc_stock_out_facility_count']*100?> ],	        
+
       ]);
 
 //        var chart12Data = google.visualization.arrayToDataTable([
@@ -361,7 +286,10 @@ function drawChart11() {
 
       <?php //echo  " var title_data = 'Coverage summary, $this->cs_date ' " ?>;
       
-      var title_data = <?php echo "'HR Summary, $this->cs_date '"; ?>;
+
+      //var date = <?php //echo "'" . $this->csummary['cs_date'] . "'"; ?>;
+      var title_data = <?php echo "'HR Summary, $this->title_date '"; ?>;
+
 
       var chart12Options = {
     		  title: title_data,

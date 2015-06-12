@@ -7,7 +7,7 @@
  *
  */
 
-
+require_once('Role.php');
 class Location extends ITechTable
 {
 	protected $_primary = 'id';
@@ -20,22 +20,22 @@ class Location extends ITechTable
 	public static function getAll($tracker="") {
             //$itech = new ITechController();
                  $auth = Zend_Auth::getInstance();
-if ($auth->hasIdentity()) {
-    // Identity exists; get it
-    $identity = $auth->getIdentity();
-  // $identify = $identity;
-   
-    foreach($identity as $identify){
-       $details_user[] = $identify;
-    }
-    //print_r($details_user);
-    $user = $details_user[0];
-    $province_id = $details_user[5];
-    $district_id = $details_user[6];
-    $region_c_id = $details_user[7];
-    $role = $details_user[4];
-   
-}   
+                if ($auth->hasIdentity()) {
+                    // Identity exists; get it
+                    $identity = $auth->getIdentity();
+                  // $identify = $identity;
+
+                    foreach($identity as $identify){
+                       $details_user[] = $identify;
+                    }
+                    //print_r($identity); exit;
+                    $user = $details_user[0];
+                    //$province_id = $details_user[5];
+                    //$district_id = $details_user[6];
+                    //$region_c_id = $details_user[7];
+                    //$role = $details_user[4];
+
+                }   
                     $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 
 		$sql = "SELECT  role,province_id,district_id,region_c_id FROM user WHERE id ='".$user."'";
@@ -46,8 +46,10 @@ if ($auth->hasIdentity()) {
                 $district_id = $result[0]['district_id'];
                 $region_c_id = $result[0]['region_c_id'];
                 $role = $result[0]['role'];
+                //echo Role::LGA_USER;exit;
 		if ( self::$_locations ) return self::$_locations;
-$tableObj = new Location();
+                
+                $tableObj = new Location();
 		//$region_b = System::getSetting('display_region_b');
 		//$region_c = System::getSetting('display_region_c');
 //echo $role.' the role is this';
@@ -65,55 +67,61 @@ $tableObj = new Location();
                         ->order('location_name'); 
          }
          else {       
-if($role=="1" || $role=="2"){
-  $select = $tableObj->select()
-			->from(array('l' => 'location'))
-                        ->where('is_deleted = 0')
-                        ->order('location_name');  
-}
-else if($role=="3"){
-    $select = $tableObj->select()
-			->from(array('l' => 'location'))
-                        ->where('is_deleted = 0')
-                        ->where('id=?',$province_id)
-                        ->orwhere('parent_id=?',$province_id)
-                        ->orwhere('tier=?','3')
-                       ->order('location_name');
-}
-else if($role=="4"){
-    $select = $tableObj->select()
-			->from(array('l' => 'location'))
-                        ->where('is_deleted = 0')
-                        ->where('id=?',$province_id)
-                        ->orwhere("id=$district_id AND parent_id=$province_id")
-                        ->orwhere("parent_id=$district_id")
-                        ->order('location_name');
-}
-else if($role=="5"){
-    $select = $tableObj->select()
-			->from(array('l' => 'location'))
-                        ->where('is_deleted = 0')
-                        ->where('id=?',$province_id)
-                        ->orwhere("id=$district_id AND parent_id=$province_id")
-                        ->orwhere("parent_id=$district_id AND id=$region_c_id")
-                        ->order('location_name');
-}
-else{
-    $select = $tableObj->select()
-			->from(array('l' => 'location'))
-                        ->where('id=?',"")
-                        ->where('is_deleted = 0')
-                        ->order('location_name');
-}
-         }
+                if($role == Role::ADMIN_USER || $role== Role::FMOH_USER){
+                  $select = $tableObj->select()
+                                        ->from(array('l' => 'location'))
+                                        ->where('is_deleted = 0')
+                                        ->order('location_name');  
+                }
+                else if($role== Role::PARTNER_USER){
+                    
+                    $select = $tableObj->select()
+                                        ->from(array('l' => 'location'))
+                                        ->where('is_deleted = 0')
+                                        ->where('id=?',$province_id)
+                                        ->orwhere('parent_id=?',$province_id)
+                                        ->orwhere('tier=?','3')
+                                       ->order('location_name');
+                }
+                else if($role== Role::STATE_USER){
+
+                    $select = $tableObj->select()
+                                        ->from(array('l' => 'location'))
+                                        ->where('is_deleted = 0')
+                                        ->where('id=?',$province_id)
+                                        ->orwhere("id=$district_id AND parent_id=$province_id")
+                                        ->orwhere("parent_id=$district_id")
+                                        ->order('location_name');
+                }
+                else if($role== Role::LGA_USER){
+
+                    $select = $tableObj->select()
+                                        ->from(array('l' => 'location'))
+                                        ->where('is_deleted = 0')
+                                        ->where('id=?',$province_id)
+                                        ->orwhere("id=$district_id AND parent_id=$province_id")
+                                        ->orwhere("parent_id=$district_id AND id=$region_c_id")
+                                        ->order('location_name');
+                }
+                else{
+
+                    $select = $tableObj->select()
+                                        ->from(array('l' => 'location'))
+                                        ->where('id=?',"")
+                                        ->where('is_deleted = 0')
+                                        ->order('location_name');
+                }
+         }//end else
+        
 		//$tableObj = new Location();
 	
   //echo $select;
-
 		$output = array();
 		try {
 			$rows = $tableObj->fetchAll($select);
 			//reindex with id
+                       // echo $select;
+                       // var_dump($row);
 			$indexed = array();
 			while($rows->current()) {
 				$indexed [$rows->current()->id]= $rows->current()->toArray();
@@ -121,7 +129,7 @@ else{
 			}
 
 			$num_tiers = 1;
-
+                          //var_dump($indexed);exit;
 			foreach($indexed as $row) {
 
 				//check that the hierarchy works
@@ -156,6 +164,7 @@ else{
 			$output []= array('id' => 0, 'name' => t('unknown'), 'tier'=>$t-1 ,'is_default'=>0, 'parent_id'=>0);
 			}
 			*/
+                        
 			self::$_locations = $output;
 			return self::$_locations;
 

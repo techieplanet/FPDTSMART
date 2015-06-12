@@ -12,7 +12,8 @@ require_once('ITechTable.php');
 
 class User extends ITechTable
 {
-    protected $_name = 'user';
+    
+        protected $_name = 'user';
 	protected $_primary = 'id';
 
 	public function insert(array $data) {

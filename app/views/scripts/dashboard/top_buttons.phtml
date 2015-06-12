@@ -13,8 +13,17 @@ $current_view = '/'.$path[1].'/'. $path[2];
 ?>
 
 <p3>
-    <?php region_filters_dropdown_db($this, $this->locations, $this->criteria, true, true); ?>
-    <input type="submit" value="Filter" class="dbbutton dbbutton_leftmenu">
+
+    <div>
+        <?php region_filters_dropdown_db($this, $this->locations, $this->criteria, true, true); ?>
+        <p><strong>Maximum of six (6) locations allowed per filter</strong></p>
+    </div>
+    <br/>
+    
+    <div>
+        <input type="submit" value="Filter" class="dbbutton dbbutton_leftmenu">
+    </div>
+
 </p3>
 
 
