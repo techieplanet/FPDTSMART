@@ -11074,9 +11074,13 @@ $consump_loc = array();
                     
                     $location_id = $locations[0];
                    
-                    if($trainingorganizer==""){
+                    if($trainingorganizer || empty($trainingorganizer) ){
+					$trainingorgq = "";
                         $trainingorganizer[] = "1";
-                    }
+                    }else{
+					$trainingorganizer = implode(",",$trainingorganizer);
+					$trainingorgq = "AND training_organizer_option_id IN (".$trainingorganizer.")";
+					}
                     $trainingorganizer = implode(",",$trainingorganizer);
                    $small_value = $this->get_name_category($training_type);
                           
@@ -11088,15 +11092,22 @@ $consump_loc = array();
                     //echo $trainingorganizer.'<br/><br/>';
 					//print_r($facilities_new);exit;
 					if(empty($facility)){
-					
-                    $all_facilities_array = $this->get_all_facilities_with_location_id($location_id,$trainingorganizer);
+					$facesss = "";
+                    $all_facilities_array = $this->all_facilities_id($location_id,$facesss);
                 //  print_r($all_facilities_array);exit;
 				  }else {
 				  //echo 'Hello';exit;
-				  $facesss = "AND facility_id IN (".$facilitators.")";
-				     $all_facilities_array = $this->get_all_facilities_with_location_id($location_id,$trainingorganizer,$facesss);
-				  //print_r($all_facilities_array);exit;
+				  $facesss = "AND id IN (".$facilitators.")";
+				     $all_facilities_array = $this->all_facilities_id($location_id,$facesss);
+				  //
 				  }
+				 // print_r($all_facilities_array);exit;
+				  foreach($all_facilities_array as $facids){
+				  $ids[] = $facids['id'];
+				  }
+				 // print_r($ids);
+				// echo  implode(",",$ids);exit;
+				  //print_r($all_facilities_array);exit;
 				  // $phrase = $this->get_training_organizer_phrase($trainingorganizer);
                     $facility_names = array();
                     $facility_ids = array();
@@ -11123,11 +11134,11 @@ $consump_loc = array();
                          
                   foreach($all_facilities_array as $fac_details){
                      
-                      $facility_ids[$fac_details['facility_id']] = $fac_details['facility_id'];
-                      array_push($facility_ids,$fac_details['facility_id']);
+                      $facility_ids[$fac_details['id']] = $fac_details['id'];
+                      array_push($facility_ids,$fac_details['id']);
                       $facility_ids = array_unique($facility_ids);
-                      $organizers[$fac_details['facility_id']] = $fac_details['training_organizer_phrase'];
-                    $facility_names[$fac_details['facility_id']] = $fac_details['facility_name'];
+                      $organizers[$fac_details['id']] = $fac_details['training_organizer_phrase'];
+                    $facility_names[$fac_details['id']] = $fac_details['facility_name'];
                       $facility_names = array_unique($facility_names);
                       
                        //echo 'Facility name is '.$fac_details['facility_name'].'----------';
@@ -11168,10 +11179,11 @@ $consump_loc = array();
                        $agreg_fac[$facility_id][$prov] = $answer;
                        $facer[$prov][] = $answer;
                       }
-                       
+                        $location = implode(',',$locations);
                        foreach($consumption as $name_id){
-                       $consumptions[$facility_id][$name_id] = $this->get_consumption_for_unique_fac($start_date,$end_date,$facility_id,$name_id);
-                      $name_of_consump = $this->get_commodity_option_name($name_id);
+                       $consumptions[$facility_id][$name_id] = $this->get_consumption_for_unique_fac($start_date,$end_date,$facility_id,$name_id,$location);
+//get_consumption_sum_for_them( )                   
+					$name_of_consump = $this->get_commodity_option_name($name_id);
                       //$word_consume = " Consumption of $name_of_consump $month_name $start_year";
                       //array_push($headers,$word_consume);
                       //$name_idsum[$name_id][$name_id] = array();
@@ -11255,7 +11267,7 @@ $consump_loc = array();
                 //exit;
                  //print_r($name_idsum);
                  $data_collectors = array();
-                 array_push($data_collectors,"zTotal");
+                 array_push($data_collectors,"zzzTotal");
                  
                  foreach($training_type as $ttype){
                       
@@ -11427,7 +11439,12 @@ $consump_loc = array();
                            $small_value = $this->get_name_category($ttype);
                            $hw_trained[$location][$i][$ttype] = $this->get_facility_with_hw_trained_in($small_value,$beginning,$end,$location,$training_type2,$stockq,$facesss);
                      }  
-                      
+                      $all_facilities_id = $this->all_facilities_id($location,$facesss);
+					  $all_fac_ids = array();
+					  foreach($all_facilities_id as $facids){
+					  $all_fac_ids[] = $facids['id'];
+					  }
+					  
                       foreach($consumption as $values){
                                
                                $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location,$facesss);
@@ -11596,7 +11613,7 @@ $consump_loc = array();
                          array_push($data_manager,$result[0]['count(*)']);
                             }
                             foreach($consumption as $values){
-                                
+                               
                               $value  = $this->get_commodity_option_name($values);
                               $sum = $this->get_consumption_sum_for_them($beginning,$end,$values,$location_id,$stockq,$facesss);
                                                   
@@ -11691,12 +11708,26 @@ $this->viewAssignEscaped('criteria',$criteria);
        public function get_consumption_sum_for_them($beginning,$end,$values,$location="",$stock_out="",$facesss=""){
            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
            $consump_sum_sql = "SELECT SUM(consumption) as sums  FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$beginning."' AND commodity.date<='".$end."') ".$facesss." ".$stock_out." AND (commodity.name_id = '".$values."') AND (facility_location_view.parent_id = ".$location." OR facility_location_view.location_id  = ".$location.")";
-          // echo $consump_sum_sql;exit;       
+          //echo $consump_sum_sql;exit;       
            $res = $db->fetchAll($consump_sum_sql);
                               
                               return $sum = $res[0]['sums'];
            
        }
+	   public function get_consumption_for_unique_fac($start_date,$end_date,$facility_id,$name_id,$location){
+           $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+           $sum = 0;
+          // $sql = "SELECT SUM(consumption) as sums FROM commodity left join facility on commodity.facility_id= facility.id left join facility_summary_person_view on facility_summary_person_view.facility_id = commodity.facility_id WHERE  (commodity.date>='".$start_date."' AND commodity.date<='".$end_date."') AND (commodity.facility_id='".$facility_id."') AND (name_id='".$name_id."')";
+           $sql = "SELECT SUM(consumption) as sums FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (commodity.date>='".$start_date."' AND commodity.date<='".$end_date."') AND (commodity.facility_id='".$facility_id."') AND (commodity.name_id='".$name_id."') ".$stock_out."  AND (facility_location_view.parent_id = ".$location." OR facility_location_view.location_id   = ".$location." )";      
+//echo $sql;exit;
+	   $res = $db->fetchAll($sql);
+                              
+                             $sum = $res[0]['sums'];
+                             if($sum==""){
+                                 $sum = 0;
+                             }
+                              return $sum;
+           }
 	   public function select_all_from_training_organizer(){
 	    $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 		$sql = "SELECT * FROM training_organizer_option";
@@ -11747,18 +11778,7 @@ $this->viewAssignEscaped('criteria',$criteria);
                               //print_r($consump_sum_sql); exit;
                               return $res[0]['count'];
       }
-       public function get_consumption_for_unique_fac($start_date,$end_date,$facility_id,$name_id){
-           $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-           $sum = 0;
-           $sql = "SELECT SUM(consumption) as sums FROM commodity left join facility on commodity.facility_id= facility.id left join facility_summary_person_view on facility_summary_person_view.facility_id = commodity.facility_id WHERE  (commodity.date>='".$start_date."' AND commodity.date<='".$end_date."') AND (commodity.facility_id='".$facility_id."') AND (name_id='".$name_id."')";
-       $res = $db->fetchAll($sql);
-                              
-                             $sum = $res[0]['sums'];
-                             if($sum==""){
-                                 $sum = 0;
-                             }
-                              return $sum;
-           }
+       
            
        public function check_length_add_one($value){
            if(strlen($value)==1){
@@ -11868,15 +11888,23 @@ $this->viewAssignEscaped('criteria',$criteria);
            }
            return $all_the_ids;
            }
-       public function get_all_facilities_with_location_id($location_id,$training_org,$facilities=""){
+       public function get_all_facilities_with_location_id($location_id,$trainingorgq,$facilities=""){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
-           $sql = "SELECT * FROM facility_summary_person_view left join facility_location_view on facility_id=facility_location_view.id  WHERE (facility_location_view.parent_id='".$location_id."' OR facility_location_view.location_id='".$location_id."')  AND training_organizer_option_id IN (".$training_org.") ".$facilities."";
-         // echo $sql;exit;
+           $sql = "SELECT * FROM facility_summary_person_view left join facility_location_view on facility_id=facility_location_view.id  WHERE (facility_location_view.parent_id='".$location_id."' OR facility_location_view.location_id='".$location_id."')  ".$trainingorgq." ".$facilities."";
+        // echo $sql;exit;
            $new = array();
            $results = $db->fetchAll($sql);
-           
            return $results;
+           
        }
+	   public function all_facilities_id($location_id,$facilities=""){
+	   $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+           $sql = "SELECT * FROM facility_location_view WHERE (parent_id='".$location_id."' OR facility_location_view.location_id='".$location_id."') ".$facilities."";
+         //echo $sql;exit;
+           $new = array();
+           $results = $db->fetchAll($sql);
+		   return $results;
+	   }
        public function get_for_particular_id($all_name_ids,$facility_id,$beginning,$end,$location){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
            $sql = "SELECT count(*) FROM commodity WHERE facility_id IN (  SELECT facility_id FROM commodity left join facility_location_view on commodity.facility_id = facility_location_view.id  WHERE (facility_location_view.id=".$facility_id.")(commodity.date>='".$beginning."' AND commodity.date<='".$end."') AND (facility_location_view.parent_id = ".$location." OR facility_location_view.location_id  = ".$location.")) AND name_id IN(".$all_name_ids.") ";
