@@ -1,0 +1,167 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title><?php echo $this->translation['Application Name'];?> | <?php tp('Info');?></title>
+		<?php
+		require_once('views/helpers/Location.php');
+		require_once('views/helpers/ScriptContainer.php');
+               
+		print ScriptContainer::$instance->renderCSSHead();
+		print ScriptContainer::$instance->renderJSHead();
+
+		?>
+
+		
+                <script type="text/javascript" charset="utf-8" src="views/helpers/jquery.js">
+			
+		</script>
+                <style>
+
+.drnw:hover,.drne:hover,.drse:hover,.drss:hover,.drsw:hover,.drnc:hover{
+    background:khaki;
+    
+}
+
+#primary_nav_wrap
+{
+	margin-top:15px
+}
+
+#primary_nav_wrap ul
+{
+	list-style:none;
+	position:relative;
+	float:left;
+	margin:0;
+	padding:0
+}
+
+#primary_nav_wrap ul a
+{
+	display:block;
+	color:#333;
+	text-decoration:none;
+	font-weight:700;
+	font-size:12px;
+	line-height:32px;
+	padding:0 15px;
+	font-family:"HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif
+}
+
+#primary_nav_wrap ul li
+{
+	position:relative;
+	float:left;
+	margin:0;
+	padding:0
+}
+
+#primary_nav_wrap ul li.current-menu-item
+{
+	background:#ddd
+}
+
+#primary_nav_wrap ul li:hover
+{
+	background:#f6f6f6
+}
+
+#primary_nav_wrap ul ul
+{
+	display:none;
+	position:absolute;
+	top:100%;
+	left:0;
+	background:#fff;
+	padding:0
+}
+
+#primary_nav_wrap ul ul li
+{
+	float:none;
+	width:150px
+}
+
+#primary_nav_wrap ul ul a
+{
+	line-height:120%;
+        width:150px;
+	padding:10px 15px
+}
+
+#primary_nav_wrap ul ul ul
+{
+	top:20%;
+	left:;
+}
+
+
+
+#primary_nav_wrap ul li:hover > ul
+{
+	display:block;
+        float:right;
+        margin-left:150px;
+        margin-top:-34px;
+}
+#primary_nav_wrap ul ul ul:hover {
+	display:block;
+        float:right;
+        margin-right:-150px;
+       
+}
+nav{
+    width:150px;
+    
+}
+#primary_nav_wrap ul ul li:hover > ul
+{
+	display:block;
+        float:right;
+        
+}
+nav ul li a{
+    width:150px;
+    border: 1px solid;
+    background:khaki;
+    
+}
+nav ul ul{
+    position:relative;
+}
+
+</style>
+
+  
+	</head>
+    
+        
+	<body class="yui-skin-sam" onload="toggle_it();" >
+		<div id="pageHolder">
+			<div id="header"><?php require_once('views/scripts/header.phtml');?></div>
+			
+				<div id="subcontent">
+					<div id="contentheader">
+						 <h2 algin="">Reporting Rates</h2>  <br/>
+					</div>
+                                    
+					<div class="clear" style=""></div>
+				</div>
+                  
+				<div class="clear" style=""></div>
+			   
+			
+							
+	
+			<div id="footer"><?php require_once('views/scripts/footer.phtml');?></div>
+			</div>
+		</div>
+	</body>
+</html>
+
+
+
+
+
+

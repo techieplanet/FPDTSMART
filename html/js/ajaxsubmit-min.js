@@ -1,11 +1,12 @@
 function addAjaxSubmit(buttonId,formId,postUrl) {
+
         console.log('button: ' + buttonId + ' form: ' + formId + ' ' + postUrl); 
+
 	(function() {
 		var _button = new YAHOO.widget.Button(buttonId);
 		var handleSuccess = function(o) {
 			try {
 				var response = o.responseText;
-				
 				var responseObj = YAHOO.lang.JSON.parse(response);
 				displayStatus(responseObj.status);
 				var allGood = true;
@@ -31,12 +32,15 @@ function addAjaxSubmit(buttonId,formId,postUrl) {
 				}
 			}
 			catch (x) {
+
 				alert("ajaxmin TP ITech script error: " + x);
+
 				alert(response);
 				return;
 			}
-	
+
                         document.body.style.cursor = "auto";
+
 	
 		}
 		var handleFailure = function(o) {
@@ -56,9 +60,11 @@ function addAjaxSubmit(buttonId,formId,postUrl) {
 				//debugger;
 	      //clear error text
 				var els = YAHOO.util.Dom.getElementsByClassName('errorText');
+
 				if ( els.length ){
 					YAHOO.util.Dom.setStyle(els, 'display', 'none');
                                 }
+
 				var formObject = document.getElementById(formId);
 				YAHOO.util.Connect.setForm(formObject);
 			 	var request = YAHOO.util.Connect.asyncRequest('POST', postUrl, callback);

@@ -184,6 +184,7 @@ print ScriptContainer::$instance->renderJSHead();
 ?>
                 
 <script type="text/javascript">
+
 		
   google.load('visualization', '1.1', {'packages':['corechart', 'table', 'gauge', 'controls']});
   google.load('visualization', '1.1', {'packages':['bar']});
@@ -196,6 +197,7 @@ print ScriptContainer::$instance->renderJSHead();
 	drawChart13();
 	drawChart14();
 		
+
 	//var currentLevel;
 	//currentLevel = <?php //echo '\'' . $this->location_data[0][name] . '\''; ?>;
 		 
@@ -203,6 +205,7 @@ print ScriptContainer::$instance->renderJSHead();
 
 
   function drawChart11() {
+
 	  // Create and populate the data table.
           //,{ role: 'style' }
 	var chart11Data = google.visualization.arrayToDataTable([
@@ -245,6 +248,7 @@ print ScriptContainer::$instance->renderJSHead();
    }
   
   
+
   function drawChart12() {
       var chart12Data = google.visualization.arrayToDataTable([
         [' ', 
@@ -254,6 +258,7 @@ print ScriptContainer::$instance->renderJSHead();
         [ 'FP', <?php echo round($this->csummary['cs_fp_trained_facility_count']*100,2); ?> , <?php echo round($this->csummary['cs_fp_consumption_facility_count']*100,2);?>,<?php echo round($this->csummary['cs_fp_stock_out_facility_count']*100,2);?> ],
         [ 'LARC', <?php echo round($this->csummary['cs_larc_trained_facility_count']*100,2); ?>,<?php echo round($this->csummary['cs_larc_consumption_facility_count']*100,2)?>,<?php echo round($this->csummary['cs_larc_stock_out_facility_count']*100,2)?> ],	        
       ]);
+
 
       <?php //echo  " var title_data = 'Coverage summary, $this->cs_date ' " ?>;
       
@@ -276,7 +281,6 @@ print ScriptContainer::$instance->renderJSHead();
 
       chart12.draw(chart12Data, chart12Options);
   }
-  
   
   function drawChart13() {
 	  

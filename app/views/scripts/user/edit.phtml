@@ -69,19 +69,19 @@
             </select></div>
 	<div class="fieldLabel"><span class="required">*</span>Zone</div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 1, 'province_id', $this->user['zone'], 'district_id', false,false); ?></div>
+							<div class="fieldselect"><?php renderFilter($this->locations, 1, 'province_id', $this->user['province_id'], 'district_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
 							<div class="fieldLabel"><span class="required">*</span>State</div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 2, 'district_id', $this->user['state'], 'region_c_id', false,false); ?></div>
+							<div class="fieldselect"><?php renderFilter($this->locations, 2, 'district_id', $this->user['district_id'], 'region_c_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
 							<div class="fieldLabel"><span class="required">*</span>LGA </div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 3, 'region_c_id', $this->user['lga'],'', false, false); ?></div>
+							<div class="fieldselect"><?php renderFilter($this->locations, 3, 'region_c_id', $this->user['region_c_id'],'', false, false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 

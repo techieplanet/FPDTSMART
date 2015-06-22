@@ -5,8 +5,7 @@ require_once ('models/table/Helper2.php');
 
 class ReportFilterHelpers extends ITechController {
 
-        
-    
+
 	public function __construct($request, $response, $invokeArgs = array()) {
 		parent::__construct ( $request, $response, $invokeArgs = array () );
 

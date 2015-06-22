@@ -20,6 +20,7 @@ class StockoutHelper {
                 $select = $db->select()
                             ->from(array('c' => 'commodity'),
                               array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
+
                             ->joinInner(array('cno'=>'commodity_name_option'), 'cno.id = c.name_id', array())
                             ->joinInner(array('fwtc'=>'facility_worker_training_counts_view'), 'c.facility_id = facid', array())
                             ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
@@ -45,6 +46,7 @@ class StockoutHelper {
                 
                 $subselect = $db->select()
                               ->from(array('c' => 'commodity'), array('DISTINCT(c.facility_id) AS providingfacs'))
+
                               ->joinInner(array('cno' => 'commodity_name_option'), 'c.name_id = cno.id', array())
                               ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array())
                               ->where($subWhereClause);
@@ -52,6 +54,7 @@ class StockoutHelper {
                 $select = $db->select()
                             ->from(array('c' => 'commodity'),
                               array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
+
                             ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
                             ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
                             ->where($mainWhereClause . ' AND c.facility_id IN (' . $subselect . ')')

@@ -15,6 +15,7 @@ require_once ('models/table/Helper2.php');
 require_once('models/table/Consumption.php');
 class ConsumptionController extends ReportFilterHelpers {
     //put your code here
+
     public function preDispatch() {
             parent::preDispatch ();
 

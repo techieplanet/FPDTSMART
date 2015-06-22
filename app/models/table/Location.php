@@ -46,6 +46,7 @@ class Location extends ITechTable
                 $district_id = $result[0]['district_id'];
                 $region_c_id = $result[0]['region_c_id'];
                 $role = $result[0]['role'];
+                //echo Role::LGA_USER;exit;
 		if ( self::$_locations ) return self::$_locations;
                 
                 $tableObj = new Location();
@@ -119,6 +120,8 @@ class Location extends ITechTable
 		try {
 			$rows = $tableObj->fetchAll($select);
 			//reindex with id
+                       // echo $select;
+                       // var_dump($row);
 			$indexed = array();
 			while($rows->current()) {
 				$indexed [$rows->current()->id]= $rows->current()->toArray();
@@ -126,7 +129,7 @@ class Location extends ITechTable
 			}
 
 			$num_tiers = 1;
-
+                          //var_dump($indexed);exit;
 			foreach($indexed as $row) {
 
 				//check that the hierarchy works
@@ -161,6 +164,7 @@ class Location extends ITechTable
 			$output []= array('id' => 0, 'name' => t('unknown'), 'tier'=>$t-1 ,'is_default'=>0, 'parent_id'=>0);
 			}
 			*/
+                        
 			self::$_locations = $output;
 			return self::$_locations;
 
