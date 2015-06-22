@@ -6819,10 +6819,10 @@ echo $sql . "<br>";
 		$this->viewAssignEscaped ( 'funding', $fundingArray );
 		//category
 		$categoryArray = OptionList::suggestionList ( 'training_category_option', 'training_category_phrase', false, false, false );
-		$this->viewAssignEscaped ( 'category'  $categoryArray );
+		$this->viewAssignEscaped ( 'category',  $categoryArray );
 		//primary language
 		$langArray = OptionList::suggestionList ( 'trainer_language_option', 'language_phrase', false, false, false );
-		$thi  >viewAssignEscaped ( 'language', $langArray );
+		$thi->viewAssignEscaped ( 'language', $langArray );
 		//category+titles
 		$categoryTitle = MultiAssignList::getOptions ( 'training_title_option', 'training_title_phrase', 'training_category_option_to_training_title_option', 'training_category_option' );
 		$this->view->assign ( 'categoryTitle', $categoryTitle );

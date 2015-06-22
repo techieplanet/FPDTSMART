@@ -58,7 +58,7 @@ class StockoutHelper {
                             ->group($tierFieldName)
                             ->order(array($tierText));                          
 
-              //echo 'Stocked out Providing: ' . $select->__toString() . '<br/><br/>'; exit;
+              //echo $select->__toString() . '<br/><br/>'; exit;
 
                $result = $db->fetchAll($select);
                

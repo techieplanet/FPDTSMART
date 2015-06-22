@@ -105,10 +105,7 @@ class ConsumptionController extends ReportFilterHelpers {
               $this->view->assign('single_location', $location);
               $this->view->assign('consumption_by_method',$consByCommodity);
               $this->view->assign('cons_all_BSL_overtime',$consAllBySingleLocOverTime);
-          }
-            
-            
-            
+          }   
         }
 
         //$this->view->assign('date', date('F Y', strtotime("-1 months"))); //TA:17:18: take last month

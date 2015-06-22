@@ -9,8 +9,8 @@
 //DB connection
 class Settings {
 
-	public static $COUNTRY_NAME = 'test';
-	public static $COUNTRY_BASE_URL = 'http://localhost/trainsmart/html';
+    public static $COUNTRY_NAME = 'test';
+    public static $COUNTRY_BASE_URL = 'http://localhost/trainsmart/html';
     public static $DB_USERNAME = 'root';
     public static $DB_PWD = '';
     

@@ -102,6 +102,74 @@ class Stockout {
     }
     
     
+    
+    public function fetchPercentStockOutFacsWithTrainedHWPerStates($training_type){
+		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
+		
+                $output = array(array('location'=>'National', 'percent'=>0)); 
+                $helper = new Helper2();
+                $cacheManager = new CacheManager();           
+                $latestDate = $helper->getLatestPullDate();
+                
+                $tierValue = 2;
+                $geoList = $helper->getLocationTierIDs($tierValue);
+                $geoList = implode(',',$geoList);
+                $freshVisit = false;
+                
+                if($training_type == 'fp')
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_HW_STOCKED_OUT_FP, $latestDate);
+                else if($training_type == 'larc')
+                    $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_HW_STOCKED_OUT_LARC, $latestDate);
+                
+                //needed variables
+                $tierText = $helper->getLocationTierText($tierValue);
+                $tierFieldName = $helper->getTierFieldName($tierText);
+
+                //where clauses
+                if($training_type == 'fp'){
+                    $tt_where = "fptrained > 0";
+                    $commodityWhere = "commodity_alias = 'so_fp_seven_days'";
+                }
+                else if($training_type == 'larc'){
+                    $tt_where = 'larctrained > 0';
+                    $commodityWhere = "commodity_alias = 'so_implants'";
+                }
+
+
+                $dateWhere = "date = '$latestDate'";
+                $reportingWhere = 'facility_reporting_status = 1';
+                $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+                $stockoutWhere = "stock_out='Y'";
+                $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                                    $tt_where . ' AND ' . $commodityWhere . ' AND ' .
+                                    $stockoutWhere. ' AND ' . $locationWhere;
+
+                $stockoutHelper = new StockoutHelper();                
+                $numerators = $stockoutHelper->getStockoutFacsWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+
+                //change long where
+                $longWhereClause = $dateWhere . ' AND ' . $tt_where . ' AND ' . $locationWhere;
+                $denominators = $helper->getReportingFacsWithTrainedHWOvertimeByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+
+                $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
+                
+                $arrayToSort = array_slice($sumsArray['output'], 1);
+                $sortedArray = $helper->msort($arrayToSort);
+                
+                //get month national data and put in first array element
+                $cacheValue = json_decode($cacheValue, true);
+                if($cacheValue) $output[0]['percent'] = $cacheValue[0]['percent'];
+                
+                $output = array_merge($output, $sortedArray);
+                
+                //var_dump($output); exit;
+                return $output;
+    }
+    
+    
+    
+    
+    
     public function fetchPercentFacsProvidingButStockedOut($commodity_type, $geoList, $tierValue, $freshVisit){
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		

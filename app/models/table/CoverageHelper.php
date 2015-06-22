@@ -112,7 +112,9 @@ class CoverageHelper {
                             ->where($longWhereClause)
                             ->group($tierFieldName)
                             ->order(array($tierText));
-
+                
+                //echo $select->__toString(); exit;
+                
               $result = $db->fetchAll($select);
                
               //filter for only valid values

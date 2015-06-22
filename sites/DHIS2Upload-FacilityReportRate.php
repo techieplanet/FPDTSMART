@@ -36,6 +36,13 @@ $PERIOD_HISTORICAL = "201503"; //"201101;201102;201103;201104;201105;201106;2011
 //TP 
 $DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;s5DPBsdoE8b&dimension=pe:";
 $DATA_URL_END   = "&displayProperty=NAME&outputIdScheme=ID";
+
+//set this to web OR file to set where the system will fecthc commodity 
+//reports data from web service or from a pre-downloaded json file
+$DATA_SOURCE = 'web';  //web||file
+
+//use this in file data source mode: Ensure to use the correct file name
+$DATA_SOURCE_JSON_FILE = "FRR_Web_Service_analytics_2015_jan_to_march.json";
  
 //https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:LAST_MONTH&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID
 
@@ -145,12 +152,18 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	// read web service 
 	print "Load data: " . $DATA_URL . "\n\n";
         echo '<br/><br/>';
-	 $data_json = getWebServiceResult($DATA_URL, $USERNAME, $PASSWORD); 
+        
+        // read from web service or file: gives facility report rate
+        if($DATA_SOURCE == 'web')
+            $data_json = getWebServiceResult($DATA_URL, $USERNAME, $PASSWORD); 
+        else if($DATA_SOURCE == 'file')
+            $data_json = file_get_contents($DATA_SOURCE_JSON_FILE);
+        
        //"https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;%20s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID
- 	//$data_json = file_get_contents ("FRR_Web_Service_analytics_2015_jan_to_march.json" ); // REMOVE: for test only
-	 //echo 'This is the anotheer aspect of t';                                                   
+        //$data_json = file_get_contents ("FRR_Web_Service_analytics_2015_jan_to_march.json" ); // REMOVE: for test only
+	
 	$data_json_arr = json_decode($data_json, true);
-        //print_r($data_json_arr);echo '<br/><br/>';
+        
         /*
        $date = "201503";
        $values = array();
@@ -181,9 +194,9 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	}
         
 	//save json output to file
-	$file = fopen("DHIS2Upload-FacilityReportRate-". $date . ".json","w");
-	echo fwrite($file,$data_json);
-	fclose($file);
+	//$file = fopen("json_frr/DHIS2Upload-FacilityReportRate-". $date . ".json","w");
+	//echo fwrite($file,$data_json);
+	//fclose($file);
 	
 	unset($data_json_arr["metaData"]); // remove this huge object
 
@@ -199,7 +212,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	foreach ( $data_json_arr ["rows"] as $row) {
            
 		$facility_external_id = $row[1];
-                echo 'facility_external id is '.$facility_external_id;
+                //echo 'facility_external id is '.$facility_external_id;
 		$report = $row[2];
 		if($report !== '100.0'){
 			$error = $error . "ERROR: " . $facility_external_id . " has value " . $report . "\n";
@@ -213,12 +226,14 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
                 */
                 echo '<br/>';
                 //print_r($row);
-                echo 'I am here &nbsp;&nbsp;&nbsp;';
+                //echo 'I am here &nbsp;&nbsp;&nbsp;';
                 
                 $result = $db->fetchAll("SELECT id  FROM facility WHERE external_id='".$facility_external_id."'");
-               //print_r($result);
+                //print_r($result);
+                
                 $id = $result[0]['id'];
-               echo 'Id is '.$id;
+                //echo 'Id is '.$id;
+                
                 $count++;
 		$bind = array(
 				'facility_external_id'			=>	$facility_external_id,
@@ -243,11 +258,11 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	$db_data_info_count = $db->fetchAll ("select count(*) as count from facility_report_rate where date='" . $date_year . "-" . $date_month . "-01'");
 	print $db_data_info_count[0]['count'] . " facilities  in database.\n\n";
 	
- if(!empty($error)){
- 	$file = fopen("DHIS2Upload-FacilityReportRate-". $date . ".errors","w");
- 	fwrite($file,$error);
- 	fclose($file);
- }
+        if(!empty($error)){
+               $file = fopen("json_frr/DHIS2Upload-FacilityReportRate-". $date . ".errors","w");
+               fwrite($file,$error);
+               fclose($file);
+        }
 }
 
 //print help how to run script

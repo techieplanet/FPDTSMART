@@ -680,6 +680,23 @@ class Helper2 {
            }
            return $output;
         }
+        
+        
+        public function msort($array){
+            for($i=0; $i<count($array)-1; $i++){                
+                for($j=$i+1; $j<count($array); $j++){
+                    if($array[$i]['percent'] > $array[$j]['percent']){
+                        $temp = $array[$i];
+                        $array[$i] = $array[$j];
+                        $array[$j] = $temp;
+                    }
+                }
+            }
+            
+            //echo '<br/>bros<br>';
+            //var_dump($array); exit;
+            return $array;
+        }
     
 }
 

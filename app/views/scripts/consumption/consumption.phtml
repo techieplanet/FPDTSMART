@@ -157,8 +157,8 @@ print ScriptContainer::$instance->renderJSHead();
 							<div id="homecontent-mid" class="row rounded">
 								<div id="homebanner" class="rounded">
 								<div class="sliderdiv">
-					                <div class="hrNav"></div>
-									<div id="chart13_div" style="width: 650px; height: 300px;"></div>
+                                                                        <div class="hrNav"></div>
+    									<div id="chart13_div" style="width: 650px; height: 300px;"></div>
 									</div>
 									<div class="main-search">
 									    <div class="hrNav"></div>									
@@ -168,7 +168,7 @@ print ScriptContainer::$instance->renderJSHead();
 							</div>
 						</div>
 								<!-------   /////////////////////////// chart 2,2 ////////////////////// -->
-								<div class="main-search"></div>
+                                                <div class="main-search"></div>
 					</div>
 					
 				</div>
@@ -335,6 +335,7 @@ function drawChart13() {
         var chart13Options = {
 		      title: title_data,
 		      titleTextStyle: { fontSize: 15 },
+                      lineWidth: 4,
 		      vAxis: {format: '#', minValue: 4},
 		      legend: {fontSize: 14},
 		      chartArea: {width: '65%', height: '70%', top: 55},

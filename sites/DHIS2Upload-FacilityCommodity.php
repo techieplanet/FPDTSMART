@@ -74,6 +74,13 @@ $COMMODITY_INDEX = 0;
 $FACILITY_INDEX = 1;
 $CONSUMPTION_INDEX = 2;
 
+//set this to web OR file to set where the system will fecthc commodity 
+//reports data from web service or from a pre-downloaded json file
+$DATA_SOURCE = 'web';  //web||file
+
+//use this in file data source mode. Ensure to use the correct file name
+$DATA_SOURCE_JSON_FILE = "DHIS2Upload-FacilityCommodity-201503.json";
+
 //stock out commodities external id
 $STOCK_OUT_COMMODITIES = "'w92UxLIRNTl','DiXDJRmPwfh'";
 
@@ -140,7 +147,7 @@ $db = Zend_Db_Table_Abstract::getDefaultAdapter();
  	}
  }
  if($PERIOD_LAST_MONTH_MODE){
-        echo 'historical'; exit;
+        //echo 'historical'; exit;
  	print "\n\n ===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " START\n\n";
  	     
  	$DATA_URL = $DATA_URL_START . $PERIOD_LAST_MONTH . $DATA_URL_END;
@@ -153,7 +160,7 @@ $db = Zend_Db_Table_Abstract::getDefaultAdapter();
  echo date(DATE_RFC2822);
  
  if(!empty($all_errors)){
- 	$file = fopen("DHIS2Upload-FacilityCommodity-". $date . ".errors","w");
+ 	$file = fopen("json_comm/DHIS2Upload-FacilityCommodity-". $date . ".errors","w");
  	echo fwrite($file,$all_errors);
  	fclose($file);
  }
@@ -166,19 +173,19 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $UPDATE_FACILITY_MODE, $UPDATE_
 	global $commodity_names_out_of_stock_arr;
 	global $date;
         global $COMMODITY_INDEX, $FACILITY_INDEX, $CONSUMPTION_INDEX;
-
+        global $DATA_SOURCE, $DATA_SOURCE_JSON_FILE;
 
         // ******************* LOAD DATA FROM DHIS2 WEB SERVICE ***************************
 	
-	// read web service with facility and commodity data
 	print "Load data: " . $DATA_URL . "\n\n";
-	$data_json = getWebServiceResult($DATA_URL, $USERNAME, $PASSWORD); 
-       //$data_json =  file_get_contents($DATA_URL);
-      //  echo $data_json;
-	//echo 'Something is wrong here'; 
-	//$data_json = file_get_contents ( 'FRR_Web_Service_analytics_2015_jan_to_march.json' ); // REMOVE: for test only
-	//$data_json = file_get_contents("DHIS2Upload-FacilityCommodity-201503.json");                                        
-	$data_json_arr = json_decode($data_json, true);
+	
+        // read from web service or file: gives facility and commodity data
+        if($DATA_SOURCE == 'web')
+            $data_json = getWebServiceResult($DATA_URL, $USERNAME, $PASSWORD); 
+        else if($DATA_SOURCE == 'file')
+            $data_json = file_get_contents($DATA_SOURCE_JSON_FILE);
+	
+        $data_json_arr = json_decode($data_json, true);
         //echo $data_json;exit;
         echo 'count of json rows: ' . count($data_json_arr["rows"]) . '<br/><br/>'; 
         //print_r($data_json_arr); 
@@ -192,8 +199,8 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $UPDATE_FACILITY_MODE, $UPDATE_
        /* -----------------
         * THIS WILL HELP TO STRIP OUT ALL COMMODITIES NOT WATCHED BY THIS SYSTEM
         */
-       $external_id = array("DiXDJRmPwfh","G5mKWErswJ0","H8A8xQ9gJ5b","ibHR9NQ0bKL","JyiR2cQ6DZT","krVqq8Vk5Kw","mvBO08ctlWw","QlroxgXpWTL","vDnxlrIQWUo","w92UxLIRNTl","wNT8GGBpXKL","yJSLjbC9Gnr","Yw92UxLIRNTl");
-                       //WS:"DiXDJRmPwfh","G5mKWErswJ0","H8A8xQ9gJ5b","ibHR9NQ0bKL","JyiR2cQ6DZT","krVqq8Vk5Kw","mvBO08ctlWw","QlroxgXpWTL","vDnxlrIQWUo","w92UxLIRNTl","wNT8GGBpXKL","yJSLjbC9Gnr",
+       $external_id = array("DiXDJRmPwfh","G5mKWErswJ0","H8A8xQ9gJ5b","ibHR9NQ0bKL","JyiR2cQ6DZT","krVqq8Vk5Kw","mvBO08ctlWw","QlroxgXpWTL","vDnxlrIQWUo","w92UxLIRNTl","wNT8GGBpXKL","yJSLjbC9Gnr");
+                       //WS:"DiXDJRmPwfh","G5mKWErswJ0","H8A8xQ9gJ5b","ibHR9NQ0bKL","JyiR2cQ6DZT","krVqq8Vk5Kw","mvBO08ctlWw","QlroxgXpWTL","vDnxlrIQWUo","w92UxLIRNTl","wNT8GGBpXKL","yJSLjbC9Gnr","Yw92UxLIRNTl"
        
        //These commodities exist in web service but not in the database. 
        //EIHpURrBm7K;eChiJMwaOqm;pYhpegHDt4x;
@@ -204,6 +211,7 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $UPDATE_FACILITY_MODE, $UPDATE_
            $count++;
            //if($row[0]==$date){
                if(in_array($row[$COMMODITY_INDEX], $external_id)){
+                    $row[$FACILITY_INDEX] = trim($row[$FACILITY_INDEX]); //remove trailing spaces from facility UUID
                     array_push($values,$row);
                }
            //}
@@ -229,7 +237,10 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
     //print_r($data_json_arr);exit;
          //$data_json = file_get_contents("DHIS2Upload-FacilityCommodity-201502.json");
          //$data_json_arr = json_decode($data_json, true);
-        unset($data_json_arr["metaData"]["ou"]); // remove this huge object (2Mb of size)
+       
+        // remove this huge object (2Mb of size)
+        // The object contains all facilities in UUID form
+        unset($data_json_arr["metaData"]["ou"]); 
         echo '<br/><br/><br/>';
         //print_r($data_json_arr);
       
@@ -239,9 +250,9 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
 	print "<br/>Data period: " . $date_year . "-" . $date_month . "-01\n\n";
 	
 	//save json output to file
-	$file = fopen("DHIS2Upload-FacilityCommodity-". $date . ".json","w");
-	echo fwrite($file,$data_json);
-	fclose($file);
+	//$file = fopen("json_comm/DHIS2Upload-FacilityCommodity-". $date . ".json","w");
+	//echo fwrite($file,$data_json);
+	//fclose($file);
 
 	//echo 'This is the nrwwweopehfefhfej';
 
@@ -268,9 +279,10 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
         }
 	//exit;
 
-	// get DB facility info AFTER update
+	// get DB updated facility info AFTER update
 	// hash: key - external id, value - array(id, external_id, facility_name)
 	$db_facility_info = getDBFacilitiesInfo ( $db );
+        //print_r($db_facility_info);
 	
 	// ******************* UPDATE COMMODITIES NAMES ***********************************************
         /*TP: 
@@ -312,9 +324,7 @@ echo 'The size of the commodity for the period '.$date.'  is '.sizeof($data_json
            
 		$db_commodity_data_info = getDBCommoditiesDataInfo ( $db, $date_year . "-" . $date_month . "-01" );
 		
-		updateCommoditiesData ( $data_json_arr ["rows"], $db_commodity_info, $db_facility_info, $db_commodity_data_info, $db, $date_year . "-" . $date_month . "-01" );
-	
-                 
+		updateCommoditiesData ( $data_json_arr ["rows"], $db_commodity_info, $db_facility_info, $db_commodity_data_info, $db, $date_year . "-" . $date_month . "-01" ); 
         }
 
 }
@@ -410,7 +420,9 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
         global $STOCK_OUT_IMPLANT;
         global $STOCK_OUT_COMMODITIES;
         global $COMMODITY_INDEX, $FACILITY_INDEX, $CONSUMPTION_INDEX;
-  
+        
+        $commodity_not_id = $not_facility = $commodity_not_inserted = array(); 
+        
         //get list of reporting facilities for the month
         $facilities_array = getReportingFacilities($db, $date);
         
@@ -439,9 +451,10 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
        
          // print_r($db_facility_info);
         $degade = 0;
-        $counter = 0;
+        $counter = 0; $facPassCounter = $loopCounter = $commPassCounter = $commPassCounter = $insertCounter = 0; 
         echo 'This is the inside size of the commodity database'.sizeof($commodity_data).'<br/><br/>';
 	foreach ($commodity_data as $commodity) {
+                $loopCounter++;
 		$commodity_external_id = $commodity[$COMMODITY_INDEX];
                 $consumption = $commodity[$CONSUMPTION_INDEX];
                 //$commodity_id = $db_commodity_info[$commodity_external_id]['id'];
@@ -472,10 +485,12 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
                $number = 0;
                
               // echo 'The commodity id is now '.$commodity_external_id.'<br/>';
-                //TP: check if the external id is registered in out system
+                //TP: check if the external id is registered in our system
 		if($db_commodity_info && array_key_exists($commodity_external_id, $db_commodity_info)){
+                    $commPassCounter++;
                     // echo $commodity_external_id.' this is the correct thing <br/>';
-             // print_r($commodity);
+                    //print 'comodity print<br>';
+                    //print_r($commodity);
             // echo 'the the number of the real call ups '.$number++;
               //echo '<br/><br/><br/>';
                // echo '<br/><br/><br/>';
@@ -486,10 +501,10 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
                        //print_r($commodity); echo '<br/><br/>';//continue;
 			$facility_external_id = $commodity[$FACILITY_INDEX];
                         
-                      
-                        
+                                
 			if($db_facility_info && array_key_exists($facility_external_id, $db_facility_info)){
                            //echo 'inside facility check <br/><br/>';
+                           $facPassCounter++;
                             
                            // echo 'THis is number '.$counter.'<br/><br/>';
                             
@@ -513,6 +528,7 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
                                               $flag = 0;
                                           }
                                         
+                                          //echo 'after flag<br><br>';
                                         // add new dataecho  
                                         // echo  'commodity id is '.$commodity_id.' facility id is '.$facility_id.' date is '.$date.' flag is '.$flag.' consumption is '.$consumption.' stock_out '.$stock_out.'<br/><br/>';
                                         // continue;
@@ -528,7 +544,12 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
                                               );
                                           $degade = $degade + 1;
                                           
-                                          $db->insert("commodity", $bind);
+                                          $insertBoolean = $db->insert("commodity", $bind);
+                                          //echo 'insert: ' . $insertBoolean . '<br><br>';
+                                          if((!$insertBoolean) || ($insertBoolean<1))
+                                              $commodity_not_inserted[] = $commodity;
+                                          else
+                                              $insertCounter++;
 
 					if($DEBUG_MODE)
 						print "ADD COMMODITY DATA: " . $commodity_external_id . " to facility " . $facility_external_id . "=" . $consumption . "\n";
@@ -540,16 +561,24 @@ function updateCommoditiesData($commodity_data, $db_commodity_info, $db_facility
                             $not_facility[] = $facility_external_id;
                         }
 		}else{
-                    
-                  
-          $commodity_not_id[] = $commodity_external_id; 
+                    $commodity_not_id[] = $commodity_external_id; 
                 }
-                
                 
 	}
        // echo 'This is the facility array ';
        // print_r($facilities_array);echo '<br/><br/>';
+        print '------------------- COMMS NOT FOUND IN DB ---------------<br/>';
         print_r($commodity_not_id); echo '<br/><br/>';
+        
+        print '------------------- FACS NOT FOUND IN DB ---------------<br/>';
+        print_r($not_facility); echo '<br/><br/>';
+        
+        
+        print '------------------- COMMS NOT INSERTED INTO DB ---------------<br/>';
+        print_r($commodity_not_inserted); echo '<br/><br/>';
+        
+        print "counter: $counter, facPassCounter: $facPassCounter, loopCounter: $loopCounter, commPassCounter: $commPassCounter, insertCounter: $insertCounter<br>";
+        
         echo 'facility id is here '.$counter.'<br/>';
         //print_r($not_facility);
         echo 'he aftermath is '.$degade;
