@@ -894,7 +894,11 @@ class TrainingController extends ReportFilterHelpers {
 		}
 
 
-
+                $personsFields ['district_name'] = $this->tr ( 'Region B (Health District)' );
+                $personsFields ['region_c_name'] = $this->tr ( 'Region C (Local Region)' );
+                
+                /*TP: This was commented out due to the fact that emphasis was laid on state and localgovernment in the requirement.
+                 *  They were made compulsory fields...
 		if ( $this->setting ( 'display_region_i' )) {
 			$personsFields ['region_i_name'] = $this->tr ( 'Region I' );
 		}
@@ -922,14 +926,17 @@ class TrainingController extends ReportFilterHelpers {
 		else {
 			$personsFields ['province_name'] = $this->tr ( 'Region A (Province)' );
 		}
-
+*/
+                 
                 //TP: restructuring the table of the participant
                  $personsFields['facility_name'] = t ( 'Facility' );
+                 $personsFields['qualification'] = t('Qualification');
                  $personsFields['certification'] = t('Certification');
+                 
+                //'facility$_name' => t ( 'Facility' ),'certification'=>t('Certification')
                 
-                //'facility_name' => t ( 'Facility' ),'certification'=>t('Certification')
-
 		$colStatic = array_keys ( $personsFields ); // static calumns (From field keys)
+                //print_r($colStatic);exit;
 		if ( $this->setting ( 'module_attendance_enabled' ) || $this->setting ( 'display_viewing_location' ) || $this->setting( 'display_budget_code' ) ) {
 			foreach( $colStatic as $i => $v )
 				if( $v == 'duration_days' || $v == 'award_phrase' || $v == 'budget_code_phrase' || $v == 'location_phrase')
@@ -968,7 +975,7 @@ class TrainingController extends ReportFilterHelpers {
 
 
 		}
-
+//print_r($persons);exit;
 		$html = EditTableHelper::generateHtmlTraining ( 'Persons', $persons, $personsFields, $colStatic, $linkInfo, $editLinkInfo, $customColDefs);
 		$this->view->assign ( 'tablePersons', $html );
 
@@ -1189,6 +1196,7 @@ class TrainingController extends ReportFilterHelpers {
 
 			if ($action == 'add') {
 
+
 				$result = $tableObj->addPersonToTraining ( $row_id, $training_id,$certification );
 
 				$sendRay ['insert'] = $result;
@@ -1266,29 +1274,28 @@ class TrainingController extends ReportFilterHelpers {
 	* Import a training
 	*/
 	
-	public function importAction() {
+	public function  importAction() {
 		$status = ValidationContainer::instance();
 		$errs = array();
 		$this->view->assign('pageTitle', t( 'Import a training' ));
 		$to_fix = "";
-                
+		
 		// template redirect
 		if ( $this->getSanParam('download') )
 			return $this->importTrainingTemplateAction();
 		
 		if( ! $this->hasACL('import_training') )
 			$this->doNoAccessError ();
-                    //var_dump($_FILES['upload']); exit;
+		
 		$filename = ($_FILES['upload']['tmp_name']);
-               
 		if ( $filename ){
-                    
+			
 			require_once('models/table/TrainingLocation.php');
 			require_once('models/table/Person.php');
 			require_once('models/table/TrainingToTrainer.php');
 			require_once('models/table/PersonToTraining.php');
 			
-			$trainingObj = new Training();
+			$trainingObj = new Training ();
 			$personToTraining = new PersonToTraining();
 			
 			$rows = $this->_excel_parser($filename);
@@ -1297,7 +1304,7 @@ class TrainingController extends ReportFilterHelpers {
 			
 			//get training info
 			$values['training_organizer_phrase'] = $rows[9][2];
-                        
+				 
 			//TA:17:16:1 validate training dates
 			if(!trim($rows[11][3])){
 				$status->addError( 'end-day', t('Your changes have been not saved: End date is required.') );
@@ -1311,10 +1318,10 @@ class TrainingController extends ReportFilterHelpers {
 				$values['training_start_date'] = '20' . $ys . '-' . $ms . '-' . $ds;
 				$status->isValidDate ( $this, 'start-day', t ( 'Your changes have been not saved: Training start date'), $values['training_start_date'] );
 				if (strtotime ($values['training_end_date'] ) < strtotime ( $values['training_start_date'] )) {
-					$status->addError( 'end-day', t ( 'Your changes have been not saved: End date must be after start date.' ) );
+					$status->addError ( 'end-day', t ( 'Your changes have been not saved: End date must be after start date.' ) );
 				}
 			}
-                        
+
 			//TA:17:16:1 validate training type
 			$values['training_title_option_id'] = '';
 
@@ -1324,50 +1331,52 @@ class TrainingController extends ReportFilterHelpers {
 					break;
 				}
 			}
-                        
 			if(!trim($values['training_title_option_id'])){
 				$status->addError ( 'title_option_id', t ( 'Your changes have been not saved: Type of training is required.' ) );
 			
                                 
                         }
-                        
+                      
                         //TP: we want to get the LEVEL category
                         for($v=30; $v<33; $v++){
-                            if(!empty($rows[$v][3]) && strtoupper($rows[$v][3]) == 'X' ){
-                                $values['training_level_id'] = $rows[$v][2];
-                                
+                            if(!empty($rows[$v][3])){
+                                $values['training_level_option_id'] = $rows[$v][2];
+                                //echo $v;
+                                //echo 'it is not empty brother';
                                 if($v==30){
-                                    $values['training_level_option_id'] = '1';
+                                    $id = '1';
                                 }else if($v==31){
-                                    $values['training_level_option_id'] ='2'; 
+                                    $id ='2'; 
                                 }else if($v==32){
-                                    $values['training_level_option_id'] = '3';
+                                    $id = '3';
                                 }
-                                
-//                                if($rows[$v][2]=="Master training"){
-//                                  $values['training_level_option__id'] = $id;
-//                                }else if($rows[$v][2]=="Training of trainer (TOT)"){
-//                                    $values['training_level_option__id'] = $id;
-//                                }else if($rows[$v][2]=="Cascade training"){
-//                                    $values['training_level_option__id'] = $id;
-//                                }
+                               
+                                if($rows[$v][2]=="Master training"){
+                                  $values['training_level_option_id'] = $id;
+
+                                }else if($rows[$v][2]=="Training of trainer (TOT)"){
+                                    $values['training_level_option_id'] = $id;
+                                }else if($rows[$v][2]=="Cascade training"){
+                                    $values['training_level_option_id'] = $id;
+                                }
                                 break;
                             }
                         }
-                        
+                        $values_person['training_level_option_id'] = $values['training_level_option_id'];
+                        //echo $values['training_level_option__id'];exit;
                         if(!trim($values['training_level_option_id'])){
-				$status->addError ( 'training_level_option__id', t ( 'Your changes have not been saved: Level of training is required.' ) );
+				$status->addError ( 'training_level_option_id', t ( 'Your changes have been not saved: Level of training is required. is here'.$rows[33][2] ) );
 			
                                 
                         }
-                      
-		if($status->hasError() == 0){ //contunue parse persons if required training info is validate
+                      // print_r($rows);
+
+		if($status->hasError() === 0){ //contunue parse persons if required training info is validated
 			try{
-				if (isset($values['training_title_option_id'])){$values['training_title_option_id']= $this->_importHelperFindOrCreate('training_title_option','training_title_phrase',$values['training_title_option_id']); }                                
+				if (isset($values['training_title_option_id'])){$values['training_title_option_id']= $this->_importHelperFindOrCreate('training_title_option','training_title_phrase',$values['training_title_option_id']); }
 				if ($values['training_start_date']){$values['training_start_date'] = $this->_date_to_sql($values['training_start_date']); }
 				if ($values['training_end_date']) {$values['training_end_date'] = $this->_date_to_sql($values['training_end_date']); }
 				if (isset($values['training_organizer_phrase'])){$values['training_organizer_option_id']= $this->_importHelperFindOrCreate('training_organizer_option','training_organizer_phrase',$values['training_organizer_phrase']); }
-                                
 				//default values
 				$values['has_known_participants'] = '1';
 				$values['comments'] = '';
@@ -1378,13 +1387,10 @@ class TrainingController extends ReportFilterHelpers {
 				$values['is_refresher'] = '1';
 				$values['training_location_id'] = '1'; // by default 'unknown'
 
-                                //if($status->hasError() != 0) print 'Error Found<br/>'; else print 'No error b4 createRow<br/>';
-                                //print_r($status); exit;
 				$tableObj = $trainingObj->createRow();
 				$tableObj = ITechController::fillFromArray($tableObj, $values);
 				$training_id = $tableObj->save();
-                                
-				if ($training_id > 0) {                                        
+				if ($training_id > 0) {
 					$db = $this->dbfunc();
 					$personObj = new Person (); //in case if we will need to add new persons
 
@@ -1406,15 +1412,15 @@ class TrainingController extends ReportFilterHelpers {
 									continue;
 								}
 							
-								//first, middle, last of trainee
+								//first, middle, last
 								$trainer_id = Person::tryFind(trim($rows[$i][1]), trim($rows[$i][2]), trim($rows[$i][3]));
-                                                                
+
                                                                 $certification = $rows[$i][14];
                                                                 
-                                                                //if person not found
+                                                                     
 								if ( !$trainer_id ) { //add new person to Person
 									
-									if(!trim($rows[$i][6])){
+									if(!trim($rows[$i][5])){
 										$errs[] = t("Could not add person to training. Cadre is required."). " Person: #" . $rows[$i][0];
 										$to_fix = "to fix data";
 										continue;
@@ -1437,18 +1443,16 @@ class TrainingController extends ReportFilterHelpers {
                                                                         $values_person['certification'] = trim($rows[$i][14]);
                                                                        // echo 'Certification is '.$values_person['certification']." ";
                                                                         $values_person['certification'] = trim($rows[$i][14]);
-                                                                        $values_person['training_level_id'] = $values['training_level_id'];
+                                                                        $values_person['training_level_id'] = $values['training_level_option__id'];
 									$values_person['primary_qualification_option_id'] = '0';
 									if(trim($rows[$i][6])){
-										$cadre_id = $db->fetchOne ( "SELECT id FROM person_qualification_option WHERE qualification_phrase_abbr = '" . trim($rows[$i][6]) . "' LIMIT 1" );
+										$cadre_id = $db->fetchOne ( "SELECT id FROM person_qualification_option WHERE qualification_phrase = '" . trim($rows[$i][6]) . "' LIMIT 1" );
 
 										if($cadre_id){
 											$values_person['primary_qualification_option_id'] = $cadre_id;
 										}
 									}
 									
-                                                                        
-                                                                        //check for 
 									//if facility id not found then allow to add person with empty facility id
 									$facility_name = strtolower(trim($rows[$i][9]));
 									$lga_name = trim($rows[$i][8]);
@@ -1462,7 +1466,7 @@ class TrainingController extends ReportFilterHelpers {
  										if (!empty ( $state_name )){
  											$state_id = $db->fetchOne ( "SELECT id FROM location WHERE LOWER(location_name) = '" . $state_name . "' LIMIT 1" );
 											if($state_id != null && !empty ( $lga_name )){
-												$lga_id = $db->fetchOne("SELECT id FROM location WHERE LOWER(location_name) = '" . $lga_name . "' AND parent_id = $state_id  LIMIT 1" );
+												$lga_id = $db->fetchOne (  "SELECT id FROM location WHERE LOWER(location_name) = '" . $lga_name . "' AND parent_id = $state_id  LIMIT 1" );
 												if($lga_id != null && !empty ( $facility_name )){
 													$values_person['facility_id'] = $db->fetchOne (  "SELECT id FROM facility WHERE LOWER(facility_name) = '" . $facility_name . "' AND location_id = $lga_id  LIMIT 1" );
 												}
@@ -1473,28 +1477,22 @@ class TrainingController extends ReportFilterHelpers {
 									//prinr_r($values_person);
 
 									$mes_facility = '';
-									if($facility_name) {
-                                                                            $mes_facility .= $facility_name;
-                                                                            if($lga_name){
-                                                                                    if($mes_facility) $mes_facility .= ", ";
-                                                                                    $mes_facility .= $lga_name;
-                                                                            }
-                                                                            if($state_name){
-                                                                                    if($mes_facility) $mes_facility .= ", ";
-                                                                                    $mes_facility .= $state_name;
-                                                                            }
-                                                                            
-                                                                            if($mes_facility != ''){
-                                                                                    $mes_facility = "Facility not found '" . $mes_facility . "'";
-                                                                                    $to_fix = "to fix data";
-                                                                            }
-                                                                        }else{
-                                                                                $mes_facility = "Facility, LGA and State are required";
-                                                                                $to_fix = "to fix data";
-                                                                        }
-                                                                        
-                                                                        
-                                                                        
+									if($facility_name) $mes_facility .= $facility_name;
+									if($lga_name){
+										if($mes_facility) $mes_facility .= ", ";
+										$mes_facility .= $lga_name;
+									}
+									if($state_name){
+										if($mes_facility) $mes_facility .= ", ";
+										$mes_facility .= $state_name;
+									}
+									if($mes_facility !== ''){
+										$mes_facility = "Facility not found '" . $mes_facility . "'";
+										$to_fix = "to fix data";
+									}else{
+										$mes_facility = "Facility, LGA and State are required";
+										$to_fix = "to fix data";
+									}
 									$mes_person = '';
 									if($rows[$i][1]) $mes_person .= $rows[$i][1];
 									if($rows[$i][2]){
@@ -1507,8 +1505,7 @@ class TrainingController extends ReportFilterHelpers {
 									}
 									
 									if($values_person['facility_id'] == '0'){				
-										//$errs [] = $mes_facility . ". Person #" . $rows[$i][0] . " '" . $mes_person . "' has been added to training, but has not being assigned to any facility.";
-                                                                                $errs[] = "Person #" . $rows[$i][0] . "($mes_person): " . $mes_facility . ". Person has been added to training, but has not being assigned to any facility. ";
+										$errs [] = $mes_facility . ". Person #" . $rows[$i][0] . " '" . $mes_person . "' has been added to training, but has not being assigned to any facility.";
 										$to_fix = "to fix data";
 									}
 									
@@ -1523,18 +1520,16 @@ class TrainingController extends ReportFilterHelpers {
 								}
 								//	this not working 
 								//TrainingToTrainer::addTrainerToTraining($trainer_id, $training_id, 0); 
-                                                               //echo var_dump($errs); exit;
+                                                               
 								$personToTraining->addPersonToTraining($trainer_id, $training_id,$certification);
+
 							
 						}
 					}
 				}
 			} catch (Exception $e) {
 				$errored = 1;
-                                //development
-				//$errs[]  = nl2br($e->getMessage()).' '.t ( 'ERROR: The training data could not be saved. Training#'.$training_id);
-                                //production
-                                $errs[]  = t( 'ERROR: Training data not saved completely. Training #'.$training_id);
+				$errs[]  = nl2br($e->getMessage()).' '.t ( 'ERROR: The training data could not be saved. Training#'.$training_id);
 			}
 		}
 			
@@ -1544,7 +1539,7 @@ class TrainingController extends ReportFilterHelpers {
 			if( empty($errored) && empty($errs) )
 				$stat = t ('Your changes have been saved.');
 			else
-				$stat = t ('Error importing data. Some trainee data have not been uploaded, please fix on the Training Edit page.');
+				$stat = t ('Error importing data. Some trainee data has not been uploaded, please fix on the Training Edit page.');
 			
 			foreach ($success as $errmsg)
 				$stat .= '<br>'.$errmsg;
@@ -1851,7 +1846,6 @@ class TrainingController extends ReportFilterHelpers {
 									$trainer_last   = trim($trainer_last);
 
                                                                         $certification = trim($certification);
-
 
 	
 									#if (! $trainer_id) // id comes with exported data - todo if @search() matches Id ->

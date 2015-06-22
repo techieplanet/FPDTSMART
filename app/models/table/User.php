@@ -12,7 +12,11 @@ require_once('ITechTable.php');
 
 class User extends ITechTable
 {
-    
+   const ADMIN_USER = 1;
+        const FMOH_USER = 2;
+        const PARTNER_USER = 3;
+        const STATE_USER = 4;
+        const LGA_USER = 5;
         protected $_name = 'user';
 	protected $_primary = 'id';
 
@@ -132,4 +136,52 @@ class User extends ITechTable
 		return $rtn;
 
  	}
+        
+        public function get_userid(){
+              $auth = Zend_Auth::getInstance();
+              $return  = 0;
+                if ($auth->hasIdentity()) {
+                    // Identity exists; get it
+                    $identity = $auth->getIdentity();
+                  // $identify = $identity;
+
+                    foreach($identity as $identify){
+                       $details_user[] = $identify;
+                    }
+                    //print_r($identity); exit;
+                    $user = $details_user[0];
+                    //$province_id = $details_user[5];
+                    //$district_id = $details_user[6];
+                    //$region_c_id = $details_user[7];
+                    //$role = $details_user[4];
+                    $return  =  $this->get_user_role($user);
+                   
+                } 
+           return $return; 
+        }
+        public function get_user_role($user){
+            
+             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+
+		$sql = "SELECT  role,province_id,district_id,region_c_id FROM user WHERE id ='".$user."'";
+		$result = $db->fetchAll($sql);
+                //print_r($result);
+                //echo 'User id is '.$user;
+                
+                $role = $result[0]['role'];
+                return $role;
+        }
+        public function is_user_an_admin(){
+           $role = $this->get_userid();
+           //echo user::ADMIN_USER;
+           if($role==User::ADMIN_USER){
+               return true;
+           }
+           else{
+               
+               return false;
+           }
+            
+        }
+        
 }

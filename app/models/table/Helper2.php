@@ -238,6 +238,7 @@ class Helper2 {
   
   
   /* TP: 
+
    * This method will return facility IDs of reporting facilities for the past 6 months 
    * from date parameter
    * Args: date - usually first day of the month to represent the month
@@ -317,7 +318,6 @@ class Helper2 {
                       ->joinInner(array('cno'=>'commodity_name_option'), array())
                       ->where("cno.id = c.name_id AND " . $where . " AND c.date='" . $date . "'")
                       ->order(array('facility_id'));
-        
         //echo $sql = $select->__toString(); exit;
         
         $result = $db->fetchAll($select);
@@ -329,7 +329,6 @@ class Helper2 {
         return $facs;
     }
   
-    
     
     public function getLocationFacilityIDs($where){
         if(empty($where)) return '';
@@ -469,6 +468,7 @@ class Helper2 {
     }
     
     
+
     public function filterLocations($locationNames, $result, $tierText){
            $locationDataArray = array();
            if(!empty($result)){
@@ -680,7 +680,7 @@ class Helper2 {
            }
            return $output;
         }
-    
+   
 }
 
 ?>

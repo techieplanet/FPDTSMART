@@ -32,23 +32,23 @@ print ScriptContainer::$instance->renderJSHead();
 	  <div class="fieldInput"><input type="password" name="password" size="32" maxlength="32" autocomplete="false" autocomplete='off' value=""/></div>
  	  <div class="fieldLabel"  id="confirm_password_lbl"><?php tp('Confirm New password');?></div>
 	  <div class="fieldInput"><input type="password" name="confirm_password" size="32" maxlength="32" autocomplete='off' value=""/></div>
- 	  
+ 	<!--  
 	<div class="fieldLabel"><span class="required">*</span>Zone</div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 1, 'province_id', $this->user['zone'], 'district_id', false,false); ?></div>
+							<div class="fieldselect"><?php //renderFilter($this->locations, 1, 'province_id', $this->user['zone'], 'district_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
 							<div class="fieldLabel"><span class="required">*</span>State</div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 2, 'district_id', $this->user['state'], 'region_c_id', false,false); ?></div>
+							<div class="fieldselect"><?php // renderFilter($this->locations, 2, 'district_id', $this->user['state'], 'region_c_id', false,false); ?></div>
 							
 							<div class="clear pad20">&nbsp;</div>
 	
 							<div class="fieldLabel"><span class="required">*</span>LGA </div><br/>
 							
-							<div class="fieldselect"><?php renderFilter($this->locations, 3, 'region_c_id', $this->user['lga'],'', false, false); ?></div>
-							
+							<div class="fieldselect"><?php // renderFilter($this->locations, 3, 'region_c_id', $this->user['lga'],'', false, false); ?></div>
+							-->
 							<div class="clear pad20">&nbsp;</div>
           
           <div class="clear"></div>

@@ -20,6 +20,8 @@ class Role extends ITechTable{
         const PARTNER_USER = 3;
         const STATE_USER = 4;
         const LGA_USER = 5;
+        
+        
 }
 
 ?>

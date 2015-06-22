@@ -398,7 +398,6 @@ class CoverageHelper {
        
        
        
-       
         
 }
 ?>

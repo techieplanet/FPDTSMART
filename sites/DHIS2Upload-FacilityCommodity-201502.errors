@@ -1,0 +1,19 @@
+
+=> UPDATE FACILITIES:
+ERROR: n6TBVygBZAZ (facility name is empty)
+ERROR: BR9zBM72Y9t (facility name is empty)
+ERROR: ZmI83Q7VUgR (facility name is empty)
+ERROR: Gk1JU9PuTLV (facility name is empty)
+ERROR: yVYIp3DuamN (facility name is empty)
+ERROR: YeBnTSFOFa3 (facility name is empty)
+ERROR: X7HdmvKfLyI (facility name is empty)
+ERROR: m06Cu4evOoO (facility name is empty)
+ERROR: dGziGdeRfvD (facility name is empty)
+ERROR: ztsbsS6KEmD (facility name is empty)
+ERROR: cC7znEYpHQn (facility name is empty)
+ERROR: mE0NhzNy6sb (facility name is empty)
+ERROR: l7nEnxZPC0H (facility name is empty)
+ERROR: EDIT FACILITY: VU1WCfjNM7R (SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'oji Dispensary' WHERE external_id='VU1WCfjNM7R'' at line 1)
+ERROR: EDIT FACILITY: kTXTGgb2FEJ (SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 's Hospital/Maternity' WHERE external_id='kTXTGgb2FEJ'' at line 1)
+
+

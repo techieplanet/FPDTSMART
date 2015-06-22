@@ -11,127 +11,61 @@
 		print ScriptContainer::$instance->renderJSHead();
 
 		?>
-
-		
-                <script type="text/javascript" charset="utf-8" src="views/helpers/jquery.js">
-			
-		</script>
-                <style>
-
-.drnw:hover,.drne:hover,.drse:hover,.drss:hover,.drsw:hover,.drnc:hover{
-    background:khaki;
-    
-}
-
-#primary_nav_wrap
-{
-	margin-top:15px
-}
-
-#primary_nav_wrap ul
-{
-	list-style:none;
-	position:relative;
-	float:left;
-	margin:0;
-	padding:0
-}
-
-#primary_nav_wrap ul a
-{
-	display:block;
-	color:#333;
-	text-decoration:none;
-	font-weight:700;
-	font-size:12px;
-	line-height:32px;
-	padding:0 15px;
-	font-family:"HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif
-}
-
-#primary_nav_wrap ul li
-{
-	position:relative;
-	float:left;
-	margin:0;
-	padding:0
-}
-
-#primary_nav_wrap ul li.current-menu-item
-{
-	background:#ddd
-}
-
-#primary_nav_wrap ul li:hover
-{
-	background:#f6f6f6
-}
-
-#primary_nav_wrap ul ul
-{
-	display:none;
-	position:absolute;
-	top:100%;
-	left:0;
-	background:#fff;
-	padding:0
-}
-
-#primary_nav_wrap ul ul li
-{
-	float:none;
-	width:150px
-}
-
-#primary_nav_wrap ul ul a
-{
-	line-height:120%;
-        width:150px;
-	padding:10px 15px
-}
-
-#primary_nav_wrap ul ul ul
-{
-	top:20%;
-	left:;
-}
-
-
-
-#primary_nav_wrap ul li:hover > ul
-{
-	display:block;
-        float:right;
-        margin-left:150px;
-        margin-top:-34px;
-}
-#primary_nav_wrap ul ul ul:hover {
-	display:block;
-        float:right;
-        margin-right:-150px;
-       
-}
-nav{
-    width:150px;
-    
-}
-#primary_nav_wrap ul ul li:hover > ul
-{
-	display:block;
-        float:right;
+<link rel="stylesheet" href="views/helpers/jquery-ui.css" />
+<script src="views/helpers/jquery-1.9.1.js"></script>
+<script src="views/helpers/jquery-ui.js"></script>
+<style type="text/css">
+    #accordion {
+        width:25%;
+        margin: 0 auto;
         
-}
-nav ul li a{
-    width:150px;
-    border: 1px solid;
-    background:khaki;
-    
-}
-nav ul ul{
-    position:relative;
-}
+       color:green;
+ 
+    }
+    #accordion p{
+        text-align:left;
+    }
+    #accordion h3{
+        color:green;
+        
+       
+        background:#DEEBE6;
+        
+    }
+    #accordion :hover{
+        
+    }
+</style>		
+                
+             <script>
+$(function () {
+$("#accordion").accordion({
+event: "click",
+heightStyle: "content",
+collapsible: true,
+activate: 0,
 
-</style>
+autoHeight: false
+
+});
+$("div.accordion1").accordion({
+event: "click",
+heightStyle: "content",
+collapsible: true,
+activate: 0,
+autoHeight: false
+});
+
+$("div.accordion2").accordion({
+event: "click",
+heightStyle: "fill",
+height:"100px",
+collapsible: false,
+activate: 0,
+autoHeight: false
+});
+});
+</script>
 
   
 	</head>

@@ -324,12 +324,14 @@ echo "<br clear='top'/><br clear='left'/><br clear='top'/>";
         echo $this->insertLocationLink;
     ?>
   </div><br/>
+
   <?php }?>
 
   
   <?php?>
   
   <?php ?>
+
   
   
   <!-- TA:17: 09/03/2014 -->
@@ -824,7 +826,9 @@ if ( $this->row['has_known_participants']) :
    <?php } ?>
        <input type="text" id="person_birthdate" size="9" disabled="true" value="<?php tp('Birthdate');?>" alt="Birthdate">
       <input type="text" id="person_facility" size="15" disabled="true" value="<?php tp('Facility');?>" alt="Facility">
+
  
+
  <?php
  if ($this->setting [ 'display_region_c' ]) {
       $location_title = $this->translation['Region C (Local Region)'];
@@ -1299,7 +1303,9 @@ function submitForm() {
         }
       }
       catch (x) {
+
         alert("temp ITech script error: " + x);
+
         alert(response);
         return;
       }

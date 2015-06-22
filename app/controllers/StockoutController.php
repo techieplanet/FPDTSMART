@@ -13,6 +13,7 @@
 require_once ('ReportFilterHelpers.php');
 require_once ('models/table/Helper2.php');
 require_once('models/table/Stockout.php');
+
 require_once('models/table/Dashboard.php');
 
 class StockoutController extends ReportFilterHelpers {

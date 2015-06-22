@@ -196,7 +196,7 @@ if(isset($this->criteria['total_participants'])){
 							
 							<div class="queryquestion"><select name="training_type[]" id="trainingtype" multiple size="10" style="width:190px;">
 <?php
-echo "<option value='' >--choose--</option>";
+echo "<option value='' disabled >--choose--</option>";
 	foreach ($this->trainingtypes as $item){
             if(in_array($item['id'],$this->criteria['training_type'])){
                 $selected = "selected='selected'";
@@ -216,7 +216,7 @@ echo "<option value='' >--choose--</option>";
 							<div class="queryquestion">
                                <select name="trainingorganizer[]" id="trainingorganizer"  multiple size="10" style="width:190px">
 	<?php
-         echo "<option value='' >--choose--</option>";
+         echo "<option value='' disabled>--choose--</option>";
 		foreach ($this->trainingorganizer as $item){
                    if(in_array($item['id'],$this->criteria['trainingorganizer'])){
                 $selected = "selected='selected'";
@@ -268,7 +268,7 @@ echo "<option value='' >--choose--</option>";
 
 						</div>
                                                         <div class="maintoucher" >
-							<div class="queryquestion"><?php echo t('Health Worker Cadre'); ?></div><br/><br/>
+							<div class="queryquestion"><?php echo t('Professional Qualification'); ?></div><br/><br/>
 							
 							<div class="queryquestion"><select name="cadre" style="width:190px;" />
 	<?php

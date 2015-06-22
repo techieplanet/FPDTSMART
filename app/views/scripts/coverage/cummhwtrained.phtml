@@ -85,7 +85,9 @@ print ScriptContainer::$instance->renderJSHead();
 		<div id="content">
 
 			<!-------   /////////////////////////// get data ////////////////////// -->
+
                         
+
 			<div>
 				<?php  // require_once('views/scripts/dashboard/load_data.phtml');?>
 
@@ -224,6 +226,7 @@ print ScriptContainer::$instance->renderJSHead();
             $hAxisTitle = '';
             $national_title = "Total HWs trained nationally as of $this->tp_date";
         }
+
   ?>
                 
 <script type="text/javascript">
@@ -231,7 +234,9 @@ print ScriptContainer::$instance->renderJSHead();
   google.load('visualization', '1.0', {'packages':['corechart', 'table', 'gauge', 'controls']});
   google.setOnLoadCallback(apiLoaded);
   function apiLoaded() {
+
 	document.getElementById("allCharts").style.marginLeft="130px";
+
 		
 	var currentLevel;
 	currentLevel = <?php echo '\'' . $this->location_data[0][name] . '\''; ?>;
@@ -243,6 +248,7 @@ print ScriptContainer::$instance->renderJSHead();
                 drawLARCChart();
         <?php } else { ?>
                 drawNationalComboChart();
+
         <?php } ?>
    
   }
@@ -257,6 +263,7 @@ print ScriptContainer::$instance->renderJSHead();
       <?php //for($i=0; $i < $this->cumm_data; $i++) {?>
               //trainedHW.push(<?php //echo $this->data[$i]['tp_fp'], $this->data[$i]['tp_larc']; ?>);
       <?php //} ?>
+
       
       var chartData = google.visualization.arrayToDataTable([
 
@@ -269,6 +276,7 @@ print ScriptContainer::$instance->renderJSHead();
         ?>                                        
       ]);
 
+
               var hAxisTitle = <?php echo "'$hAxisTitle'"; ?>;
               var national_title = <?php echo "'$national_title'"; ?>;
               
@@ -278,6 +286,7 @@ print ScriptContainer::$instance->renderJSHead();
                 titleTextStyle: { fontSize: 16 },
                 vAxis: {format: '#', minValue: 4}, 
                 //seriesType: "bars",
+
                 series: {2: {type: "line", color: 'red'}},
                 chartArea: {width: '50%', left: 80}//new       
                 //tooltip: {'text' : 'both', isHtml : true}
