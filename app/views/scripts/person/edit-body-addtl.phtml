@@ -131,7 +131,8 @@ if ($this->setting['display_mod_skillsmart']) {
  <div class="clear"></div>
   <div class="hrGrey"></div>
   <div class="clear"></div>
-<div class="fieldIndentNoMargin"><?php tp('Qualifications');?></div>
+  <fieldset>
+      <legend><div class="fieldIndentNoMargin"><?php tp('Qualification');?></div></legend>
 <div class="fieldLabel" id="primary_qualification_option_id_lbl"><span class="required">*</span><?php tp('Professional qualification');?></div><div class="fieldInput"><select id="primary_qualification_option_id" name="primary_qualification_option_id">
   <option value="">--<?php tp('choose');?>--</option>
   <?php
@@ -146,7 +147,7 @@ if ($this->setting['display_mod_skillsmart']) {
   }
     ?>
 </select></div><br/>
-
+ 
 <?php if ( $this->setting['display_responsibility_me']  ) { ?>
 <div class="fieldLabel" ><?php echo (@$this->translation['M&E Responsibility']); ?></div><div class="fieldInput"><textarea name="me_responsibility" rows="3" cols="100"><?php echo $this->person['me_responsibility'];?></textarea></div><br/>
 <?php }?>
@@ -159,7 +160,7 @@ if ($this->setting['display_mod_skillsmart']) {
 <?php echo DropDown::render('secondary_responsibility_option_id', $this->translation['Secondary Responsibility'], $this->secondaryResponsibilities, 'responsibility_phrase', 'id', $this->person['secondary_responsibility_option_id'], $onchange = 'makeUniqueOptions("secondary_responsibility_option_id","primary_responsibility_option_id");' ); ?><br/>
 <?php }?>
 
-
+ </fieldset>
 <script type="text/javascript">
   function makeUniqueOptions(updatedSelect,alternateSelect) {
     var updatedObj = YAHOO.util.Dom.get(updatedSelect);

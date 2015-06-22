@@ -7,7 +7,6 @@ function addAjaxSubmit(buttonId,formId,postUrl) {
 		var handleSuccess = function(o) {
 			try {
 				var response = o.responseText;
-				
 				var responseObj = YAHOO.lang.JSON.parse(response);
 				displayStatus(responseObj.status);
 				var allGood = true;

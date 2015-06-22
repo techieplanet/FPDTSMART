@@ -139,10 +139,16 @@ $navMain['reports']['trainingrep'] = t('Training Data');
 			}
 		}
                 
+                
+                
                 $navMain['menu'] = array('index' => t('info'));
               $navMain['menu']['info'] = t('DHS Result');
               $navMain['menu']['rrate'] = t('Reporting Rates');
-
+              $user = new User();
+              //TP checking if the user is a user with an ADMIN ROLE
+if($user->is_user_an_admin()){
+$navMain['menu']['import'] = t('Import DHS Data');
+}
 		if ( $this->setting['module_evaluation_enabled']) {
 			$navMain['evaluation'] = array(
 			'index' => t('Evaluations')

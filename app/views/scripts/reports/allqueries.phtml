@@ -120,7 +120,7 @@
                                         </div>
 					<div class="space"></div>		
 	 <div class="maintoucher" >
-							<div class="queryquestion">State</div><br/>
+							<div class="queryquestion"><span class="required">*</span> State</div><br/>
 							
 							<div class="queryquestion"><?php renderFilter($this->locations, 2, 'district_id', $this->criteria['district_id'], 'region_c_id', true,false); ?></div>
 							 </div>
@@ -139,7 +139,7 @@
 <?php ?>
                                                        
                                                       <div class="maintoucher">
-                                                        <div class="queryquestion"><span class="required">*</span> Facility</div><br/>
+                                                        <div class="queryquestion"> Facility</div><br/>
 							<div class="queryquestion">
 							
 <?php renderFilter($this->locations, 4, 'facility_id', $this->criteria['facility_id'],'', true, false,'10'); ?></div><br/>
@@ -177,7 +177,7 @@
 								<div class="maintoucher" >
 
 	
-							<div class="queryquestion"><?php echo t('Cadres'); ?></div><br/>
+							<div class="queryquestion"><?php echo t('Professional Qualification'); ?></div><br/><br/>
 							
 							<div class="queryquestion"><select name="cadre"  size="1" style="width:190px;"/>
 	<?php
@@ -223,8 +223,8 @@ echo "<option value='' disabled>--choose--</option>";
 							
                                                                <br/><br/> <div class="clear pad20">&nbsp;</div>
 
-                                                        <div class="queryquestion"><input type="radio" name="show" value="show_aggreg_part" <?php if($this->criteria['show']=="show_aggreg_part"){ echo "checked='checked'";} ?> /> Show# Participants Trained <br/><br/><input type="radio" name="show" value="show_aggregfac"  <?php if($this->criteria['show']=="show_aggregfac"){ echo "checked='checked'";} ?>/> Show# Facilities</div>
-                                                                                                        </div>
+                                                                                                       
+																									   </div>
                                                                                                 	<div class="maintoucher" >
 
                                                          <div class="queryquestion">Providing</div><br/>
@@ -329,6 +329,8 @@ echo "<option value='' disabled>--choose--</option>";
 
                                                 
                                                  <div class="side_by_side" >
+												 <input type="radio" name="show" value="show_aggreg_part" <?php if($this->criteria['show']=="show_aggreg_part"){ echo "checked='checked'";} ?> /> Show# Participants Trained &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="show" value="show_aggregfac"  <?php if($this->criteria['show']=="show_aggregfac"){ echo "checked='checked'";} ?>/> Show# Facilities
+                                                        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                      <span class="required">*</span> 
                                                      <?php //echo 'This is the thing you dnt do in school '.$this->criteria['aggregate_method']; ?>
                                                         <input type="radio" name="aggregate_method" value="agrregate_data" <?php if($this->criteria['aggregate_method']=="agrregate_data"){ echo "checked='checked'";} ?>/> View Aggregate Data &nbsp;&nbsp;&nbsp;&nbsp;

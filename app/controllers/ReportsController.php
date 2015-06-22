@@ -10956,6 +10956,7 @@ public function allqueriesAction() {
                 $training_type2 = $this->getSanParam('cumu');
                 $stock_out = $this->getSanParam('stock_out');
                 $providing = $this->getSanParam('providing');
+				$submit = $this->getSanParam('go');
                 $locations = array();
                 
                // echo sizeof($state);
@@ -10985,20 +10986,7 @@ public function allqueriesAction() {
                  
                 $filter = "parent_id";
 }
-else if(!empty($zone)){
-//print_r($locations); echo 'here inside ';exit;
-//array_push($locations,$zone);
-if(is_array($zone)){
-//print_r($zonal);
-foreach($zone as $zonal){
 
-$locations[] = $zonal;
-
-}
-}else{
-$locations[] = $zone;
-}
-}
 else{
    unset($locations);
 }
@@ -11067,13 +11055,17 @@ $consump_loc = array();
       $end_date = $end_year.'-'.$end_month.'-'.$end_day;
       //$facilities = array();
       //$training_org = array();
+	  if($period=="" || empty($period)){
+	  $error[] = "You need to select the period";
+	  }
        //$training_org = $this->get_all_facilities_with_partner($trainingorganizer);
                    // print_r($training_org); exit;
-                   
+				   if(!empty($submit) || $submit!=""){
+                   if(!isset($locations) || empty($locations)){
+         $error[] = "Geography is required (at least state)";
+         }else {
                 if($agrregate_method=="aggregate_unifacilities"){
-                     if(!isset($locations) || empty($locations)){
-         $error[] = "Location is required (at least state)";
-         }
+                    
                       if($training_type2=="Cumulative" && $start_year==""){
                         $start_day = "01"; 
                         $start_year = "1950";
@@ -11314,7 +11306,8 @@ $consump_loc = array();
                    
                     
                   
-                }else if($agrregate_method=="aggregate_facilities"){
+                }
+				else if($agrregate_method=="aggregate_facilities"){
                     if(!isset($locations) || empty($locations)){
          $locations = $this->get_all_locations();
          }
@@ -11648,7 +11641,8 @@ $consump_loc = array();
                         
                     }
      
-                    
+                  }  
+				  }
                   //  array_push($results,$ends_years);
                     //array_push($results,$starts_years);
                   //array_push($headers,"Geography");
@@ -11715,8 +11709,11 @@ $criteria['end_month'] = ($this->getSanParam('end-month')!="")?$this->check_leng
 //array_push($results,$beginning);
 //array_push($results,end_date);
 
-
+if(!empty($error)){
+$output = array();
+}
 $this->viewAssignEscaped ('headers',$headers);
+
 $this->viewAssignEscaped ('output',$output);
 //$status->setStatusMessage($stat);
 $this->viewAssignEscaped('criteria',$criteria);

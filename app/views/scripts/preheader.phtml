@@ -133,6 +133,10 @@ if ($auth->hasIdentity()) {
          $navMain['menu'] = array('index' => t('info'));
               $navMain['menu']['info'] = t('DHS Result');
               $navMain['menu']['rrate'] = t('Reporting Rates');
+                   $user = new User();
+if($user->is_user_an_admin()){
+$navMain['menu']['import'] = t('Import DHS Data');
+}
 
 	// PRE-SERVICE LINK
 	if ($this->hasACL('in_service')) {

@@ -113,7 +113,9 @@ echo '</div>';
             $filename = ($_FILES['upload']['tmp_name']);
 		if ( $filename ){
 			$rows = $this->_excel_parser($filename,1);
+                       
                         $json = json_encode($rows);
+                        
                        // $result = true;
                        // print_r($json);
    
@@ -158,6 +160,7 @@ public function update_json_file($json){
   
 );
  
+   
 $result = $db->update('dhs_static_data', $data, 'id = 1');
 return $result;
 }

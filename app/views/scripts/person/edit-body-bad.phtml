@@ -290,11 +290,14 @@ function init() {
 
 YAHOO.util.Event.onDOMReady(init);
 </script>
+
  <div class="clear"></div>
   <div class="hrGrey"></div>
   <div class="clear"></div>
-<div class="fieldIndentNoMargin"><?php tp('Qualifications');?></div>
-<div class="fieldLabel" id="primary_qualification_option_id_lbl"><span class="required">*</span><?php tp('Professional qualification');?></div><div class="fieldInput"><select id="primary_qualification_option_id" name="primary_qualification_option_id">
+<div class="clear" />
+<div class="fieldIndentNoMargin"><?php tp('Qualification');?></div>
+<div class="fieldLabel" id="primary_qualification_option_id_lbl"><span class="required">*</span><?php tp('Professional qualification');?></div>
+<div class="fieldInput"><select id="primary_qualification_option_id" name="primary_qualification_option_id">
 	<option value="">--<?php tp('choose');?>--</option>
 	<?php
 		$lastParent = null;
@@ -308,6 +311,7 @@ YAHOO.util.Event.onDOMReady(init);
 	}
 		?>
 </select></div>
+
 <div class="fieldLabel"  id="primary_responsibility_option_id_lbl"><?php tp('Primary responsibility');?></div><div class="fieldInput"><select id="primary_responsibility_option_id" name="primary_responsibility_option_id" onChange='makeUniqueOptions("primary_responsibility_option_id","secondary_responsibility_option_id");'>
 	<option value="">--<?php tp('choose');?>--</option>
 	<?php

@@ -1,3 +1,9 @@
+<?php 
+/*error_reporting(-1); // reports all errors
+ini_set("display_errors", "1"); // shows all errors
+ini_set("log_errors", 1);
+ini_set("error_log", "/tmp/php-error.log");*/
+?>
 <script language="javascript">
 
 function adminChecks(val) {
@@ -70,8 +76,7 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
                
                
             </select></div>
-        
-<div class="fieldLabel">Zone</div><br/>
+	<div class="fieldLabel"><span class="required"></span>Zone</div><br/>
 							
 							<div class="fieldselect"><?php renderFilter($this->locations, 1, 'province_id', $this->user['zone'], 'district_id', false,false); ?></div>
 							
@@ -90,6 +95,7 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
 							<div class="clear pad20">&nbsp;</div>
 
         <div class="clear"></div>
+
 
 	<fieldset><legend><?php tp('Access Level');?></legend>
 		<div class="fieldLabelThin"> <?php tp('In-Service');?></div><div class="fieldInput width100"><div class="float50"><input type="checkbox" name="in_service" id="in_service" CHECKED /><label for="in_service"> <?php tp('In-service access');?></label></div></div>
@@ -207,12 +213,18 @@ YAHOO.util.Event.onDOMReady(setOrgAccessStatus);
 	<div class="fieldLabelThin" for="spacer"></div>
 	<input type="submit" value="Next User" title="save and continue" class="submitArrow"/>
 	<div style="float:right;">&nbsp;</div>
+
+        <!--<input type="submit" value="Finished" title="save this record" class="submitArrow"/>-->
+
 	<button type="button" id="Finished" title="save this record" class="submitNoArrow" /><?php tp('Finished');?></button>
 	<div class="clear"></div>
 
 </form>
 <script type="text/javascript">
-addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add/outputType/json');
+
+//addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add/outputType/json');
+addAjaxSubmit('Finished','userForm','<?php echo $this->base_url;?>/user/add');
+
 
 $(document).ready(function () {
 	$('#orgcheckall').click(function (e) { /* check all btn */
