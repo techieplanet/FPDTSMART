@@ -285,6 +285,7 @@ class CoverageHelper {
                        ->from(array('fwtc'=> 'facility_worker_training_counts_view'), 
                                array('COUNT(DISTINCT(facid)) as fid_count'))
                        ->joinInner(array('frr'=>'facility_report_rate'), 'facid = frr.facility_id', array('MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                       ->joinInner(array('flv'=>'facility_location_view'), 'facid = flv.id', array())
                        ->where($longWhereClause)
                        ->group('date')
                        ->order(array('date'));
@@ -305,6 +306,7 @@ class CoverageHelper {
                           array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
                         ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array('MONTHNAME(date) as month_name', 'YEAR(date) as year'))
                         ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid', array())
+                        ->joinInner(array('flv'=>'facility_location_view'), 'c.facility_id = flv.id', array())
                         ->where($longWhereClause)
                         ->group('date')
                         ->order(array('date')); 
@@ -397,9 +399,6 @@ class CoverageHelper {
             
             return $locationDataArray;
        }
-       
-       
-       
-        
+      
 }
 ?>

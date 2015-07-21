@@ -26,7 +26,10 @@ class PDF {
             $result = $db->fetchAll($select);
             if(!empty($result)) return;
             
-            $select = $db->select()->from(array('location'), array('id'));
+            $select = $db->select()->from(array('location'), array('id'))
+                                   ->where('tier < 4')
+                                   ->order(array('tier'));
+            
             $result = $db->fetchAll($select);
             //var_dump($result); exit;
             

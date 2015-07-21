@@ -15,6 +15,7 @@ require_once('Helper2.php');
 require_once('CoverageHelper.php');
 require_once('CoverageNationalHelper.php');
 require_once('Stockout.php');
+require_once('StockoutHelper.php');
 require_once 'CacheManager.php';
 
 class Coverage {
@@ -133,10 +134,12 @@ class Coverage {
                 else if($training_type == 'larc')
                     $cacheValue = $cacheManager->getIndicator(CacheManager::PERCENT_FACS_TRAINED_LARC, $latestDate);
                 
+                //echo 'after cache value<br>';
                 //check if page is just being loaded
                 //fresh session, month data already registered
                 //just retrieve registered data
                 if($cacheValue && $freshVisit){ 
+                    //echo 'after cache value<br>'; exit;
                     $output = json_decode($cacheValue, true);
                 }
                 else {
@@ -158,6 +161,7 @@ class Coverage {
                     $facility = new Facility();
                     
                     $numerators = $coverageHelper->getFacWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
+                    //echo 'after numerator<br>';
                     //$denominators = $coverageHelper->getFacWithTrainedHWCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
                     $denominators = $facility->getFacilityCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
                     
@@ -165,6 +169,7 @@ class Coverage {
                     $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
                     $output = array_merge($output, $sumsArray['output']);
                     $output[0]['percent'] = $sumsArray['nationalAvg'];
+                    //echo 'after sums<br>';  var_dump($output); exit;
                     
                     //check if to save month national data
                     if(!$cacheValue && $freshVisit){ //fresh in month
@@ -218,7 +223,7 @@ class Coverage {
                 //needed variables
                 $tierText = $helper->getLocationTierText($tierValue);
                 $tierFieldName = $helper->getTierFieldName($tierText);
-                $latestDate = $helper->getLatestPullDate();
+                //$latestDate = $helper->getLatestPullDate();
 
                 //where clauses
                 if($training_type == 'fp')
@@ -239,8 +244,8 @@ class Coverage {
                     
                 $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
                 
-                $arrayToSort = array_slice($sumsArray['output'], 1);
-                $sortedArray = $helper->msort($arrayToSort);
+                //$arrayToSort = array_slice($sumsArray['output']);
+                $sortedArray = $helper->msort($sumsArray['output']);
 
                 //get month national data and put in first array element
                 $cacheValue = json_decode($cacheValue, true);
@@ -511,8 +516,8 @@ class Coverage {
      
      
      
- function fetchHWCoverageOvertime($training_type){
-         $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+ function fetchHWCoverageOvertime($training_type, $geoList, $tierValue, $freshVisit){
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
         
         $ouput = array();
         $helper = new Helper2();
@@ -528,18 +533,23 @@ class Coverage {
         //check if page is just being loaded
         //fresh session, month data already registered
         //just retrieve registered data
-        if($cacheValue){ 
+        if($cacheValue && $freshVisit){ 
             $output = json_decode($cacheValue, true);
         }
         else{
+            $tierText = $helper->getLocationTierText($tierValue);
+            $tierFieldName = $helper->getTierFieldName($tierText);
+            
             //where clauses
             if($training_type == 'fp'){
                 $tt_where = "fptrained > 0";
                 $ct_where = "(commodity_type = 'fp' OR commodity_type = 'larc')";
+                $so_alias_where = "commodity_alias = 'so_fp_seven_days'";
             }
             else if($training_type == 'larc'){
                 $tt_where = 'larctrained > 0';
                 $ct_where = "commodity_type = 'larc'";
+                $so_alias_where = "commodity_alias = 'so_implants'";
             }
 
             $coverageHelper = new CoverageHelper();                
@@ -547,26 +557,42 @@ class Coverage {
             $dateWhere = '(date <= (SELECT MAX(date) FROM facility_report_rate) AND date >= DATE_SUB((SELECT MAX(date) FROM facility_report_rate), INTERVAL 11 MONTH))';
             $consmptionWhere = 'consumption > 0';
             $reportingWhere = 'facility_reporting_status = 1';
-            $longWhereClause = $tt_where . ' AND ' . $dateWhere;
-
-            //hw                                        getCoverageCountFacWithHWProviding  
-            $facsWithTrainedHWNumers = $coverageHelper->getReportingFacsWithTrainedHWOvertime($longWhereClause);
-            $facsReporting = $helper->getReportingFacsOvertime($dateWhere);        
-
+            $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+            $longWhereClause = $tt_where . ' AND ' . $dateWhere . ' AND ' . $locationWhere;
+            $stockoutWhere = "stock_out='Y'";
+            
+            //hw                                        
+            //numerator:
+            $facsWithTrainedHWNumers =  $coverageHelper->getReportingFacsWithTrainedHWOvertime($longWhereClause, $geoList, $tierText, $tierFieldName);
+            
+            $longWhereClause = $dateWhere . ' AND ' . $locationWhere;
+            $facsReporting = $helper->getReportingFacsOvertime($longWhereClause);              
+            //var_dump($facsWithTrainedHWNumers); echo '<br><br>';
+            //var_dump($facsReporting); echo '<br><br>';
+            
             //providing
             $longWhereClause = $reportingWhere . ' AND ' . $tt_where . ' AND ' . $ct_where . ' AND ' .
-                               $consmptionWhere . ' AND ' . $dateWhere;
+                               $consmptionWhere . ' AND ' . $dateWhere . ' AND ' . $locationWhere;
             $facsWithHWAndConsumptionNumers = $coverageHelper->getFacWithHWProvidingOverTime($longWhereClause);
             $facsReportingWithHW = $facsWithTrainedHWNumers;
-
+            //var_dump($facsWithHWAndConsumptionNumers); echo '<br><br>';
+            //var_dump($facsReportingWithHW); echo '<br><br>';
+            
             //stockout 
-            $stockout = new Stockout();
-            $facsWithHWStockOutNumers = $stockout->fetchStockOutFacsWithTrainedHWOverTime($training_type);
+            $stockout = new StockoutHelper();
+            $longWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                               $tt_where . ' AND ' . $so_alias_where . ' AND ' .
+                               $stockoutWhere . ' AND ' . $locationWhere;
+            $facsWithHWStockOutNumers = $stockout->getStockoutFacsWithTrainedHWOverTime($longWhereClause);
+            //var_dump($facsWithHWStockOutNumers); echo '<br><br>';
+            //var_dump($facsReportingWithHW); echo '<br><br>';
+            
             //$facsWithTrainedHWNumers is also denominator for this
 
             $hwOverTime = $helper->doOverTimePercents($facsWithTrainedHWNumers, $facsReporting);
             $providingOverTime = $helper->doOverTimePercents($facsWithHWAndConsumptionNumers, $facsWithTrainedHWNumers);
             $stockoutOverTime = $helper->doOverTimePercents($facsWithHWStockOutNumers, $facsWithTrainedHWNumers);
+            //var_dump($stockoutOverTime); echo '<br><br>';
             
             $output = array($hwOverTime, $providingOverTime, $stockoutOverTime);
             
@@ -584,7 +610,7 @@ class Coverage {
                     'indicator_alias' => $alias,
                     'value' => json_encode($output)
                 );
-                $cacheManager->setIndicator($dataArray);
+                //$cacheManager->setIndicator($dataArray);
             }
         }
         

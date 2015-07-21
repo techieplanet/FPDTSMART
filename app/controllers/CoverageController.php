@@ -189,14 +189,21 @@ class CoverageController extends ReportFilterHelpers {
         function coverageovertimeAction(){
             $helper = new Helper2();
             $coverage = new Coverage();
+            $freshVisit = true;
             //$this->view->assign('title',$this->t['Application Name'].space.t('CHAI').space.t('Dashboard'));
-
+            
             //get the parameters
             list($geoList, $tierValue) = $this->buildParameters();
             
-            $fp_overtime = $coverage->fetchHWCoverageOvertime('fp');
-            //var_dump($fp_overtime[2]); exit;
-            $larc_overtime = $coverage->fetchHWCoverageOvertime('larc');
+            if( !isset($_POST["region_c_id"]) && !isset($_POST["district_id"]) && !isset($_POST["province_id"]) ) { 
+                $fp_overtime = $coverage->fetchHWCoverageOvertime('fp', $geoList, $tierValue, true);
+                $larc_overtime = $coverage->fetchHWCoverageOvertime('larc', $geoList, $tierValue, true);
+            }
+            else { 
+                $fp_overtime = $coverage->fetchHWCoverageOvertime('fp', $geoList, $tierValue, false);
+                $larc_overtime = $coverage->fetchHWCoverageOvertime('larc', $geoList, $tierValue, false);
+                $freshVisit = false;
+            }
             
             $this->view->assign('fp_overtime', $fp_overtime); 
             $this->view->assign('larc_overtime', $larc_overtime); 
@@ -209,8 +216,9 @@ class CoverageController extends ReportFilterHelpers {
             $overTimeDates = $helper->getPreviousMonthDates(12);
             $this->view->assign('start_date', date('F', strtotime($overTimeDates[11])). ' '. date('Y', strtotime($overTimeDates[11]))); 
             $this->view->assign('end_date', date('F', strtotime($overTimeDates[0])). ' '. date('Y', strtotime($overTimeDates[0]))); 
-
-            $this->viewAssignEscaped ('locations', Location::getAll(1) );
+            $this->view->assign('freshvisit', $freshVisit); 
+            
+            $this->viewAssignEscaped('locations', Location::getAll(1) );
         }
         
         

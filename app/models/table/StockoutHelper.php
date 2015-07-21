@@ -78,11 +78,13 @@ class StockoutHelper {
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
                 $helper = new Helper2();
                 
+                //the facility_location_view is used for overtime by location calls
                 $select = $db->select()
                             ->from(array('c' => 'commodity'),
                               array('COUNT(DISTINCT(c.facility_id)) AS fid_count', 'MONTHNAME(date) as month_name', 'YEAR(date) as year'))
                             ->joinInner(array('cno'=>'commodity_name_option'), 'cno.id = c.name_id', array())
                             ->joinInner(array('fwtc'=>'facility_worker_training_counts_view'), 'c.facility_id = facid', array())
+                            ->joinInner(array('flv'=>'facility_location_view'), 'c.facility_id = flv.id', array())
                             ->where($longWhereClause)
                             ->group('date')
                             ->order(array('date'));

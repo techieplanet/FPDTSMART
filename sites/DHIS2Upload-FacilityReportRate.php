@@ -1,4 +1,11 @@
 <?php
+/*
+ * EXPORT THE INSERTED ROWS INTO A FILE 
+ * UPLOAD THE FILE TO UPDATE THE WEB DATABASE
+ * mysqldump -h localhost -u root -p --where ="date='2015-04-01'"
+ * itechweb_chainigeria facility_report_rate > filename.sql
+ */
+
 
 /* 
  1. Read DHIS2 web service
@@ -11,7 +18,7 @@
 
 Put in database 'facility_report_rate': id, facility_external_id, date.
 */
-
+ini_set('display_errors', 'On');
 $DB_NAME = 'dev_test';
 
 //constants
@@ -19,21 +26,7 @@ $PERIOD_LAST_MONTH_MODE = false;
 $PERIOD_HISTORICAL_MODE = false;
 
 $PERIOD_LAST_MONTH = 'LAST_MONTH';
-$PERIOD_HISTORICAL = "201503"; //"201101;201102;201103;201104;201105;201106;201107;201108;201109;201110;201111;201112;201201;201202;201203;201204;201205;201206;201207;201208;201209;201210;201211;201212;201301;201302;201303;201304;201305;201306;201307;201308;201309;201310;201311;201312;201401;201402;201403;201404;201405;201406;201407;201408;201409;201410";
-
-
-//$DATA_URL_START = "https://dhis2nigeria.org.ng/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=pe:";
-//$DATA_URL_END = "&dimension=ou:LEVEL-5;TFY8aaVkCtV;BmWTbiMgEai;Gq37IyyjUfj;jXngIDniC8t;Ym1fEhWFWYI;FmH4buccgqx;fBInDsbaQHO;r3IK5qdHsZ6;hfNPq5F4mjr;yx3QJHm86vWH2ZhSMudlMI;gzLOszDWdqM;RYEnw3sMDyE;tjLatcokcel;M689V9w3Gs3;cTIw3RXOLCQ;S7Vs7ifJKlh;uKlacgs9ykR;jReUW6NCPkL;HYCMnXqLDPV;bSfaEpPFa9Y;FmOhtDnhdwU;MJVVi73YayJ;tjLatcokcel;M689V9w3Gs3;cTIw3RXOLCQ;S7Vs7ifJKlh;m0rZG06GdPe;xWSEoKmrbBW;aMQcvAoEFh0;iilma7EajGc;Quac4RHRtaZ;HYCMnXqLDPV;bSfaEpPFa9Y;FmOhtDnhdwU;Nko8QFDmYmq;FHlOerryBjk;OgjFloqKoqk;qLiKWoddwFu;ziJ3yxfgb3m;MXrZyuS9E7A;RLySnRCE1Gy;ns3vF75Y0bF;caG44DzHu6F&displayProperty=NAME";
-
-
-//$DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;s5DPBsdoE8b&filter=pe:";
-//$DATA_URL_END = "&displayProperty=NAME&ignoreLimit=true";
-//$USERNAME = "afadeyi";
-//$PASSWORD = "CHAI100F";
-
-//JOHN - BAD
-//$DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:";
-//$DATA_URL_END = "&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID";
+$PERIOD_HISTORICAL = "201505"; //"201101;201102;201103;201104;201105;201106;201107;201108;201109;201110;201111;201112;201201;201202;201203;201204;201205;201206;201207;201208;201209;201210;201211;201212;201301;201302;201303;201304;201305;201306;201307;201308;201309;201310;201311;201312;201401;201402;201403;201404;201405;201406;201407;201408;201409;201410";
 
 //TP 
 $DATA_URL_START = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;s5DPBsdoE8b&dimension=pe:";
@@ -44,8 +37,12 @@ $DATA_URL_END   = "&displayProperty=NAME&outputIdScheme=ID";
 $DATA_SOURCE = 'web';  //web||file
 
 //use this in file data source mode: Ensure to use the correct file name
-$DATA_SOURCE_JSON_FILE = "FRR_Web_Service_analytics_2015_jan_to_march.json";
+$DATA_SOURCE_JSON_FILE = "json_frr/DHIS2Upload-FacilityReportRate-201505.json";
  
+//get the current server location to know how to get paths 
+//when on local host and when online/live
+$HOST_SERVER = $_SERVER['HTTP_HOST'];
+
 //https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=pe:LAST_MONTH&dimension=ou:LEVEL-5;s5DPBsdoE8b&displayProperty=NAME&outputIdScheme=ID
 
 $USERNAME = "FP_Dashboard";
@@ -67,7 +64,7 @@ if(sizeof($options) === 0){
 		}
 		if(in_array('p', $options)){
 			$PERIOD_HISTORICAL_MODE = true;
-			$per = $options['p'];
+			$per = array_search('p', $options);
 			if(!empty($per)){
 				$PERIOD_HISTORICAL = $per;
 			}
@@ -80,35 +77,13 @@ if(sizeof($options) === 0){
 }
 
 //to run on local PC
- require_once 'globals.php';
- $db = Zend_Db_Table_Abstract::getDefaultAdapter();
- /*
-  * TP:: This is where we do the swapping tinz
- 
- $sql = "SELECT * FROM facility_report_rate_mine WHERE date='2015-02-01'";
- $all = $db->fetchAll($sql);
- foreach($all as $report_rate){
-     $date = $report_rate['date'];
-     $facility_external_id  = $report_rate['facility_external_id'];
-     $time_created = $report_rate['timestamp_created'];
-     $facility_id = $report_rate['facility_id'];
-     
-     $bind = array(
-				'facility_external_id'			=>	$facility_external_id,
-				'date' => $date,
-                                'facility_id'=>$facility_id
-		);
-		
-			$db->insert("facility_report_rate", $bind);
-		
- }
- exit;
- */
+if($HOST_SERVER == 'localhost')
+    require_once 'globals.php';
+else 
+    require_once 'globals.php';
 
- //to run on server
- //  $db = getDB($DB_NAME);
- // print "USE DATABASE: " . $DB_NAME . "\n\n";
- 
+ $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+  
  $all_errors = '';
  $date = '';
  
@@ -132,7 +107,7 @@ if(sizeof($options) === 0){
         //echo 'last month'; exit;
  	print "\n\n ===> UPLOAD PERIOD: " . $PERIOD_LAST_MONTH . " START\n\n";
  	$DATA_URL = $DATA_URL_START . $PERIOD_LAST_MONTH . $DATA_URL_END;
-        //print '<br/><br/>' . $DATA_URL; exit;
+        print '<br/><br/>' . $DATA_URL; exit;
         
 
        // $DATA_URL = "https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5; s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID";
@@ -153,8 +128,10 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	
 	$error = '';
 	global $date;
-	
-	// ******************* LOAD DATA FROM DHIS2 WEB SERVICE ***************************
+        global $DATA_SOURCE, $DATA_SOURCE_JSON_FILE;
+
+
+        // ******************* LOAD DATA FROM DHIS2 WEB SERVICE ***************************
 
 	//$date = "we are finally here 201503";
 	// read web service 
@@ -162,11 +139,17 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
         echo '<br/><br/>';
         
         // read from web service or file: gives facility report rate
-        if($DATA_SOURCE == 'web')
+        if($DATA_SOURCE == 'web'){
+            print '<br>WEB MODE<br><br>';
             $data_json = getWebServiceResult($DATA_URL, $USERNAME, $PASSWORD); 
-        else if($DATA_SOURCE == 'file')
+        }
+        else if($DATA_SOURCE == 'file'){
+            print '<br>FILE MODE<br><br>';
             $data_json = file_get_contents($DATA_SOURCE_JSON_FILE);
+        }
+        //print 'about to print data json<br><br>';  exit;
         
+        //print_r($data_json);
        //"https://dhis2nigeria.org.ng/dhis/api/analytics.json?dimension=dx:lyVV9bPLlVy&dimension=ou:LEVEL-5;%20s5DPBsdoE8b&dimension=pe:LAST_12_MONTHS&displayProperty=NAME&outputIdScheme=ID
         //$data_json = file_get_contents ("FRR_Web_Service_analytics_2015_jan_to_march.json" ); // REMOVE: for test only
 	
@@ -202,10 +185,11 @@ function upload($DATA_URL, $USERNAME, $PASSWORD, $db) {
 	}
         
 	//save json output to file
-	//$file = fopen("json_frr/DHIS2Upload-FacilityReportRate-". $date . ".json","w");
-	//echo fwrite($file,$data_json);
-	//fclose($file);
-	
+//	$file = fopen("json_frr/DHIS2Upload-FacilityReportRate-". $date . ".json","w");
+//	echo fwrite($file,$data_json);
+//	fclose($file);
+//	echo '<br>Saved file. '; exit;
+        
 	unset($data_json_arr["metaData"]); // remove this huge object
 
 	//print_r($data_json_arr); exit;
@@ -283,27 +267,64 @@ function help(){
 	/**
 	 * Read web service and return output
 	 */
+        function getWebServiceResult2($commodity_data_url, $username, $password){
+            try{
+                echo 'new curl method: ' . $commodity_data_url . '<br><br>';
+                
+                echo 'user: ' . $username . '<br/>';
+                echo 'pass: ' . $password . '<br/>';
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $commodity_data_url);
+                curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+                curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+                curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE); 
+                $output = curl_exec($ch);
+                
+                $info = @curl_getinfo($ch);
+                echo $response;
+                print_r($info);
+                
+                echo 'output: ' . $output;
+                curl_close($ch);
+            } catch (Exception $ex) {
+                echo $ex->getMessage(); exit;
+            }
+            
+            exit;
+        }
+        
 	function getWebServiceResult($commodity_data_url, $username, $password){
 		if (!function_exists('curl_init')){
 			die('Sorry cURL is not installed!');
 		}
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $commodity_data_url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
-		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // comment later, it is for Windows only
-		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-		
-		$output = curl_exec($ch);
-		if($output === false){
-			echo 'ERROR: ' . curl_error($ch);
-		}
-// 		else{
-// 			return $output;
-// 		}
+                
+                try{
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $commodity_data_url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+                    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                    //comment later, it is for Windows only
+                    //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+                    //echo 'after ssl verifier<br>';
+                    
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+
+                    $output = curl_exec($ch);
+                    $info = @curl_getinfo($ch);
+
+                    if($output === false){
+                        echo 'ERROR: ' . curl_error($ch); exit;
+                    }                    
+                } catch (Exception $e){
+                    echo $e->getMessage();
+                }
+                
 		curl_close($ch);
-		return $output;
+                return $output;
 	}
 	
 	function getReportedFacilities(){

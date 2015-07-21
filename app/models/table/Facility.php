@@ -301,7 +301,7 @@ class Facility extends ITechTable {
                             ->group($tierFieldName)
                             ->order(array($tierText));
                 
-              //echo 'FCL: ' . $sql . '<br/>'; exit;
+              //echo $select->__toString(); exit;
 
               $result = $db->fetchAll($select);
               

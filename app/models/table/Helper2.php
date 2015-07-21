@@ -190,6 +190,7 @@ class Helper2 {
    * reporting in the months covered in the date range 
    * IT DOES NOT MATTER IF THE FACILITIES DO NOT HAVE TRAINED HW
    * IT DOES NOT CONSIDER ANY LOCATION(S)
+   * SEE BELOW IF TO CONSIDER LOCATION
    */
    public function getReportingFacsOvertime($longWhereClause){
           $db = $this->getDbAdapter();
@@ -197,6 +198,7 @@ class Helper2 {
           $select = $db->select()
                         ->from(array('frr' => 'facility_report_rate'),
                             array('COUNT(DISTINCT(facility_id)) AS fid_count', 'MONTHNAME(date) as month_name', 'YEAR(date) as year'))
+                        ->joinInner(array('flv'=>'facility_location_view'), 'frr.facility_id = flv.id', array())
                         ->where($longWhereClause)
                         ->group('date')
                         ->order(array('date'));   
@@ -212,6 +214,7 @@ class Helper2 {
    * This method will return number of facilities that are 
    * reporting in the months covered in the date range and locations provided arg
    * IT DOES NOT MATTER IF THE FACILITIES DO NOT HAVE TRAINED HW
+   * THIS ONE CONSIDERS LOCATION
    */
    public function getReportingFacsOvertimeByLocation($longWhereClause, $geoList, $tierText, $tierFieldName){
           $db = $this->getDbAdapter();
@@ -449,8 +452,8 @@ class Helper2 {
     public function sumNumersAndDenoms($numerators, $denominators){
         $numerSum = $denomSum = 0; $output = array();
         foreach ($numerators as $location=>$numer){
-            $nationalNumerator += $numer;
-            $nationalDenominator += $denominators[$location];
+            //$nationalNumerator += $numer;
+            //$nationalDenominator += $denominators[$location];
 
             $output[] = array(
                         'location' => $location,
@@ -671,13 +674,24 @@ class Helper2 {
         
         function doOverTimePercents($numerArray, $denomArray){
             $output = array();
-            foreach ($numerArray as $i=>$numer){
-               $output[] = array(
-                           'month' => $numer['month_name'],
-                           'year' => $numer['year'],
-                           'percent' => $numer['fid_count'] / $denomArray[$i]['fid_count']
-               );
-           }
+            if(!empty($numerArray)){
+                foreach ($numerArray as $i=>$numer){
+                   $output[] = array(
+                               'month' => $numer['month_name'],
+                               'year' => $numer['year'],
+                               'percent' => $numer['fid_count'] / $denomArray[$i]['fid_count']
+                   );
+               }
+            }
+            else{
+                foreach($denomArray as $i => $denom){
+                    $output[] = array(
+                               'month' => $denom['month_name'],
+                               'year' => $denom['year'],
+                               'percent' => 0
+                   );
+                }
+            }
            return $output;
         }
         

@@ -79,7 +79,7 @@ class PdfController extends ReportFilterHelpers {
         //trained workers
         $coverage = new Coverage();
         $cumm_data = $coverage->fetchCummulativeTrainedWorkers(1, $geoList, $tierValue);
-        $key = key($cumm_data); 
+        $key = key($cumm_data);
         $this->view->assign('cumm_data', $cumm_data);
         $this->view->assign('fp_diff', ($fp_target - $cumm_data[$key]['fp']));
         $this->view->assign('larc_diff', ($larc_target - $cumm_data[$key]['larc']));
@@ -222,11 +222,11 @@ class PdfController extends ReportFilterHelpers {
 
                    $pdf = $dompdf->output();
                    
-                   
-                   file_put_contents("pdfrepo/National_Report_$month" . "_$year.pdf", $pdf);
+                   $saveName = "pdfrepo/National_Report_$month" . "_$year.pdf";
+                   file_put_contents($saveName, $pdf);
                    echo json_encode(array('result'=>'OK','message'=>''));
                 } catch(Exception $e){
-                    echo json_encode(array('result'=>'OK','message'=>$e->getMessage()));
+                    echo json_encode(array('result'=>'ERROR','message'=>$e->getMessage()));
                     exit;
                 }
             }

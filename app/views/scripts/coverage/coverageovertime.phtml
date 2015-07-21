@@ -92,7 +92,7 @@ print ScriptContainer::$instance->renderJSHead();
 			<!-------   /////////////////////////// make top buttons ////////////////////// -->
 
 			<div class="rightdiv" style="float: right;">
-				<?php //require_once('views/scripts/dashboard/top_buttons.phtml');?>
+				<?php require_once('views/scripts/dashboard/top_buttons.phtml');?>
 			</div>
 
 			<!-------   /////////////////////////// make left buttons ////////////////////// -->
@@ -139,19 +139,17 @@ print ScriptContainer::$instance->renderJSHead();
 							<div id="homecontent-mid" class="row rounded">
 								<div id="homebanner" class="rounded">
 								<div class="sliderdiv">
-									<div id="chart12_div" style="width: 500px; height: 300px;"></div>
+									<div id="chart13_div" style="width: 600px; height: 300px;"></div>
 									</div>
 									<div class="main-search">
-										<div id="chart14_div" style="width: 500px; height: 300px;"></div>
+										<div id="chart14_div" style="width: 600px; height: 300px;"></div>
 									</div>
 								</div>
 							</div>
 						</div>
 								
-								<!-------   /////////////////////////// chart 2,2 ////////////////////// -->
-								
-								
-								<div class="main-search"></div>
+						<!-------   /////////////////////////// chart 2,2 ////////////////////// -->		
+                                                <div class="main-search"></div>
 
 					</div>
 				</div>
@@ -219,7 +217,13 @@ print ScriptContainer::$instance->renderJSHead();
         ?>                                        
       ]);
 
-      <?php echo  " var title_data = 'FP HR coverage, $this->start_date to $this->end_date' " ?>;
+      <?php 
+            if($this->freshvisit)
+                echo  " var title_data = 'FP HR coverage, $this->start_date to $this->end_date' " ;
+            else
+                echo  " var title_data = 'FP HR coverage for selected geographies, $this->start_date to $this->end_date' " ;
+      ?>;
+            
       
       var chartOptions = {
 		      title: title_data,
@@ -232,7 +236,6 @@ print ScriptContainer::$instance->renderJSHead();
 
           var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 	  chart.draw(chartData, chartOptions);
-      
     }
     
     
@@ -245,11 +248,7 @@ print ScriptContainer::$instance->renderJSHead();
         $soCoverage = $this->larc_overtime[2]; 
       ?>
           
-       //console.log(trainedHW);
-       //return;
-      
       var chartData = google.visualization.arrayToDataTable([
-
         [' ', '% of facilities with LARC-trained HW', '% of LARC-trained facilities providing LARC', '% of LARC-trained facilities stocked out of LARC'],
         <?php
                      foreach($hwCoverage as $i => $details) {
@@ -264,20 +263,24 @@ print ScriptContainer::$instance->renderJSHead();
         ?>                                        
       ]);
 
-      <?php echo  " var title_data = 'LARC HR coverage, $this->start_date to $this->end_date' " ?>;
+        <?php 
+            if($this->freshvisit)
+                echo  " var title_data = 'LARC HR coverage, $this->start_date to $this->end_date' " ;
+            else
+                echo  " var title_data = 'LARC HR coverage for selected geographies, $this->start_date to $this->end_date' " ;
+      ?>;
       
       var chartOptions = {
 		      title: title_data,
 		      titleTextStyle: { fontSize: 15 },
 		      vAxis: {format: '#', minValue: 4},
 		      legend: {fontSize: 14},
-		      chartArea: {width: '65%', height: '70%', top: 55},
+		      chartArea: {height: '70%', top: 55},
 		      is3D:true
 		};
 
-          var chart = new google.visualization.LineChart(document.getElementById('chart12_div'));
+          var chart = new google.visualization.LineChart(document.getElementById('chart13_div'));
 	  chart.draw(chartData, chartOptions);
-      
     }
   
   

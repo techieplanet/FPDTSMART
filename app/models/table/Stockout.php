@@ -266,7 +266,7 @@ class Stockout {
     public function fetchStockOutFacsWithTrainedHWOverTime($training_type){
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		
-                $output = array(); 
+                $output = array();
                 $helper = new Helper2();
                 
                 //where clauses
