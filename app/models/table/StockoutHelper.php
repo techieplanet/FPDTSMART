@@ -39,6 +39,61 @@ class StockoutHelper {
             return $locationDataArray;
        }
        
+       public function getFacilitiesprovidingButStockkedOut($mainWhereClause, $subWhereClause, $geoList, $tierText, $tierFieldName){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+                $helper = new Helper2();
+                
+                $subselect = $db->select()
+                              ->from(array('c' => 'commodity'), array('DISTINCT(c.facility_id) AS providingfacs'))
+
+                              ->joinInner(array('cno' => 'commodity_name_option'), 'c.name_id = cno.id', array())
+                              ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array())
+                              ->where($subWhereClause);
+                
+                $select = $db->select()
+                            ->from(array('c' => 'commodity'))
+
+                            ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
+                            ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
+                            ->where($mainWhereClause . ' AND c.facility_id IN (' . $subselect . ')')
+                            ->group($tierFieldName)
+                            ->order(array($tierText));                          
+
+              //echo $select->__toString() . '<br/><br/>'; exit;
+
+               $result = $db->fetchAll($select);
+               
+            return $result;
+       }
+       
+        public function getFacilitiesListProvidingButStockedout($mainWhereClause, $subWhereClause, $geoList, $tierText, $tierFieldName){
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+                $helper = new Helper2();
+                
+                $subselect = $db->select()
+                              ->from(array('c' => 'commodity'), array('DISTINCT(c.facility_id) AS providingfacs'))
+
+                              ->joinInner(array('cno' => 'commodity_name_option'), 'c.name_id = cno.id', array())
+                              ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array())
+                              ->where($subWhereClause);
+                
+                $select = $db->select()
+                            ->from(array('c' => 'commodity'))
+
+                            ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
+                            ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('facility_name','lga', 'state',  'geo_zone'))
+                            ->where($mainWhereClause . ' AND c.facility_id IN (' . $subselect . ')')
+                            ->group("c.facility_id")
+                            ->order(array($tierText));                          
+
+             // echo $select->__toString() . '<br/><br/>'; exit;
+
+               $result = $db->fetchAll($select);
+               
+              
+            //var_dump($locationDataArray); exit;
+            return $result;
+       }
        
        public function getFacsProvidingButStockedout($mainWhereClause, $subWhereClause, $geoList, $tierText, $tierFieldName){
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();

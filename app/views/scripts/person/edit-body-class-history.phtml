@@ -20,13 +20,15 @@ var classInfoData = [
 var classColumnDefs = [
     {key:"training_id", label: "ID", sortable:false, resizeable:true,
                   formatter: formatTrainingViewUrl},
-    {key:"training_start_date", label: "<?php tp('Start Date');?>", sortable:true, resizeable:true},
+    {key:"training_end_date", label: "<?php tp('End Date');?>", sortable:true, resizeable:true},
     {key:"training_title", label: "<?php tp('Name');?>", sortable:true, resizeable:true},
     //TA:17:20 fix bug  
     <?php if($this->setting['display_training_topic']){?>
     {key:"topics", label: "<?php tp('Topics(s)');?>", sortable:true, resizeable:true},
     <?php }?>
     {key:"training_location_name", label: "<?php tp('Location');?>", sortable:true, resizeable:true},
+    
+    {key:"certification", label: "<?php tp('Certification');?>", sortable:true, resizeable:true},
     {key:"training_organizer_phrase", label: "<?php tp('Training Organizer');?>", sortable:true, resizeable:true}
     
     

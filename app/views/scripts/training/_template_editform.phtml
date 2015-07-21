@@ -257,7 +257,7 @@ echo "<br clear='top'/><br clear='left'/><br clear='top'/>";
 
 <!-- TA:17: 09/02/2014  -->
 <?php if($this->setting['display_training_start_date']){?>
-  <div class="fieldLabel"><?php echo t('Training').' '.t('start date');?></div>
+  <div class="fieldLabel"><?php echo t('Training').' '.t('Date Range');?></div>
   <div class="fieldInput" id="startdate">
     <?php tp('Day');?> <input id="start-day" class="dayfield" type="text" name="start-day" maxlength="2" value="<?php echo $this->row['start-day']; ?> " <?php echo $this->viewonly; ?>>
     / <?php tp('Month');?> <input id="start-month" class="monthfield" type="text" name="start-month" maxlength="2" value="<?php echo $this->row['start-month']; ?>"  <?php echo $this->viewonly; ?>>
@@ -274,7 +274,7 @@ echo "<br clear='top'/><br clear='left'/><br clear='top'/>";
    <?php } ?>
    
 <?php if ( $this->setting['display_end_date'] ) { ?>
- <div class="fieldLabel"><span class="required">*</span><?php echo t('Training').' '.t('end date');?></div>
+ <div class="fieldLabel"><span class="required">*</span></div>
  <div class="fieldInput" id="enddate">
     <?php tp('Day');?> <input id="end-day" class="dayfield" type="text" name="end-day" maxlength="2" value="<?php echo $this->row['end-day']; ?>"  <?php echo $this->viewonly; ?>>
     / <?php tp('Month');?> <input id="end-month" class="monthfield" type="text" name="end-month" maxlength="2" value="<?php echo $this->row['end-month']; ?>"  <?php echo $this->viewonly; ?>>
@@ -650,8 +650,11 @@ if ( $this->row['has_known_participants']) :
    	<input type="text" id="trainer_last_name" size="15"  value="<?php echo $this->translation['Last Name'];?>" onfocus="lastNameOnFocus(this)" onblur="lastNameOnBlur(this)">
     <?php if ( $this->setting['display_middle_name'] && $this->setting['display_middle_name_last'] ) { ?>
       <input type="text" id="trainer_middle_name" size="15"  value="<?php echo $this->translation['Middle Name'];?>" onfocus="middleNameOnFocus(this)" onblur="middleNameOnBlur(this)">
-	<?php } ?>
+	<?php }
+        
+        ?>
       <input type="hidden" id="trainer_days" value="0" >
+          
       <!--<input type="text" id="trainer_days" size="3" value="" >&nbsp;<?php tp('days');?>-->
       &nbsp;&nbsp;&nbsp;
       <input type="hidden" id="trainer_id" value="0">
@@ -854,7 +857,11 @@ if ( $this->row['has_known_participants']) :
        <div id="personContainerMiddle" class="autoComplete" style="margin-left:135px;z-index: 9001;"></div>
    <?php } ?>
 
-
+<select name="certification" id="certification">
+    <option value="">--certification--</option>
+              <option value="N">No</option>
+              <option value="Y">Yes</option>
+          </select>
       <div class="actionBtn" style="float:right; margin-top: -18px;">
         <input type="button" name="Insert" value="<?php tp("Insert");?>" class="insert" id="personInsertButton" onclick="addPerson(this);return false;">
        &nbsp;&nbsp;&nbsp;
@@ -943,6 +950,7 @@ if ( $this->row['has_known_participants']) :
     	      var oPBday = YAHOO.util.Dom.get('person_birthdate');
     	      var oPFacility = YAHOO.util.Dom.get('person_facility');
     	      var OPHealth = YAHOO.util.Dom.get('person_health');
+              var oCertification = YAHOO.util.Dom.get('certification');
     	      var oPId = YAHOO.util.Dom.get('person_id');
 
     		if(oPId.value == 0) {
@@ -961,8 +969,8 @@ if ( $this->row['has_known_participants']) :
         jsonAdd.birthdate = oPBday.value;
         jsonAdd.facility_name = oPFacility.value;
         jsonAdd.district_name = OPHealth.value;
-
-
+        jsonAdd.certification = oCertification.value;
+          //alert(jsonAdd.certification);
         var successCallback = function() {
           oPId.value = "0";
           oPFirst.value = ""; oPFirst.focus(); oPFirst.blur();

@@ -359,7 +359,7 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 															<!-- TA:17: 9/3/2014  START -->
 															<?php if($this->setting['display_training_start_date']){?>
 															<div class="clear"></div><br/><br/>
-															<div class="fieldLabel"><?php tp('Start date');?></div>
+															<div class="fieldLabel"><?php tp('Date Range:    From');?></div>
 															<div class="fieldInput" id="startdate">
 																<?php tp('Day');?> <input id="start-day" class="dayfield" type="text" name="start-day" maxlength="2" value="<?php echo $this->criteria['start-day']; ?>"  />
 																/ <?php tp('Month');?> <input id="start-month" class="monthfield" type="text" name="start-month" maxlength="2" value="<?php echo $this->criteria['start-month']; ?>"  />
@@ -376,7 +376,7 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 															<!-- TA:17: 09/09/2014 fixed bug to on/off end date -->
 			
 															<?php if ( $this->setting['display_end_date']){?>
-															<div class="fieldLabel" style="padding-top:1em;"><?php tp('End date');?></div>
+															<div class="fieldLabel" style="padding-top:1em;"><?php tp(' to ');?></div>
 															<div class="fieldInput" id="enddate" style="margin-top:1em;">
 																<?php tp('Day');?> <input id="end-day" class="dayfield" type="text" name="end-day" maxlength="2" value="<?php echo $this->criteria['end-day']; ?>"  />
 																/ <?php tp('Month');?> <input id="end-month" class="monthfield" type="text" name="end-month" maxlength="2" value="<?php echo $this->criteria['end-month']; ?>"  />
@@ -458,7 +458,7 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
 																	echo ',"'.$row['training_category_phrase'].'"';
 																	if ( $this->criteria['showTrainingTitle'])
 																	$title = trim($row['training_title']);
-                                                                                                                                        $search = strpos($title," ");
+                                                                                                                                        /*$search = strpos($title," ");
                                                                                                                                         if($search===false){
                                                                                                                                             $title = strtoupper($title);
                                                                                                                                         }else{
@@ -469,7 +469,7 @@ echo DropDown::render_report_filter('training_primary_language_option', 'showPri
                                                                                                                                                 $titles[0] = strtoupper($titles[0]);
                                                                                                                                             }
                                                                                                                                             $title = implode(" ",$titles);
-                                                                                                                                        }
+                                                                                                                                        }*/
                                                                                                                                             echo ',"'.$title.'"';
 																	if ( $this->criteria['showLocation'] )
 																	echo ',"'.$row['training_location_name'].'"';

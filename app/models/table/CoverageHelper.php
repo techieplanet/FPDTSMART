@@ -121,7 +121,7 @@ class CoverageHelper {
               $locationNames = $helper->getLocationNames($geoList);
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
               
-            //var_dump($locationDataArray); exit;
+           //print_r($result);exit;
             return $locationDataArray;
        }
        
@@ -135,7 +135,7 @@ class CoverageHelper {
                             ->from(array('c' => 'commodity'),
                               array('COUNT(DISTINCT(c.facility_id)) AS fid_count'))
                             ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
-                            ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone'))
+                            ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('lga', 'state',  'geo_zone','location_id'))
                             ->where($longWhereClause)
                             ->group($tierFieldName)
                             ->order(array($tierText));   
@@ -143,7 +143,11 @@ class CoverageHelper {
               //echo 'Providing: ' . $select->__toString() . '<br/>'; exit;
 
                $result = $db->fetchAll($select);
-               
+//               if($tierText=="lga"){
+//                   $geoList = implode(",",$helper->fetchlocwithparentid($geoList));
+//                   //print_r($geoList);exit;
+//               }
+             
               //filter for only valid values
               $locationNames = $helper->getLocationNames($geoList);
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
@@ -168,17 +172,40 @@ class CoverageHelper {
                         ->order(array($tierText)); 
 
 
-                //echo $sql = $select->__toString(); exit;
+               // echo $sql = $select->__toString(); echo '<br/>';
                 
                $result = $db->fetchAll($select);
                
               //filter for only valid values
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
                
-              //var_dump($locationDataArray); exit;
+              
               return $locationDataArray;
        }
        
+       public function getCoverageDataFacWithHWNotProviding($longWhereClause, $locationNames, $geoList, $tierText, $tierFieldName){
+           $db = Zend_Db_Table_Abstract::getDefaultAdapter();               
+                
+                $select = $db->select()
+                        ->from(array('c' => 'commodity'))
+                        ->joinInner(array('cno' => 'commodity_name_option'), 'cno.id = c.name_id', array())
+                        ->joinInner(array('flv' => 'facility_location_view'), 'flv.id = c.facility_id', array('facility_name','lga', 'state',  'geo_zone'))
+                        ->joinInner(array('fwtc' => 'facility_worker_training_counts_view'), 'c.facility_id = fwtc.facid', array())
+                        ->where($longWhereClause)
+                        ->group('c.facility_id')
+                        ->order(array($tierText)); 
+
+
+                //echo $sql = $select->__toString(); exit;
+                
+               $result = $db->fetchAll($select);
+               
+              //filter for only valid values
+              
+              return $result;
+              //var_dump($locationDataArray); exit;
+             // return $locationDataArray;
+       }
        
        public function getTrainedHWByLocationList($tt_where, $dateWhere, $locationWhereClause, $locationKey, $groupFieldName, $havingName, $geoList, $tierText){
            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();                         
@@ -214,7 +241,7 @@ class CoverageHelper {
                 $facsList = array();
                 foreach ($locationNames as $locationKey=>$location){
                     $facsList[$location] = $this->getTrainedHWByLocationList($tt_where, $dateWhere, $locationWhereClause, $locationKey, $groupFieldName, $havingName, $geoList, $tierText);
-                    var_dump($facsList); exit;
+                    //var_dump($facsList); exit;
                 }
                 
                 $result = $db->fetchAll($sql);
@@ -222,7 +249,7 @@ class CoverageHelper {
               //filter for only valid values
               $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
                
-              var_dump($locationDataArray); exit;
+              //var_dump($locationDataArray); exit;
               return $locationDataArray;
        }
        
@@ -375,19 +402,23 @@ class CoverageHelper {
                 foreach($locationNames as $key=>$locationName){
                     $locationValue = '';
                     foreach($result as $coverageEntry){
+                       
                         //echo 'tier: ' . $tierText . '<br/>';
-                        //var_dump($coverageEntry); exit;
+                        
                         if($locationName == $coverageEntry[$tierText]){                                    
                             $locationValue = $coverageEntry['fid_count']; 
+                           $location_id = $coverageEntry['location_id'];
                             break;
                         }
                     }
 
                     if($locationValue == '')
                         $locationValue = 0;
-
+                
                     $locationDataArray[$locationName] = $locationValue;
+                    
                 }
+             
             }
             else{
                 //echo 'empty: ' . $tierText; exit;
@@ -395,6 +426,7 @@ class CoverageHelper {
                     $locationDataArray[$locationName] = 0;
             }
             
+           // print_r($locationDataArray);exit;
             return $locationDataArray;
        }
        

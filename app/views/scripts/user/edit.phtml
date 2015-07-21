@@ -56,7 +56,7 @@
                                 
                                 
                                   <div class="fieldLabel"  id="role"><span class="required">*</span>Role</div>
-	<div class="fieldInput"><select name="role" required >
+	<div class="fieldInput"><select name="role" required id="roleSelect" class="role" onchange="checkLevelPicked()">
              
                 <option value="" >--choose--</option>
                  <option value="1" <?php if($this->user['role']=="1"){ echo "selected='selected'"; }?>>Administrator</option>
@@ -861,6 +861,160 @@
 			$('#admin_box input').removeAttr('checked');
 		}
 	}
+        function lgaAccessLevel(){
+    document.getElementById("view_people").checked=false;
+    document.getElementById("edit_people").checked=false;
+    document.getElementById("view_facility").checked=false;
+     document.getElementById("edit_facility").checked=false;
+    document.getElementById("edit_training_location").checked = false;
+    document.getElementById("edit_course").checked = false;
+    document.getElementById("duplicate_training").checked = false;
+    document.getElementById("view_create_reports").checked = false;
+    document.getElementById("admin_files").checked = false;
+    
+    document.getElementById("acl_editor_training_category").checked = false;
+     document.getElementById("acl_admin_facilities").checked = false;
+     document.getElementById("edit_evaluations").checked = false;
+     document.getElementById("facility_and_person_approver").checked = false;
+     document.getElementById("approve_trainings").checked = false;
+   
+    
+   //showAdminLevels();
+   var toggle = document.getElementById("toggle").checked;
+     
+   if(toggle==true){
+   document.getElementById("toggle").checked = false;
+   $('#admin_box').toggle();
+   $('#admin_box input').removeAttr('checked');
+   }
+    adminChecks(0);
+    //$('#admin_box input[type="checkbox"]').attr('checked', chked);
+    //$('#admin_box input[type="checkbox"]').attr('checked', chked);
+    //$('#admin_box input[type="checkbox"]').attr('checked', chked);
+    //$('#admin_box input[type="checkbox"]').attr('checked', chked);
+}
+
+function stateAccessLevel(){
+    document.getElementById("view_people").checked=false;
+    document.getElementById("edit_people").checked=true;
+    document.getElementById("view_facility").checked=true;
+     document.getElementById("edit_facility").checked=false;
+    document.getElementById("edit_training_location").checked = true;
+    document.getElementById("edit_course").checked = true;
+    document.getElementById("duplicate_training").checked = true;
+    document.getElementById("view_create_reports").checked = true;
+    document.getElementById("admin_files").checked = true;
+    document.getElementById("acl_editor_training_category").checked = false;
+     document.getElementById("acl_admin_facilities").checked = false;
+     
+     
+     
+     document.getElementById("acl_editor_training_category").checked = false;
+     document.getElementById("acl_admin_facilities").checked = false;
+     document.getElementById("edit_evaluations").checked = false;
+     document.getElementById("facility_and_person_approver").checked = false;
+     document.getElementById("approve_trainings").checked = false;
+     var toggle = document.getElementById("toggle").checked;
+     
+   if(toggle==true){
+   document.getElementById("toggle").checked = false;
+   $('#admin_box').toggle();
+   $('#admin_box input').removeAttr('checked');
+   }
+}
+
+function adminAccessLevel(){
+     document.getElementById("view_people").checked=false;
+    document.getElementById("edit_people").checked=true;
+    document.getElementById("view_facility").checked=false;
+     document.getElementById("edit_facility").checked=true;
+    document.getElementById("edit_training_location").checked = true;
+    document.getElementById("edit_course").checked = true;
+    document.getElementById("duplicate_training").checked = true;
+    document.getElementById("view_create_reports").checked = true;
+    document.getElementById("admin_files").checked = true;
+    document.getElementById("edit_evaluations").checked = true;
+    document.getElementById("approve_trainings").checked = true;
+    document.getElementById("admin_files").checked = true;
+    
+    document.getElementById("acl_admin_facilities").checked = true;
+  
+    document.getElementById("acl_editor_training_category").checked = true;
+    
+    
+    
+   
+   var toggle = document.getElementById("toggle").checked;
+   //alert(toggle);
+   if(toggle==true){
+   
+   
+   }else{
+       $('#admin_box').toggle();
+   document.getElementById("toggle").checked = true;
+   }
+    adminChecks(1);
+}
+function fmohAccessLevel(){
+     document.getElementById("view_people").checked=false;
+    document.getElementById("edit_people").checked=true;
+    document.getElementById("view_facility").checked=true;
+     document.getElementById("edit_facility").checked=false;
+     document.getElementById("acl_admin_facilities").checked = false;
+    document.getElementById("edit_training_location").checked = true;
+    document.getElementById("edit_course").checked = true;
+    document.getElementById("duplicate_training").checked = true;
+    document.getElementById("view_create_reports").checked = true;
+    document.getElementById("admin_files").checked = true;
+    document.getElementById("acl_editor_training_category").checked = false;
+     var toggle = document.getElementById("toggle").checked;
+      
+   if(toggle==true){
+  document.getElementById("toggle").checked = false;
+   $('#admin_box').toggle();
+   $('#admin_box input').removeAttr('checked');
+   }
+}
+function partnerAccessLevel(){
+     document.getElementById("view_people").checked=false;
+    document.getElementById("edit_people").checked=true;
+    document.getElementById("view_facility").checked=true;
+     document.getElementById("edit_facility").checked=false;
+    document.getElementById("edit_training_location").checked = true;
+    document.getElementById("edit_course").checked = true;
+     document.getElementById("acl_admin_facilities").checked = false;
+    document.getElementById("duplicate_training").checked = true;
+    document.getElementById("view_create_reports").checked = true;
+    document.getElementById("admin_files").checked = true;
+    document.getElementById("acl_editor_training_category").checked = false;
+     var toggle = document.getElementById("toggle").checked;
+     s
+   if(toggle==true){
+   document.getElementById("toggle").checked = false;
+   $('#admin_box').toggle();
+   $('#admin_box input').removeAttr('checked');
+   }
+    
+}
+function checkLevelPicked(){
+    var role = document.getElementById('roleSelect').value;
+   
+    if(role=="4"){
+        stateAccessLevel();
+    }else if(role=="3"){
+       partnerAccessLevel();
+    }
+    else if(role=="2"){
+        fmohAccessLevel();
+    }
+    else if(role=="1"){
+       adminAccessLevel();
+        
+    }
+    else{
+        lgaAccessLevel();
+    }
+}
 
 	function setOrgAccessStatus() { /* organizer logic (restrict access), show hide, uncheck and check */
 		if ($('#acl_restrict').attr('checked') == 'checked') {

@@ -190,9 +190,9 @@ class TrainingController extends ReportFilterHelpers {
 			if ( $this->getSanParam ( 'training_category_and_title_option_id' ) == "" ){
 				$status->addError( 'select_training_title_option', t('Training Name is required.') );
 			}
-			if ( $this->getSanParam ( 'training_location_id' ) == "" ){
+			/*if ( $this->getSanParam ( 'training_location_id' ) == "" ){
 				$status->addError( 'select_training_location', t('Location is required.') );
-			}
+			}*/
 	
 
 			//TA:17: 9/2/2014 Start date is not required
@@ -1149,7 +1149,9 @@ class TrainingController extends ReportFilterHelpers {
 
 		$action = $this->_getParam ( 'a' );
 		$row_id = $this->_getParam ( 'row_id' );
-
+                $certification = $this->_getParam ('certification');
+ //echo $action;
+ //echo $row_id;
                 //$certification = $this->_getParam('certification');
 
 		
@@ -1201,8 +1203,11 @@ class TrainingController extends ReportFilterHelpers {
 
 				$sendRay ['insert'] = $result;
 				if ($result == - 1) {
-					$sendRay ['error'] = t ( 'This' ).' '.t( 'participant' ).' '.t( 'is already in this training session.' );
-				}
+					$sendRay ['error'] = t ( 'This' ).' '.$certification.' '.t( 'participant' ).' '.t( 'is already in this training session.' );
+				
+                                        //$sendRay ['error'] = ''. $certification;
+                                }
+                                
 				$this->sendData ( $sendRay );
 
 			} elseif ($action == 'del') {
@@ -1284,7 +1289,7 @@ class TrainingController extends ReportFilterHelpers {
 		if ( $this->getSanParam('download') )
 			return $this->importTrainingTemplateAction();
 		
-		if( ! $this->hasACL('import_training') )
+                if( ! $this->hasACL('import_training') )
 			$this->doNoAccessError ();
 		
 		$filename = ($_FILES['upload']['tmp_name']);
@@ -1299,24 +1304,32 @@ class TrainingController extends ReportFilterHelpers {
 			$personToTraining = new PersonToTraining();
 			
 			$rows = $this->_excel_parser($filename);
-			
+		
 			$values = array();
 			
 			//get training info
 			$values['training_organizer_phrase'] = $rows[9][2];
-				 
+				// echo $rows[11][3];exit;
 			//TA:17:16:1 validate training dates
 			if(!trim($rows[11][3])){
 				$status->addError( 'end-day', t('Your changes have been not saved: End date is required.') );
 			}else{
-				list($de, $me, $ye) = array_pad(explode('/', $rows[11][3], 3), 3, 0);
-				$values['training_end_date'] = '20' . $ye . '-' . $me . '-' . $de;
-				$status->isValidDate ( $this, 'end-day', t ( 'Your changes have been not saved: Training end date'), $values['training_end_date'] );
-			}	
+                           list($ye,$me,$de) = $status->dateFormatter($rows[11][3]);
+                           
+                           
+                            //echo $de;echo $me; echo $ye;exit;
+				//list($de, $me, $ye) = array_pad(explode('/', $rows[11][3], 3), 3, 0);
+                                //echo $rows[11][3];exit;
+				$values['training_end_date'] =  $ye . '-' . $me . '-' . $de;
+                                //echo $values['training_end_date']; echo '<br/>';//exit;
+				$true = $status->isValidDateChecker ( $this, 'end-day', t ( 'Your changes have been not saved: Training end date'), $values['training_end_date'] );
+			   
+                        }	
 			if(trim($rows[10][3]) !== ''){
-				list($ds, $ms, $ys) = array_pad(explode('/', $rows[10][3], 3), 3, 0);
-				$values['training_start_date'] = '20' . $ys . '-' . $ms . '-' . $ds;
-				$status->isValidDate ( $this, 'start-day', t ( 'Your changes have been not saved: Training start date'), $values['training_start_date'] );
+				list($ys,$ms,$ds) = $status->dateFormatter($rows[10][3]);
+                                
+				$values['training_start_date'] =  $ys . '-' . $ms . '-' . $ds;
+				$status->isValidDateChecker ( $this, 'start-day', t ( 'Your changes have been not saved: Training start date'), $values['training_start_date'] );
 				if (strtotime ($values['training_end_date'] ) < strtotime ( $values['training_start_date'] )) {
 					$status->addError ( 'end-day', t ( 'Your changes have been not saved: End date must be after start date.' ) );
 				}
@@ -1416,11 +1429,11 @@ class TrainingController extends ReportFilterHelpers {
 								$trainer_id = Person::tryFind(trim($rows[$i][1]), trim($rows[$i][2]), trim($rows[$i][3]));
 
                                                                 $certification = $rows[$i][14];
-                                                                
+                                                               
                                                                      
 								if ( !$trainer_id ) { //add new person to Person
 									
-									if(!trim($rows[$i][5])){
+									if(!trim($rows[$i][6])){
 										$errs[] = t("Could not add person to training. Cadre is required."). " Person: #" . $rows[$i][0];
 										$to_fix = "to fix data";
 										continue;
@@ -1893,6 +1906,9 @@ class TrainingController extends ReportFilterHelpers {
 	/**
 	 * A template for importing a training
 	 */
+        
+        
+  
 	public function importTrainingTemplateAction() {
 		$sorted = array (
 				array (
@@ -1954,6 +1970,14 @@ class TrainingController extends ReportFilterHelpers {
   			$this->view->layout()->disableLayout();
          	$this->_helper->viewRenderer->setNoRender(true);
 		}
+               else if($this->getSanParam('outputType') == 'FacilityList.xlsx'){//TA:17: 10/14/2014
+ 			header('Content-Type: application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 			header('Content-Disposition: attachment; filename="FacilityList.xlsx"');
+ 			header("Content-Type: application/force-download");
+ 			readfile(Globals::$BASE_PATH . '/html/templates/FacilityList.xlsx');
+  			$this->view->layout()->disableLayout();
+         	$this->_helper->viewRenderer->setNoRender(true);
+		}
 	}
 
 	/**
@@ -1988,10 +2012,12 @@ class TrainingController extends ReportFilterHelpers {
 			$regionGText = $this->tr ( 'Region G' );
 			$regionHText = $this->tr ( 'Region H' );
 			$regionIText = $this->tr ( 'Region I' );
-
+                        $locationText = $this->tr('Location');
+                        
 			$status->checkRequired ( $this, 'province_id', $provinceText );
+                        $status->checkRequired ($this,'training_location_name',$locationText);//unset($location);
 			if ($this->setting ( 'display_region_b' )) $status->checkRequired ( $this, 'district_id', $districtText );
-			if ($this->setting ( 'display_region_c' )) $status->checkRequired ( $this, 'region_c_id', $localRegionText );
+			//if ($this->setting ( 'display_region_c' )) $status->checkRequired ( $this, 'region_c_id', $localRegionText );
 			if ($this->setting ( 'display_region_d' )) $status->checkRequired ( $this, 'region_d_id', $regionDText );
 			if ($this->setting ( 'display_region_e' )) $status->checkRequired ( $this, 'region_e_id', $regionEText );
 			if ($this->setting ( 'display_region_f' )) $status->checkRequired ( $this, 'region_f_id', $regionFText );
@@ -2029,9 +2055,9 @@ class TrainingController extends ReportFilterHelpers {
 						$location_id = $this->getSanParam('region_e_id');
 					} else if ($this->setting ( 'display_region_d' )) {
 						$location_id = $this->getSanParam('region_d_id');
-					} else if ($this->setting ( 'display_region_c' )) {
+					} /*else if ($this->setting ( 'display_region_c' )) {
 						$location_id = $this->getSanParam('region_c_id');
-					} else if ($this->setting ( 'display_region_b' )) {
+					}*/ else if ($this->setting ( 'display_region_b' )) {
 						$location_id = $this->getSanParam('district_id' );
 					} else {
 						$location_id = $this->getSanParam('province_id' );

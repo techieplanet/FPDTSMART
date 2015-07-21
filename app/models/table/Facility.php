@@ -220,6 +220,15 @@ class Facility extends ITechTable {
             $result = $db->fetchRow($select);
             return $result['count'];
         }
+        public function getAllFacilityCountByLocation($locationWhere){
+              $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            
+            $select = $db->select()->from(array('flv'=>'facility_location_view'), 'COUNT(id) AS count')
+                    ->where($locationWhere);
+            //echo $select->__toString(); exit;
+            $result = $db->fetchRow($select);
+            return $result['count'];
+        }
         
         /*
          * Returns the count of all facilities returning for the currrent month
@@ -234,6 +243,20 @@ class Facility extends ITechTable {
             return $result['count'];
         }
         
+        
+        /*
+       Returns all facilities for a given location
+         */
+        public function getFacilityByLocation($locationWhere){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            
+            $select = $db->select()
+                    ->from(array('flv'=>'facility_location_view'))
+                    ->where($locationWhere);
+             $result = $db->fetchAll($select);
+             return $result;
+            
+        }
         /*
          * Returns the count of all facilities returning for the currrent month
          * that have trained health worker in a cetain training type.
@@ -301,7 +324,7 @@ class Facility extends ITechTable {
                             ->group($tierFieldName)
                             ->order(array($tierText));
                 
-              //echo 'FCL: ' . $sql . '<br/>'; exit;
+             //echo 'FCL: ' . $select->__toString() . '<br/>'; exit;
 
               $result = $db->fetchAll($select);
               

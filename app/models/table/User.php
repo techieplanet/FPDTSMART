@@ -137,6 +137,15 @@ class User extends ITechTable
 
  	}
         
+        public function fetchAllUsers(){
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+            $select = $db->select()
+                         ->from (array('user'=>'user'));
+            
+            $result = $db->fetchAll($select);
+            return $result;
+            
+        }
         public function get_userid(){
               $auth = Zend_Auth::getInstance();
               $return  = 0;
@@ -182,6 +191,18 @@ class User extends ITechTable
                return false;
            }
             
+        }
+        public function isUserAnLga(){
+           $role = $this->get_userid();
+           //echo user::ADMIN_USER;
+           if($role==User::LGA_USER){
+               return true;
+           }
+           else{
+               
+               return false;
+           }
+              
         }
         
 }

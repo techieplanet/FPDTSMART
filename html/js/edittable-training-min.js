@@ -110,14 +110,17 @@ function makeEditTableTraining(labelAdd, tableData, columnDefs, jsonUrl, linkInf
 			},
 			scope : this
 			};
-
+                        
 			var queryString = "a=add&row_id=" + jsonData.id;
 			if (jsonData.duration_days != null) {
 				queryString += "&days=" + jsonData.duration_days;
 			}
-
+                        queryString+= "&certification="+jsonData.certification;
+                       // alert(jsonUrl);
+//alert(queryString);
 			cObj = YAHOO.util.Connect.asyncRequest('POST', jsonUrl,
 					ajaxCallback, queryString);
+                                        
 		}
 
 		// animate row        

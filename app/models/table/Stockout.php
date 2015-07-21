@@ -154,7 +154,8 @@ class Stockout {
                 $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
                 
                 $arrayToSort = array_slice($sumsArray['output'], 1);
-                $sortedArray = $helper->msort($arrayToSort);
+                
+                $sortedArray = $helper->msort($arrayToSort,"DESC");
                 
                 //get month national data and put in first array element
                 $cacheValue = json_decode($cacheValue, true);
@@ -168,6 +169,63 @@ class Stockout {
     
     
     
+    
+     public function fetchFacilitiesProvidingButStockedOut($commodity_type, $geoList, $tierValue, $freshVisit){
+		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
+		
+                $output = array(array('location'=>'National', 'percent'=>0)); 
+                $helper = new Helper2();
+                $latestDate = $helper->getLatestPullDate();
+                
+               
+                    //needed variables
+                    $tierText = $helper->getLocationTierText($tierValue);
+                    $tierFieldName = $helper->getTierFieldName($tierText);
+
+
+                    //where clauses
+                    if($commodity_type == 'fp'){
+                        $commodityTypeWhere = "commodity_type = 'fp'";
+                        $commodityAliasWhere = "commodity_alias = 'so_fp_seven_days'";
+                    }
+                    else if($commodity_type == 'larc'){
+                        $commodityTypeWhere = "commodity_type = 'larc'";
+                        $commodityAliasWhere = "commodity_alias = 'so_implants'";
+                    }
+
+
+                    $dateWhere = "c.date = '$latestDate'";
+                    //use 5 months interval because current month is inclusive
+                    $date6MonthsIntervalWhere = "c.date >= DATE_SUB('$latestDate', INTERVAL 5 MONTH) AND c.date <= '$latestDate'";
+                    $reportingWhere = 'facility_reporting_status = 1';
+                    $locationWhere = $tierFieldName . ' IN (' . $geoList . ')';
+                    $stockoutWhere = "stock_out='Y'";
+                    $consumptionWhere = 'consumption > 0';
+
+                    $mainWhereClause = $reportingWhere . ' AND ' . $dateWhere . ' AND ' . 
+                                        $commodityAliasWhere . ' AND ' . $stockoutWhere . ' AND ' .
+                                        $locationWhere;
+                    $subWhereClause = $commodityTypeWhere . ' AND ' . $consumptionWhere . ' AND ' .
+                                      $date6MonthsIntervalWhere . ' AND ' . $locationWhere;;
+
+                    $stockoutHelper = new StockoutHelper();                
+                    $facilitiesLists = $stockoutHelper->getFacilitiesListProvidingButStockedout($mainWhereClause, $subWhereClause, $geoList, $tierText, $tierFieldName);
+$facilitiesNames = array();
+                    foreach($facilitiesLists as $facilityDetails){
+    $facilitiesNames[] = $facilityDetails['facility_name'];
+    
+}
+                    //change main where
+                    
+                    //var_dump($numerators); echo '<br><br>';
+                    //var_dump($denominators); echo '<br><br>';
+
+                  
+                
+                
+                //print_r($output);exit;
+                return $facilitiesNames;
+    }
     
     
     public function fetchPercentFacsProvidingButStockedOut($commodity_type, $geoList, $tierValue, $freshVisit){
@@ -229,12 +287,16 @@ class Stockout {
                     $denominators = $stockoutHelper->getFacsProvidingButStockedout($mainWhereClause, $subWhereClause, $geoList, $tierText, $tierFieldName);
 
                     $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
-                    $output = array_merge($output, $sumsArray['output']);
+                    
+                      $sortedArray = $helper->msort($sumsArray['output'],"DESC");
+                   // print_r($sortedArray);
+                   // echo '<br/>';
+                    $output = array_merge($output, $sortedArray);
                     $output[0]['percent'] = $sumsArray['nationalAvg'];
                     
-                    //var_dump($numerators); echo '<br><br>';
-                    //var_dump($denominators); echo '<br><br>';
-
+                   // print_r($numerators); echo '<br><br>';
+                    //print_r($denominators); echo '<br><br>';
+//exit;
                     //check if to save month national data
                     if(!$cacheValue && $freshVisit){ //fresh in month
                         //do cache insert
@@ -258,7 +320,7 @@ class Stockout {
                     }
                 }
                 
-                //var_dump($output); exit;
+                
                 return $output;
     }
     
