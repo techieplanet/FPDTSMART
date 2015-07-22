@@ -313,7 +313,7 @@ class Training extends ITechTable
 
 		$select->from( '', "GROUP_CONCAT(tt.training_topic_phrase ORDER BY training_topic_phrase SEPARATOR ', ') AS topics");
 
-		$select->join(array('ptot' => 'person_to_training'), 'training.id = ptot.training_id','ptot.training_id');
+		$select->join(array('ptot' => 'person_to_training'), 'training.id = ptot.training_id',array('ptot.training_id','certification'));
                 
                 //TP
                 $select->join(array('too' => 'training_organizer_option'), 'training.training_organizer_option_id = too.id','too.training_organizer_phrase');

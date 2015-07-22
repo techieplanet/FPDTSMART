@@ -17,9 +17,9 @@
 <script src="views/helpers/jquery-ui.js"></script>
 <style type="text/css">
     #accordion {
-        width:25%;
-        margin: 0 auto;
-        
+        width:50%;
+        float:left;
+        margin-left:50px;
        color:green;
  
     }
@@ -29,6 +29,28 @@
     #accordion h3{
         color:green;       
         background:#DEEBE6;
+        
+    }
+    .tab{
+        padding-right:60%;
+    }
+    .tableft{
+        padding-left:10%;
+        width:60%;
+        float:left;
+        text-align: left;
+        
+    }
+    .tabstateleft{
+       width:60%;
+    
+       text-align:left;
+    }
+  
+    .tabright{
+        width:30%;
+        float:right;
+        text-align:right;
         
     }
     #accordion :hover{
@@ -43,7 +65,7 @@ event: "click",
 heightStyle: "content",
 collapsible: true,
 activate: 0,
-
+active:false,
 autoHeight: false
 
 });
@@ -52,6 +74,7 @@ event: "click",
 heightStyle: "content",
 collapsible: true,
 activate: 0,
+active:false,
 autoHeight: false
 });
 
@@ -61,6 +84,7 @@ heightStyle: "fill",
 height:"100px",
 collapsible: false,
 activate: 0,
+active:false,
 autoHeight: false
 });
 });
@@ -76,7 +100,7 @@ autoHeight: false
 			
 				<div id="subcontent">
 					<div id="contentheader">
-						 <h2 algin="">Reporting Rates</h2>  <br/>
+						 <h2 algin="">Reporting Rates <?php echo $this->date_format; ?></h2>  <br/>
 					</div>
                                     
 					<div class="clear" style=""></div>

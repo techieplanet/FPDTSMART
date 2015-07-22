@@ -117,7 +117,7 @@ if ($auth->hasIdentity()) {
 	// REPORT LINK
 	if ( $this->hasACL('view_create_reports')) {
 		//TA: added 7/25/2014 : automatic label changes
-		$navMain['reports'] = array('index' => t('Queries'));
+		$navMain['reports'] = array('index' => t('Reports'));
 		/*$navMain['reports']['psStudentsTrained']			= t('Student Reports');
 		$navMain['reports']['psCourseByName']				= t('Course Reports');
 		$navMain['reports']['psCohortByParticipantCount']	= t('Cohort Reports');
@@ -127,13 +127,18 @@ if ($auth->hasIdentity()) {
         */
                 $navMain['reports']['trainingrep'] = t('Training Data');
                          $navMain['reports']['facilitysummary']				= t('Facility  Data');
-                       //  $navMain['reports']['allqueries']				= t('All Data');
+       $user = new User();                    //TP checking if the user is a user with an LGA ROLE
+if(!($user->isUserAnLga())){
+$navMain['reports']['archivedreports']				= t('Archived PDF Reports');
+}
 	}
 
          $navMain['menu'] = array('index' => t('info'));
+         $navMain['menu']['definitionspage'] = t('Definitions Page');
+          $navMain['menu']['rrate'] = t('Reporting Rates');
               $navMain['menu']['info'] = t('DHS Result');
-              $navMain['menu']['rrate'] = t('Reporting Rates');
-                   $user = new User();
+             
+         $user = new User();         
 if($user->is_user_an_admin()){
 $navMain['menu']['import'] = t('Import DHS Data');
 }

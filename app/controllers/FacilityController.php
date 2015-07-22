@@ -7,6 +7,7 @@ require_once ('models/table/Facility.php');
 require_once ('models/ValidationContainer.php');
 require_once ('models/table/Location.php');
 require_once ('controllers/ReportsController.php');
+require_once ('models/table/Helper2.php');
 
 require_once ('models/table/OptionList.php');
 class FacilityController extends ReportFilterHelpers {
@@ -275,8 +276,8 @@ class FacilityController extends ReportFilterHelpers {
 		
 		require_once ('models/table/OptionList.php');
 		require_once ('views/helpers/TrainingViewHelper.php');
-		
-               
+		$helper2 = new Helper2();
+               $lastpulled_date = $helper2->getLatestPullDate();
 		if ($id = $this->getSanParam ( 'id' )) {
 			$facility = new Facility ();
 			$facilityRow = $facility->fetchRow ( 'id = ' . $id );
@@ -387,7 +388,7 @@ where commodity.facility_id=". $id . " and date > DATE_SUB(now(), INTERVAL 12 MO
                       }
 		}
                 
-                $month = time();
+                $month = strtotime($lastpulled_date);
 $headers[] = "FP Commodity"; 
 $output = array();
                 $output = array();
@@ -418,7 +419,7 @@ foreach($commodity_name as $row){
     $sum_first = array();
 $outputs[] = $row['commodity_name'];
 $id = $row['id'];
-$month = time();
+$month = strtotime($lastpulled_date);
  //$month = strtotime('last month', $month);
 $month = strtotime('next month', $month);
 for ($i = 1; $i <= 12; $i++) {
@@ -442,6 +443,46 @@ foreach($sum_first as $sum_first_date){
 }
 array_push($output,$outputs);
 }
+
+
+
+
+
+$outputs = array();
+$name_ids = array("11,15,27,30","38","10,35","31");
+
+$fullname = array("Any FP Product","Implants","Female Condoms","Emergency Contraception");
+$length = sizeof($name_ids);
+$month = strtotime($lastpulled_date);
+$month = strtotime('next month', $month);
+//$month = strtotime($lastpulled_date);
+for($r=0;$r<$length;$r++){
+    $out = array();
+    $out_first = array();
+    $out[] = $fullname[$r];
+    $name_id = $name_ids[$r];
+    $month = time();
+   // echo $name_id.' '.$fullname[$r].'<br/><br/>';
+    for ($i = 1; $i <= 12; $i++) {
+   $month = strtotime('last month', $month);
+    $dates = date("Y-m",$month);
+    $start = $dates."-01";
+    $end = $dates."-31";
+  
+ $out_first[] = $this->get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id);
+ //echo $start.' end '.$end.'<br/>';
+ //print_r($this->get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id)) ;
+}
+//echo '<br/><br/>';
+$out_first = array_reverse($out_first);
+
+foreach($out_first as $out_first_date){
+    
+    $out[] = $out_first_date;
+}
+array_push($outputs,$out);
+}
+
         }
 
 		require_once('models/table/Translation.php');
@@ -462,6 +503,7 @@ array_push($output,$outputs);
                 $html = EditTableHelper::generateHtml('commodity', $rows, $fieldDefs, $customColDefs, $noDelete, true);
 		$this->view->assign ( 'tableCommodities', $html );
                 $this->view->assign ( 'output', $output ); 
+                $this->view->assign ( 'outputs', $outputs );
                 $this->view->assign ( 'headers', $headers );
 		$this->view->assign ( 'totalCommodities',  sizeof($rows));
 		
@@ -752,7 +794,24 @@ array_push($output,$outputs);
 		// locations
 		$this->viewAssignEscaped ( 'locations', Location::getAll () );
 	}
-        
+        public function get_at_least_one_commodity_out_of_stock($start,$end,$facility_id,$name_id){
+           $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+             $stock_out= "";
+           $consump_sum_sql = "SELECT stock_out  FROM commodity WHERE (commodity.date>='".$start."' AND commodity.date<='".$end."') AND (facility_id IN (".$facility_id.") )  AND (name_id IN (".$name_id."))";
+          //echo $consump_sum_sql;exit;                   
+           $res = $db->fetchAll($consump_sum_sql);
+                             foreach($res as $res){
+                                $stock_out = $res['stock_out'];
+                                if($stock_out=="Y" || $stock_out=="y"){
+                                 break;   
+                                }
+                                 
+                             }
+                             
+                              
+                              return $stock_out;
+       }
+       
          public function get_commodity_consumption($start,$end,$facility_id,$name_id){
              $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
              $sum = 0;

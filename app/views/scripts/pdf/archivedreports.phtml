@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title><?php echo $this->translation['Application Name'];?> | <?php tp('PDF Archival');?></title>
+		<?php
+		require_once('views/helpers/Location.php');
+		require_once('views/helpers/ScriptContainer.php');
+		print ScriptContainer::$instance->renderCSSHead();
+		print ScriptContainer::$instance->renderJSHead();
+
+		?>
+
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+				/* Init the table */
+				oTable = $('.tablegrid').dataTable({
+					"bJQueryUI": true,
+					"sPaginationType": "full_numbers"
+				});
+			} );
+		</script>
+	</head>
+    <style type="text/css">
+        
+        select{
+            
+      
+           
+        }
+        .mclass{
+    min-height:100px;
+    
+}
+        </style>
+	<body class="yui-skin-sam" >
+		<div id="pageHolder">
+			<div id="header"><?php require_once('views/scripts/header.phtml');?></div>
+			<div id="content">
+				<div id="subcontent">
+					<div id="contentheader">
+						<h2><?php tp('Archived Pdf Reports');?></h2><br>
+                                                   
+                                                   <br/>
+					</div>
+                                    
+                                     <?php 
+                                                    // print_r($this->criteria['error']);
+                                     if(isset($_GET['go'])){
+                                                     foreach($this->criteria['error'] as $error){
+                                                         echo '<h3 align="center" style="color:red;"><b>* '.$error.'</b></h3>';
+                                                     }
+                                     }
+                                                     ?>
+					<div class="pad50 clear"></div>
+					<form  action="" method="get">
+						
+					<input type="hidden" name="process" id="process" value="1">
+					<br/>
+<fieldset style="width:100%;height:200px; margin:0 auto;">
+    	<div class="maintoucher" >
+	
+							<div class="queryquestion"><span class="required"></span> National Report</div><br/>
+							
+							<div class="queryquestion"><select name="national_report">
+                                                                
+                                                                <option value="">--choose--</option>
+                                                                <option value="0" <?php if($this->criteria['national_report']=="0"){ echo 'selected="selected"'; }?>>National Report</option>
+                                                            </select></div><br/>
+                                                        </div>
+							<div class="maintoucher" >
+
+							<div class="queryquestion"><span class="required">*</span> Zone</div><br/>
+							
+							<div class="queryquestion"><?php renderFilter($this->locations, 1, 'province_id', $this->criteria['province_id'], 'district_id', true,false,"10"); ?></div><br/>
+                                                        </div>
+							<div class="maintoucher" >
+	
+							<div class="queryquestion"><span class="required">*</span> State</div><br/>
+							
+							<div class="queryquestion"><?php renderFilter($this->locations, 2, 'district_id', $this->criteria['district_id'], 'region_c_id', true,false,"10"); ?></div><br/>
+                                                        </div>
+							<div class="maintoucher" >
+	
+							<div class="queryquestion"><span class="required"></span> LGA</div><br/>
+							
+							<div class="queryquestion"><?php renderFilter($this->locations, 3, 'region_c_id', $this->criteria['region_c_id'],'facility_id', true, false,"10"); ?></div><br/>
+                                                        </div>
+							
+<div class="maintoucher" >
+
+                                                         
+							<div class="queryquestion"><?php echo t('Date Range'); ?></div><br/>
+							
+							<div class="querylongerdates" style="max-width:100%;">
+                                                           
+                                                           <div class="queryq" id="startdate" style="float:left">
+                                                               
+                                                               
+																 <input id="start-day" class="dayfield" type="text" placeholder="DD" name="start-day" maxlength="2" size="2" value="<?php echo $this->criteria['start_day']; ?>" style="width : 30px; margin-right : 10px; margin-left : 0px;" />
+																 <input id="start-month" class="monthfield" type="text" placeholder="MM" name="start-month" maxlength="2" size="2"value="<?php echo $this->criteria['start_month']; ?>" style="width : 30px; margin-right : 10px; margin-left : 0px;"  />
+																 <input id="start-year" class="yearfield" type="text" placeholder="YYYY" name="start-year" maxlength="4" size="4" value="<?php echo $this->criteria['start_year'];  ?>" style="width : 50px; margin-right : 10px; margin-left : 0px;" />
+																<script  type="text/javascript">
+																	YAHOO.util.Event.onDOMReady(function () {
+																		makeCalendar("startdate","start-day", "start-month", "start-year");
+																	});
+																</script>
+															
+                                                           </div>          <br/>
+                                                            <div style="queryquestion"> to &nbsp;</div><br/>    
+                                                                        
+                                                                                
+                                                                                
+                                                                                
+                                                                                     
+															<div class="queryq" style="float:right" id="enddate" style="margin-top:1em;">
+																 <input id="end-day" class="dayfield" type="text" placeholder="DD" name="end-day" maxlength="2" value="<?php echo $this->criteria['end_day']; ?>"  style="width : 30px; margin-right : 10px; margin-left : 0px;"/>
+																 <input id="end-month" class="monthfield" type="text" placeholder="MM" name="end-month" maxlength="2" value="<?php echo $this->criteria['end_month']; ?>" style="width : 30px; margin-right : 10px; margin-left : 0px;" />
+																<input id="end-year" class="yearfield" type="text" name="end-year" placeholder="YYYY" maxlength="4" value="<?php echo $this->criteria['end_year'];  ?>" style="width : 50px; margin-right : 10px; margin-left : 0px;"/>
+																<script  type="text/javascript">
+																	YAHOO.util.Event.onDOMReady(function () {
+																		makeAdditionalCalendar("enddate","end-day", "end-month", "end-year");
+																	});
+																</script>
+															</div>   
+                                                        
+                                                      
+                                                       
+
+						</div>      </div>
+						
+						
+							<!-- TA:17: 09/04/2014 START-->
+
+</fieldset>
+							<div class="clear pad20">&nbsp;</div>
+							<div class="mainformholder" style="height : 100px;">
+							<div  style="float : right;" >
+								<input type="submit" name="go" value="<?php tp('Preview');?> &raquo;" class="tsbutton green large">
+							</div>
+							<div class="clear pad20">&nbsp;</div>
+						</div>
+						<div class="clear pad20">&nbsp;</div>
+</form>
+
+
+                                  
+                                    
+                                    
+                                    <br/>
+                                    <div class="clear" style="">
+                                        
+                                        <?php
+ //print_r($this->tocktack);
+
+if (isset($this->outputs)) {
+	if (count ($this->outputs) == 0){
+            echo 
+            '<br/>
+            <h2><b>Archived Pdf Reports</b></h2>';
+		echo "				<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display tablegrid\" id=\"\" style=\"width:100%\">\n";
+		echo "					<thead>\n";
+		echo "						<tr>\n";
+		echo "							<th>".t('Output')."</th>\n";
+		echo "						</tr>\n";
+		echo "					</thead>\n";
+		echo "					<tbody>\n";
+		echo "						<tr>\n";
+		echo "							<td>".t("Your search criteria returned no results")."</td>\n";
+		echo "						</tr>\n";
+		echo "					</tbody>\n";
+		echo "				</table>\n";
+	} else {
+?>
+
+				<br>
+                                    <h2><b>Archived Pdf Reports</b></h2>
+                                    <table cellpadding="0" cellspacing="0" border="0" class="display tablegrid" id="" style="width:100%">
+					<thead>
+						<tr>
+<?php
+		foreach ($this->headers as $key=>$value){
+			echo "							<th>" . $value . "</th>\n";
+		}
+?>
+						</tr>
+					</thead>
+					<tbody>
+<?php
+		foreach ($this->outputs as $row){
+			echo "						<tr style=\"cursor : pointer;\" class=\"GradeA\">\n";
+			foreach ($row as $key=>$value){
+				echo "				   			<td>" . $value . "</td>\n";
+			}
+			echo "						</tr>\n";
+		}
+?>
+					</tbody>
+				</table>
+				
+<?php
+	}
+}
+?>
+                                    </div>
+					<div class="clear" style=""></div>
+				</div>
+				<div class="clear" style=""></div>
+			</div>   
+			<div class="clear" style="height : 100px;"></div>
+			<div class="clear" style=""></div>
+				
+			<div id="footer"><?php require_once('views/scripts/footer.phtml');?></div>
+			</div>
+		</div>
+	</body>
+</html>
+
+
+
+
+
+

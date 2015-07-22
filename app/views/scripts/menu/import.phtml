@@ -16,7 +16,8 @@ print ScriptContainer::$instance->renderJSHead();
       <h1><?php echo $this->pageTitle; ?></h1>
       <p><?php tp('Select the file that contains the DHS data in MS Excel format (*.xlsx) you want to import.'); ?></p>
       <p>&nbsp;</p>
-      
+        <p><a href="<?php echo $this->base_url; ?>/menu/import/download/template/Dashboard_static_page_indicators.xlsx"><?php tp('Get sample template'); ?></a></p>
+     
       <p>&nbsp;</p>
       <form id="uploadFileForm" enctype="multipart/form-data" method="post">
       <div class="fieldIndent">

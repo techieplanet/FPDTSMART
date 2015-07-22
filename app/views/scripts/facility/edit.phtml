@@ -204,10 +204,63 @@ if (isset($this->output)) {
 }
 ?>
         <br/><br/>
+        
+        <?php
+ //print_r($this->tocktack);
+
+if (isset($this->outputs)) {
+	if (count ($this->outputs) == 0){
+            echo 
+            '<br/>
+            <h2><b>Stock Out Summary: Stock outs over last 12 months</b></h2>';
+		echo "				<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"display tablegrid\" id=\"\" style=\"width:100%\">\n";
+		echo "					<thead>\n";
+		echo "						<tr>\n";
+		echo "							<th>".t('Output')."</th>\n";
+		echo "						</tr>\n";
+		echo "					</thead>\n";
+		echo "					<tbody>\n";
+		echo "						<tr>\n";
+		echo "							<td>".t("Your search criteria returned no results")."</td>\n";
+		echo "						</tr>\n";
+		echo "					</tbody>\n";
+		echo "				</table>\n";
+	} else {
+?>
+
+				<br>
+                                    <h2><b>Stock Out Summary: Stock outs over last 12 months</b></h2>
+                                    <table cellpadding="0" cellspacing="0" border="0" class="display tablegrid" id="" style="width:100%">
+					<thead>
+						<tr>
+<?php
+		foreach ($this->headers as $key=>$value){
+			echo "							<th>" . $value . "</th>\n";
+		}
+?>
+						</tr>
+					</thead>
+					<tbody>
+<?php
+		foreach ($this->outputs as $row){
+			echo "						<tr style=\"cursor : pointer;\" class=\"GradeA\">\n";
+			foreach ($row as $key=>$value){
+				echo "				   			<td>" . $value . "</td>\n";
+			}
+			echo "						</tr>\n";
+		}
+?>
+					</tbody>
+				</table>
+				
+<?php
+	}
+}
+?>
   <div class="hrGrey"></div>
   <div class="clear"></div>
   <!-- TA:17: rows count must have this format <span id="[label]_total">-->
-  <div class="fieldIndentNoMargin"><?php tp('Commodity Information');?> <span class="total"><?php tp('Total Records For Last 12 Months:');?> <span id="commodity_total"><?php echo $this->escape($this->totalCommodities);?></span></span></div>
+  <!--<div class="fieldIndentNoMargin"><?php //tp('Commodity Information');?> <span class="total"><?php // tp('Total Records For Last 12 Months:');?> <span id="commodity_total"><?php //echo $this->escape($this->totalCommodities);?></span></span></div>!-->
   <div class="fieldIndent2">
   <!-- TA:17: table div id must have this format  <div id="[label]Table">-->
   <div name="commodityTable" id="commodityTable"></div>
@@ -273,7 +326,7 @@ if (isset($this->output)) {
 
     	</script>
   
-  <?php echo $this->tableCommodities; ?><br>
+  <?php //echo $this->tableCommodities; ?><br>
   
   <input type="hidden" id="commodity_new_data" name="commodity_new_data"/>
   <input type="hidden" id="commodity_delete_data" name="commodity_delete_data"/>

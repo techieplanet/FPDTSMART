@@ -16,8 +16,10 @@ print ScriptContainer::$instance->renderJSHead();
       <h1><?php echo $this->pageTitle; ?></h1>
       <p><?php tp('Select the file that contains the data in MS Excel format (*.xlsx) you want to import.'); ?></p>
       <p>&nbsp;</p>
-      <p><a href="<?php echo $this->base_url; ?>/training/import/download/template/outputType/ImportTrainingTemplate.xlsx"><?php tp('Get sample template'); ?></a></p>
+      <p><a href="<?php echo $this->base_url; ?>/training/import/download/template/outputType/ImportTrainingTemplate.xlsx"><?php tp('Get sample template for training data upload'); ?></a></p>
+     
       <p>&nbsp;</p>
+       <p><a href="<?php echo $this->base_url; ?>/training/import/download/template/outputType/FacilityList.xlsx"><?php tp('Get Facility List'); ?></a></p>
       <form id="uploadFileForm" enctype="multipart/form-data" method="post">
       <div class="fieldIndent">
         <div class="fieldLabel"><?php tp('File to upload');?></div><input type="file" name="upload" /><br>

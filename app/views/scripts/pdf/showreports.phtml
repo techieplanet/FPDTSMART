@@ -124,7 +124,8 @@ print ScriptContainer::$instance->renderJSHead();
             var larcprov_hidden = document.getElementById('larcprov_hidden').value;
             var larcso_hidden = document.getElementById('larcso_hidden').value;
             var fpso_hidden = document.getElementById('fpso_hidden').value;
-            
+            var folder_name = document.getElementById("folder_name").value; 
+            var report_id = document.getElementById("report_id").value;
             
             $.ajax({
                 type: 'POST',
@@ -132,9 +133,10 @@ print ScriptContainer::$instance->renderJSHead();
                 data: {generate:true,tw_hidden:tw_hidden,mm_hidden:mm_hidden,mc_hidden:mc_hidden,
                         fptps_hidden:fptps_hidden,larctps_hidden:larctps_hidden,
                         fpprov_hidden:fpprov_hidden, larcprov_hidden:larcprov_hidden,
-                        larcso_hidden:larcso_hidden, fpso_hidden:fpso_hidden},
+                        larcso_hidden:larcso_hidden, fpso_hidden:fpso_hidden,folder_name:folder_name,report_id:report_id},
                 success: function(response){
                     //reload the page
+                     alert(response);
                     console.log('ajax success: ' + response);
                 },
                 error: function(e){
@@ -215,6 +217,14 @@ print ScriptContainer::$instance->renderJSHead();
 		<div id="header"><?php require_once('views/scripts/header.phtml');?></div>
 		<div id="content">
 
+                    <?php
+                    $folder_name = $this->folder_name;
+                    $reportId = $this->report_id;
+                    $info = $this->info;
+                    if($info!="" && !empty($info)){
+                        echo '<h3>'.$info.'</h3>';
+                    }
+                    ?>
 			<!-------   /////////////////////////// get data ////////////////////// -->
 
 			<div>
@@ -234,7 +244,9 @@ print ScriptContainer::$instance->renderJSHead();
 						<div id="homecontent" class="container">
 							<div id="homecontent-mid" class="row rounded">
 								<div id="homebanner" class="rounded">
-                                                                    
+                                                                    <input type="hidden" id="folder_name" value="<?php echo $folder_name; ?>" name="folder_name" />
+                                                                    <input type="hidden" id="report_id" value="<?php echo $reportId; ?>" name="report_id" />
+                                                                     
                                                                         <!--1 $ 2-->
                                                                         <div class="sliderdiv">
                                                                                 <!--1-->
@@ -513,11 +525,11 @@ print ScriptContainer::$instance->renderJSHead();
         var chartOptions = {
                       width: 900,
                       height: 400,
-                      lineWidth: 4,
+                     
 		      titleTextStyle: { fontSize: 15 },
 		      vAxis: {format: '#', minValue: 4},
 		      legend: {fontSize: 14},
-                      pointSize: 8,
+                      pointSize: 10,
                       pointShape: 'circle'
 		      //chartArea: {width: '65%', height: '70%', top: 55}
 		      //is3D:true

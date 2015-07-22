@@ -71,6 +71,8 @@ class UserController extends ReportFilterHelpers {
                     $status->checkRequired ( $this, 'last_name', 'Last name' );
                     $status->checkRequired ( $this, 'username', 'Login' );
                     $status->checkRequired ( $this, 'email', 'Email' );
+                    $status->checkRequired ( $this, 'role', 'Role');
+                    
 
 			//valid email?
 			$validator = new Zend_Validate_EmailAddress ( );
@@ -83,7 +85,7 @@ class UserController extends ReportFilterHelpers {
 				$status->addError ( 'username', 'Usernames should be at least 3 characters in length.' );
 			}
                         if($role==""){
-                            $status->addError ( 'role', 'You need to select the role of the user you are about to create' );
+                                $status->addError ( 'role', 'You need to select the role of the user you are about to create' );
 			
                         }
 			$status->checkRequired ( $this, 'password', 'Password' );
@@ -138,6 +140,7 @@ class UserController extends ReportFilterHelpers {
                             $lga = $lgas[2];
                             $details = $this->_getAllParams ();
                             
+                            $details['province_id'] = $zone;
                             $details['district_id'] = $state;
                             $details['region_c_id'] = $lga;
                             //print_r($details);
@@ -346,7 +349,13 @@ $locations = Location::getAll();
 
 		if ($request->isPost ()) {
 			$status = ValidationContainer::instance ();
-
+$province_id = $this->getSanParam('province_id');
+                    
+                    $district_id = $this->getSanParam('district_id');
+                    $region_c_id = $this->getSanParam('region_c_id');
+                    
+                    $role = $this->getSanParam('role');
+                    
 			//validate
 			$status->checkRequired ( $this, 'first_name', 'First name' );
 			$status->checkRequired ( $this, 'last_name', 'Last name' );
@@ -391,6 +400,19 @@ $locations = Location::getAll();
 				$passwordChange = true;
 			}
 
+                        
+                        if($role=="3" && empty($province_id)){
+                            $status->addError ( 'province_id', 'Geo Zone is a required field for user with role Partner' );
+                        
+                        }
+                        else if($role=="4" && empty($district_id)){
+                           $status->addError ( 'district_c_id', 'State is a required field for user with role State' );
+                         
+                        }
+                        else if($role=="5" && empty($region_c_id)){
+                           $status->addError ( 'region_c_id', 'LGA is a required field for user with role LGA' );
+                         
+                        }
 			if ($status->hasError ()) {
 				$status->setStatusMessage ( 'Your account information could not be saved.' );
 			} else {
