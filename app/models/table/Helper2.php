@@ -226,16 +226,41 @@ class Helper2 {
                         ->where($longWhereClause)
                         ->group(array($tierFieldName, 'date'))
                         ->order(array($tierText, 'date'));   
-          
-        //echo $sql = $select->__toString(); exit;
         
-        $result = $db->fetchAll($select);
+         $sql = $select->__toString(); 
+         //echo $sql; exit;
+       // echo $select->__toString();exit;
+       //   echo $select->__toString();echo $tierText.'<br/><br/>';
+       
+          $result = $db->fetchAll($select);
+//         if($tierText=="lga"){
+//                   $geoList = implode(",",$this->fetchlocwithparentid($geoList));
+//                   //print_r($geoList);exit;
+//               }
         
         //filter for only valid values
         $locationNames = $this->getLocationNames($geoList);
         $locationDataArray = $this->filterLocations($locationNames, $result, $tierText);
         
 	return $locationDataArray;
+  }
+  
+  /*TP:
+   * This method gets the parent id of a given location id
+   * Args: the location id of a given location
+   */
+  public function getParentID($location_id){
+       $db = $this->getDbAdapter();
+    
+        $sql = $db->select()
+                  ->from(array('l'=>'location'))
+                  ->where("l.id ='$location_id' ");
+  
+        //echo $sql->__toString();exit;
+        $result = $db->fetchAll($sql);
+       
+        $parent_id = $result[0]['parent_id'];
+        return $parent_id;
   }
   
   
@@ -416,7 +441,7 @@ class Helper2 {
                       ->from(array('l'=>'location'),'id')
                       ->where('tier =' . $tierValue);
         //echo $select->__toString(); exit;
-        $result = $db->fetchAll($select->__toString());
+        $result = $db->fetchAll($select);
         
         $array = array();
         foreach($result as $row)
@@ -580,6 +605,43 @@ class Helper2 {
        }
        
        
+       public function addlocationnames(array $sortedArray){
+           $length = sizeof($sortedArray);
+           for($i=0;$i<$length;$i++){
+              $locname =  $sortedArray[$i]['location'];
+              
+              $location_id = $this->fetchlocaid($locname);
+              $sortedArray[$i]['location_id'] = $location_id;
+           }
+           return $sortedArray;
+       }
+       
+       
+       public function fetchlocaid($locname){
+           $locationname = strtolower(trim($locname));
+          $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+           $select = $db->select()
+                    ->from (array('loc'=>'location'), array('id'))
+                     ->where ("location_name='$locationname'");
+           $result = $db->fetchRow($select);
+           //echo $select->__toString();exit;
+            return $result['id'];  
+       }
+       
+       public function fetchlocwithparentid($parent_id){
+            //echo $parent_id;exit;
+          $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+           $select = $db->select()
+                    ->from (array('loc'=>'location'), array('id'))
+                     ->where ("parent_id IN ('$parent_id')");
+           $result = $db->fetchAll($select);
+           $locations = array();
+           //echo $select->__toString();exit;
+           foreach($result as $loc){
+               $locations[] = $loc['id'];
+           }
+            return $locations; 
+       }
        
        public function getAllReportingFacsCount($date){
            $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -696,14 +758,25 @@ class Helper2 {
         }
         
         
-        public function msort($array){
+        public function msort($array,$order="ASC"){
             for($i=0; $i<count($array)-1; $i++){                
                 for($j=$i+1; $j<count($array); $j++){
+                    if($order=="ASC"){
                     if($array[$i]['percent'] > $array[$j]['percent']){
                         $temp = $array[$i];
                         $array[$i] = $array[$j];
                         $array[$j] = $temp;
                     }
+                    }else{
+                       if($array[$i]['percent'] < $array[$j]['percent']){
+                        $temp = $array[$i];
+                        $array[$i] = $array[$j];
+                        $array[$j] = $temp;
+                    }  
+                    }
+                    
+                    
+                    
                 }
             }
             

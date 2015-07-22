@@ -50,18 +50,9 @@ function renderFilter(&$locations, $tier, $widget_id, $default_val_id = false, $
   <select size="<?php echo $size; ?>" id="<?php echo $widget_id;?>" name="<?php echo $widget_id;?><?php if ($is_multiple) echo '[]';?>" <?php if ($readonly) echo 'disabled="disabled"'?> <?php if ( $is_multiple) echo 'multiple="multiple" ';?>
   <?php if ($child_widget_id ) { ?> onchange="<?php echo 'setChildStatus_' . str_replace('-', '_', $widget_id) . '()';?>" <?php }?> class="mclass">
     
-   <?php  if($widget_id!="province_id"){ 
-       
-       ?>
-      <option value="" disabled>--<?php tp('choose');?>--</option>
-      <?php
-   }else{
-      ?>
+  
       <option value="" >--<?php tp('choose');?>--</option>
-      <?php
-       
-   } ?>
-    <?php
+   <?php
       foreach ( $locations as $val ) {
         if ( $val['tier'] == $tier) {
         	  $selected = '';

@@ -13,6 +13,8 @@ require_once ('views/helpers/CheckBoxes.php');
 require_once ('models/table/MultiAssignList.php');
 require_once ('models/table/TrainingTitleOption.php');
 require_once ('models/table/Helper.php');
+require_once('models/table/Helper2.php');
+require_once ('models/table/Report.php');
 
 class ReportsController extends ReportFilterHelpers {
 
@@ -28,6 +30,9 @@ class ReportsController extends ReportFilterHelpers {
 $this->_forward ( 'allqueries' );
 
 	}
+        public function archivedreportsAction(){
+            $this->_redirect('pdf/archivedreports');
+        }
 
 	public function preDispatch() {
 		$rtn = parent::preDispatch ();
@@ -1818,7 +1823,7 @@ echo $sql . "<br>";
 			if (intval ( $criteria ['end-year'] ) and $criteria ['start-year']) {
 				$startDate = $criteria ['start-year'] . '-' . $criteria ['start-month'] . '-' . $criteria ['start-day'];
 				$endDate = $criteria ['end-year'] . '-' . $criteria ['end-month'] . '-' . $criteria ['end-day'];
-				$where [] = ' training_start_date >= \'' . $startDate . '\'  AND training_start_date <= \'' . $endDate . '\'  ';
+				$where [] = ' training_end_date >= \'' . $startDate . '\'  AND training_end_date <= \'' . $endDate . '\'  ';
 			}
 
 			if (intval ( $criteria ['funding_min'] ) or intval ( $criteria ['funding_max'] )) {
@@ -9867,10 +9872,11 @@ public function facilitysummaryAction(){
 		$this->_countrySettings = System::getAll();
 
 		$this->view->assign ( 'mode', 'search' );
-
+                $reports = new Report();
 		require_once ('models/table/TrainingLocation.php');
 		require_once('views/helpers/TrainingViewHelper.php');
-
+                $helper2 = new Helper2();
+                $lastpulled_date = $helper2->getLatestPullDate();
 		$criteria = array ();
 		$where = array ();
 		$display_training_partner = ( isset($this->_countrySettings
@@ -9970,7 +9976,7 @@ $csql = "SELECT * FROM commodity_name_option WHERE id!='38'AND id!='32'AND id!='
                // $this->viewAssignEscaped ( 'commodity_name_option', $commodity_name );
                
 
-$month = time();
+$month = strtotime($lastpulled_date);
 $headers[] = "FP Commodity"; 
 $output = array();
 $details_facility = $details;
@@ -10008,7 +10014,8 @@ foreach($hw_details as $hw_det){
 
 //$outputs = array();
 $heading_date = array();
-$month = time();
+$month = strtotime($lastpulled_date);
+//$month = time();
 //$outputs[] = $row['commodity_name'];
 $month = strtotime('next month', $month);
    
@@ -10031,7 +10038,9 @@ $outputs[] = $row['commodity_name'];
 $id = $row['id'];
 $month = time();
  //$month = strtotime('last month', $month);
- $month = strtotime('next month', $month);
+
+$month = strtotime('next month', $month);
+ $month = strtotime($lastpulled_date);
 for ($i = 1; $i <= 12; $i++) {
    $month = strtotime('last month', $month);
     $dates = date("Y-m",$month);
@@ -10060,6 +10069,7 @@ $fullname = array("Any FP Product","Implants","Female Condoms","Emergency Contra
 $length = sizeof($name_ids);
 $month = time();
 $month = strtotime('next month', $month);
+$month = strtotime($lastpulled_date);
 for($r=0;$r<$length;$r++){
     $out = array();
     $out_first = array();
@@ -10115,7 +10125,7 @@ $criteria['details_facility'] = $details_facility;
 public function trainingrepAction(){
     $this->_countrySettings = array();
 		$this->_countrySettings = System::getAll();
-
+                $reports = new Report();
 		$this->view->assign ( 'mode', 'search' );
 
 		require_once ('models/table/TrainingLocation.php');
@@ -10833,7 +10843,7 @@ public function get_all_facilities_with_location($category,$id){
 public function allqueriesAction() {
 		$this->_countrySettings = array();
 		$this->_countrySettings = System::getAll();
-
+                $reports = new Report();
 		$this->view->assign ( 'mode', 'search' );
 
 		require_once ('models/table/TrainingLocation.php');
@@ -10961,6 +10971,7 @@ public function allqueriesAction() {
                 
                // echo sizeof($state);
              // print_r($state);
+               
                 if(!empty($localgovernment)){
                 foreach($localgovernment as $state){
                   $state_gen =   explode("_",$state);
@@ -11055,24 +11066,32 @@ $consump_loc = array();
       $end_date = $end_year.'-'.$end_month.'-'.$end_day;
       //$facilities = array();
       //$training_org = array();
-	  if($period=="" || empty($period)){
-	  $error[] = "You need to select the period";
-	  }
+	  
        //$training_org = $this->get_all_facilities_with_partner($trainingorganizer);
                    // print_r($training_org); exit;
-				   if(!empty($submit) || $submit!=""){
-                   if(!isset($locations) || empty($locations)){
+				   if(isset($submit) && $submit!=""){
+                                       if($period=="" || empty($period)){
+	  $error[] = "You need to select the period";
+	  }
+          
+                  else  if(!isset($locations) || empty($locations)){
          $error[] = "Geography is required (at least state)";
          }else {
+             if($period=="annual"){
+                 
+                           list($starts_years,$ends_years) = $reports->getAnnualDateRange($start_year,$end_year);
+             }
+             else if($period=="monthly"){
+                 echo $start_year; echo $end_year;
+                 list($starts_years,$ends_years) = $reports->getMonthlyDateRange($start_month,$start_year,$end_month,$end_year);
+             }
+             else if($period=="total"){
+                 $starts_years[] = $start_date;
+                 $ends_years[] = $end_date;
+             }
                 if($agrregate_method=="aggregate_unifacilities"){
                     
-                      if($training_type2=="Cumulative" && $start_year==""){
-                        $start_day = "01"; 
-                        $start_year = "1950";
-                       //$current_month = ;
-                       $start_month = "01";
-                        
-                    }
+                    
                     
                     $location_id = $locations[0];
                    
@@ -11308,77 +11327,17 @@ $consump_loc = array();
                   
                 }
 				else if($agrregate_method=="aggregate_facilities"){
-                    if(!isset($locations) || empty($locations)){
-         $locations = $this->get_all_locations();
-         }
-                   if($period==""){
-                       $period = "annual";
-                   }
+                          
                     
-                    
-                    if($period=="annual" || $period=="monthly"){
-                        if($period=="annual"){
-                        $starts_years = array();
-                        $ends_years = array();
-                        for($i=$start_year; $i<=$end_year; $i++){
-                           $start_date = $i."-01-01";
-                           $end_date = $i."-12-31";
-                           array_push($starts_years,$start_date);
-                           array_push($ends_years,$end_date);
-                           }
-                    }
-                    else if($period=="monthly"){
-                        
-                        //TP: this is where I format the date to get for monthly. The data gotten here is for the monthly aspect of it all
-                        $year_diff = $end_year-$start_year;
-                        $starts_years = array();
-                        $ends_years = array();
-                        if($year_diff==0){
-                            $month_limit = $end_month;
-                            for($i=$start_month;$i<=$month_limit;$i++){
-                                $i = $this->check_length_add_one($i);
-                                $start_date = $end_year."-".$i."-01";
-                                $end_date = $end_year."-".$i."-31";
-                                array_push($starts_years,$start_date);
-                                array_push($ends_years,$end_date);
-                                 
-                            }
-                            
-                             }else{
-                            for($r=$start_year;$r<=$end_year;$r++){
-                                if($r==$start_year){
-                                    $month_start = $start_month;
-                                    
-                                }else{
-                                    $month_start = "01";
-                                }
-                                
-                                if($r==$end_year){
-                                    $month_limit = $end_month;
-                                }
-                                else{
-                                    $month_limit = "12";
-                                }
-                                
-                              for($i=$month_start;$i<=$month_limit;$i++){
-                                  $i = $this->check_length_add_one($i);
-                                  $start_date  = $r."-".$i."-01";
-                                  $end_date = $r."-".$i."-31";
-                                   array_push($starts_years,$start_date);
-                                array_push($ends_years,$end_date);
-                              }
-                                
-                            }
-                            
-                            
-                        }
-                    }
+                
                         $headers = array();
                            array_push($headers,"Geography");
                            if($period=="annual"){
                   array_push($headers,"Year");
                            }else if($period=="monthly"){
                                array_push($headers,"Month");
+                           }else if($period=="total"){
+                               array_push($headers,"Total");
                            }
                           
                           if($stock_out!=""){
@@ -11416,9 +11375,11 @@ $consump_loc = array();
                                }
                                foreach($training_type as $ttype){
                                    $value = strtoupper($this->get_name_category($ttype));
-                                $words = "# facilities with a HW ".$train_status.' '.$value.' in '.$end_year;
-                               if($period=="monthly"){
-                                   $words = "# facilities with a HW ".$train_status.' '.$value; 
+                                //$words = "# facilities with a HW ".$train_status.' '.$value.' in '.$end_year;
+                               if($training_type2=="Cumulative"){
+                                  $words = "Cumulative #facilities with a HW trained in ".$value;  
+                               }else{
+                                  $words = "# facilities with a HW trained in " .$value;  
                                }
                                array_push($headers,$words);
                                }
@@ -11490,14 +11451,18 @@ $consump_loc = array();
                            
                            $location_name = $this->get_location_name($location);
                            array_push($data_collector,$location_name);
-                           
+                           if($period=="monthly" || $period=="annual"){
                            if($period=="monthly"){
                                
                                $get_word = $this->return_the_month_name($clear);
                                
                            }
                            $year = $get_word." ".$year;
-                           array_push($data_collector,$year);
+                          
+                           }else{
+                               $year = $start_date."- to ".$end_date;
+                           }
+                            array_push($data_collector,$year);
                            foreach($providing as $prov){
                                $all_name_ids = $this->get_the_name_ids($prov);
                                $all_name_ids = implode(",",$all_name_ids);
@@ -11509,7 +11474,11 @@ $consump_loc = array();
                            array_push($data_collector, $fac_prov[$prov]);
                            }
                             foreach($training_type as $ttype){
-                           $fachw = $hw_trained[$location][$i][$ttype];
+                                if($training_type2=="Cumulative"){
+                           $fachw += $hw_trained[$location][$i][$ttype];
+                                }else{
+                               $fachw = $hw_trained[$location][$i][$ttype];     
+                                }
                            array_push($data_collector,$fachw);
                             }
                            foreach($consumption as $values){
@@ -11533,7 +11502,8 @@ $consump_loc = array();
                     
                       //array_push($results,$all_name_ids);      
                        
-                    }
+                    
+                                   
                     
                     else if($agrregate_method=="agrregate_data"){
                         //echo 'hello';exit;
@@ -11641,8 +11611,9 @@ $consump_loc = array();
                         
                     }
      
-                  }  
-				  }
+                  }
+                                   }
+				  
                   //  array_push($results,$ends_years);
                     //array_push($results,$starts_years);
                   //array_push($headers,"Geography");

@@ -8,10 +8,12 @@
 require_once ('ReportFilterHelpers.php');
 require_once ('models/table/OptionList.php');
 //require_once('models/table/Course.php');
+require_once ('models/table/Facility.php');
 require_once ('views/helpers/CheckBoxes.php');
 require_once ('models/table/MultiAssignList.php');
 require_once ('models/table/TrainingTitleOption.php');
 require_once ('models/table/Helper.php');
+require_once ('models/table/Helper2.php');
 
 class MenuController extends ReportFilterHelpers {
 
@@ -41,14 +43,28 @@ $this->_forward ( 'info' );
         public function rrateAction(){
              $this->_countrySettings = array();
 		$this->_countrySettings = System::getAll();
-
+                $facility = new Facility();
+                $helper = new Helper2();
 		$this->view->assign ( 'mode', 'search' );
                 require_once ('models/table/TrainingLocation.php');
 		require_once('views/helpers/TrainingViewHelper.php');
 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
+
 $current_month = "03";
 $current_year = date('Y');
-$date_format = $current_year.'-'.$current_month.'-'.'01';
+//$date_format = $current_year.'-'.$current_month.'-'.'01';
+$date_format = $helper->getLatestPullDate();
+$time = strtotime($date_format);
+$month = date('F',$time);
+$year = date('Y',$time);
+$format = "for $month,$year";
+$allFacilitiesNational = $this->get_all_facilities_with_location("","");
+$facility_idsNational = implode(",",$allFacilitiesNational);
+$reportRatesNational = $this->get_all_facilities_reporte_rates($facility_idsNational,$date_format);
+$totalFacilities = sizeof($allFacilitiesNational);
+$reportRateNationalPercent = round(($reportRatesNational/$totalFacilities) * 100,2);
+  echo '<h1 align="left" style="color:green;margin-left:60px;width:50%;"><span style="width:70%;float:left;">National Reporting Rate:</span><span style="float:right;width:29%;">'.$reportRateNationalPercent.'% </span></h1>';
+
 echo '<div id="accordion">';
 
 $zones = $this->get_location_category_unique("zone");
@@ -61,7 +77,9 @@ foreach($zones as $zone){
     $facility_ids = implode(",",$facilities);
     
    $report_rates = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-  echo ' <h3 align="">'.$zone_name.'::'.$report_rates.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h3>
+   $totalFacilities = sizeof($facilities);
+    $reportRateZonePercent = round(($report_rates/$totalFacilities) * 100,2);
+  echo ' <h3 align=""><span class="tableft">'.$zone_name.':</span><span class="tabright">'.$reportRateZonePercent.'%</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 <div class="accordion1">';
   //  echo '<li><a href=#"><span></span>'.$zone_name.'::'.$report_rates.'</a>';
     $states = $this->get_location_category_unique("state",$zone_id);
@@ -72,7 +90,9 @@ foreach($zones as $zone){
         $facilities = $this->get_all_facilities_with_location("state",$state_id);
     $facility_ids = implode(",",$facilities);
     $report_rates_state = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-    echo '<h3 align="">'.$state_name.'::'.$report_rates_state.'</h3>
+    $totalFacilities = sizeof($facilities);
+    $reportRateStatePercent = round(($report_rates_state/$totalFacilities) * 100,2);
+    echo '<h3 align=""><span class="tabstateleft" >'.$state_name.':</span></span><span class="tabright">'.$reportRateStatePercent.'%</span></h3>
    
 ';
         //echo '<li><a href="#"><span></span>'.$state_name.'::'.$report_rates_state.'</a>';
@@ -84,9 +104,11 @@ foreach($zones as $zone){
         $lga_name = $lga['lga'];
         $lga_id = $lga['lga_id'];
        $facilities = $this->get_all_facilities_with_location("lga",$lga_id);
+       $totalFacilities = sizeof($facilities);
     $facility_ids = implode(",",$facilities);
     $report_rates_lga = $this->get_all_facilities_reporte_rates($facility_ids,$date_format);
-        echo '<p>'.$lga_name.'::'.$report_rates_lga.'</p>'; 
+    $reportRateLgaPercent = round(($report_rates_lga/$totalFacilities) * 100,2);
+        echo '<p><span class="tableft">'.$lga_name.':</span><span class="tabright">'.$reportRateLgaPercent.'%</span></p>'; 
         
     }
   echo '</div>';
@@ -98,12 +120,15 @@ foreach($zones as $zone){
 
 
 echo '</div>';
-            
+           
+$this->view->assign('date_format',$format);
         }
         public function importAction(){
             $this->_countrySettings = array();
 		$this->_countrySettings = System::getAll();
-
+if ( $this->getSanParam('download') )
+			return $this->download();
+		
 		$this->view->assign ( 'mode', 'search' );
                 require_once ('models/table/TrainingLocation.php');
 		require_once('views/helpers/TrainingViewHelper.php');
@@ -206,13 +231,19 @@ public function get_all_facilities_with_location($category,$id){
     $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
     if($category=="zone"){
         $needle = "geo_parent_id";
+        $whereClause = "WHERE `$needle`='$id'";
     }else if($category=="state"){
         $needle = "state_id";
-    }else{
+        $whereClause = "WHERE `$needle`='$id'";
+    }else if($category=="lga"){
         $needle = "lga_id";
+        $whereClause = "WHERE `$needle`='$id'";
+    }
+    else{
+       $whereClause = "";
     }
     
-    $sql  = "SELECT id FROM facility_location_view WHERE `$needle`='$id'";
+    $sql  = "SELECT id FROM facility_location_view ".$whereClause."";
     $result = $db->fetchAll($sql);
     $facilities = array();
     foreach($result as $facility){
@@ -221,6 +252,17 @@ public function get_all_facilities_with_location($category,$id){
     }
     return $facilities;
 }
-        
+public function download(){
+    header('Content-Type: application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 			header('Content-Disposition: attachment; filename="Dashboard_static_page_indicators.xlsx"');
+ 			header("Content-Type: application/force-download");
+ 			readfile(Globals::$BASE_PATH . '/html/templates/Dashboard_static_page_indicators.xlsx');
+  			$this->view->layout()->disableLayout();
+         	$this->_helper->viewRenderer->setNoRender(true);
+}
+
+public function definitionsPageAction(){
+    
+}
 }
 ?>

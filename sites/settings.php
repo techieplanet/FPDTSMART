@@ -11,13 +11,15 @@ class Settings {
 
     public static $COUNTRY_NAME = 'test';
     public static $COUNTRY_BASE_URL = 'http://localhost/trainsmart/html';
-    public static $DB_USERNAME = 'root';
-    public static $DB_PWD = '';
+   // public static $DB_USERNAME = 'root';
+   // public static $DB_PWD = '';
+    public static $DB_USERNAME = 'john2';
+    public static $DB_PWD = 'john2';
     
-    public static $DB_SERVER = '127.0.0.1';
-
-    public static $DB_DATABASE = 'itechweb_chainigeria';
-    
+    public static $DB_SERVER = '192.168.1.4';
+  //  public static $DB_SERVER = '127.0.0.1';
+   public static $DB_DATABASE = 'itechweb_chainigeria';
+    //public static $DB_DATABASE = 'itechweb_chainigeria_back_up';
     public static $EMAIL_NAME = "ITECH Administrator";
     public static $EMAIL_ADDRESS = "admin@localhost";
 }

@@ -1107,7 +1107,7 @@ class PersonController extends ReportFilterHelpers {
 		*/
 
 			if ($loc){
-				if ($criteria ['person_type'] == 'is_everyone') {
+				if ($criteria ['person_type'] == 'is_everyone' || $criteria['person_type']=='is_participant') {
 					// left join instead of inner for everyone
 					$sql = '
 					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email, f.facility_name, '.implode(',',$field_name).'
@@ -1117,13 +1117,16 @@ class PersonController extends ReportFilterHelpers {
 					LEFT JOIN facility as f ON p.facility_id = f.id
 					LEFT JOIN ('.$location_sub_query.') AS l ON f.location_id = l.id  ';
                                         //echo $sql;
-
+                                             
 				} else {
 				$sql = '
 					SELECT DISTINCT p.id, p.last_name, p.middle_name, p.first_name, p.gender, q.qualification_phrase,p.phone_mobile,p.email,f.facility_name, '.implode(',',$field_name).'
 
-					FROM person AS p, person_qualification_option AS q, facility AS f, ('.$location_sub_query.') AS l';
-				}
+					FROM person AS p, person_qualification_option AS q, facility AS f, ('.$location_sub_query.') AS l ';
+				
+                                
+                                }
+                               
 			} else {
 				if ($criteria ['person_type'] == 'is_everyone') {
 					// left join instead of inner for everyone
@@ -1164,7 +1167,7 @@ class PersonController extends ReportFilterHelpers {
 
 			if ($criteria ['person_type'] != 'is_everyone') { // was left joined (see above)
 				if ($loc){
-					$where []= 'p.primary_qualification_option_id = q.id and p.facility_id = f.id and f.location_id = l.id ';
+					$where []= ' p.facility_id = f.id and f.location_id = l.id ';
 				} else {
 					$where []= 'p.primary_qualification_option_id = q.id and p.facility_id = f.id ';
 				}
@@ -1214,8 +1217,8 @@ class PersonController extends ReportFilterHelpers {
 				$sql .= ' WHERE ' . implode(' AND ', $where);
 			}
 
-			$sql .= " ORDER BY " . " `p`.`last_name` ASC, " . " `p`.`first_name` ASC";
-
+			$sql .= " GROUP BY p.id ORDER BY " . " `p`.`last_name` ASC, " . " `p`.`first_name` ASC ";
+                          //echo $sql;exit;
 			//print($sql);
 			$rowArray = $db->fetchAll ( $sql );
 

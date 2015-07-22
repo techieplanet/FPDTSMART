@@ -161,8 +161,7 @@ class Coverage {
                     $facility = new Facility();
                     
                     $numerators = $coverageHelper->getFacWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
-                    //echo 'after numerator<br>';
-                    //$denominators = $coverageHelper->getFacWithTrainedHWCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
+                    
                     $denominators = $facility->getFacilityCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
                     
                     
@@ -202,7 +201,7 @@ class Coverage {
         
         
         
-        public function fetchPercentFacHWTrainedPerState($training_type){
+        public function fetchPercentFacHWTrainedPerLocation($training_type){
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
                 $output = array(array('location'=>'National', 'percent'=>0));
                 $helper = new Helper2();
@@ -223,7 +222,6 @@ class Coverage {
                 //needed variables
                 $tierText = $helper->getLocationTierText($tierValue);
                 $tierFieldName = $helper->getTierFieldName($tierText);
-                //$latestDate = $helper->getLatestPullDate();
 
                 //where clauses
                 if($training_type == 'fp')
@@ -239,9 +237,10 @@ class Coverage {
 
                 $numerators = $coverageHelper->getFacWithTrainedHWCountByLocation($longWhereClause, $geoList, $tierText, $tierFieldName);
                 //$denominators = $coverageHelper->getFacWithTrainedHWCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
+             
                 $denominators = $facility->getFacilityCountByLocation($locationWhere, $geoList, $tierText, $tierFieldName);
                     
-                    
+                      
                 $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
                 
                 //$arrayToSort = array_slice($sumsArray['output']);
@@ -356,7 +355,8 @@ class Coverage {
      /*
      * Percentage facilities providing FP, LARC nationally per state
      */
-      public function fetchPercentFacsProvidingPerState($commodity_type){
+        
+      public function fetchPercentFacsProvidingPerLocation($commodity_type){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter ();
 
             $output = array(array('location'=>'National', 'percent'=>0)); 
@@ -405,6 +405,9 @@ class Coverage {
             
             $arrayToSort = array_slice($sumsArray['output'], 1);
             $sortedArray = $helper->msort($arrayToSort);
+            if($commodity_type=="fp"){
+            $sortedArray = $helper->msort($arrayToSort);
+            }
 
             //get month national data and put in first array element
             $cacheValue = json_decode($cacheValue, true);
@@ -443,8 +446,15 @@ class Coverage {
                     $output = json_decode($cacheValue, true);
                 }
                 else{
+                   
+           
+            
                     $tierText = $helper->getLocationTierText($tierValue);
                     $tierFieldName = $helper->getTierFieldName($tierText);
+                    if(empty($geoList)){
+                        $geoLists = $helper->getLocationTierIDs($tierValue);
+                        $geoList = implode(",",$geoLists);
+                    }
                     $locationNames = $helper->getLocationNames($geoList);
                     $consumptionWhere = 'consumption > 0';
                     $reportingWhere = 'facility_reporting_status = 1';
@@ -482,8 +492,16 @@ class Coverage {
 
                     //set output                    
                     $sumsArray = $helper->sumNumersAndDenoms($numerators, $denominators);
-                    $output = array_merge($output, $sumsArray['output']);
+                    //$output = array_merge($output, $sumsArray['output']);
                     $output[0]['percent'] = $sumsArray['nationalAvg'];
+                       $arrayToSort = array_slice($sumsArray['output'], 1);
+                
+                $sortedArray = $helper->msort($arrayToSort);
+                
+                 $output = array_merge($output, $sortedArray);
+                
+                    
+                    
 
                     //check if to save month national data
                     if(!$cacheValue && $freshVisit){ //fresh in month

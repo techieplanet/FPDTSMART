@@ -157,6 +157,10 @@ nav ul ul{
 	   $('#toggle').click(function() {
                 $('.knowledge').toggle();                
        });
+       $('#toggleunmet').click(function() {
+                $('.unmet').toggle();                
+       });
+       
 	    $('#togglenc').click(function() {
                 $('.nc').toggle(); 
 				$('.drnc').show();
@@ -209,8 +213,9 @@ nav ul ul{
 					<div class="clear" style=""></div>
 				</div>
                          
-<span style="width:50%;margin: 0 auto; margin-left:30%;" align="center"> <input type="checkbox"  id="togglecpr" style="cursor:pointer;" title="Toggle CPR" align="right" /> Toggle CPR
-                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox"  id="toggle" style="cursor:pointer;" title="Toggle Knowledge" align="right" /> Toggle Knowledge</span>
+<span style="width:50%;margin: 0 auto; margin-left:30%;" align="center"> <input type="checkbox"  id="togglecpr" style="cursor:pointer;" title="Toggle CPR" align="right" checked="checked" /> Toggle CPR
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox"  id="toggle" style="cursor:pointer;" title="Toggle Knowledge" align="right" checked="checked"/> Toggle Knowledge</span>
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox"  id="toggleunmet" style="cursor:pointer;" title="Toggle Unmet Need" align="right" checked="checked"/> Unmet Need</span>
                                        
 <table border="1" class="GridOne">
     
@@ -220,7 +225,7 @@ nav ul ul{
                                                 <th rowspan="3">Zone</th>
                                                 <th rowspan="3">State</th>
                                           <th colspan="16" class="cpr">CPR </th>  
-                                            <th rowspan="3">Unmet need among currently married women aged 15-49</th>
+                                            <th rowspan="3" class="unmet">Unmet need among currently married women aged 15-49</th>
                                             <th colspan="4" class="knowledge">Knowledge </th>
                                             </tr>
                                             <tr  style="text-align:center;">
@@ -274,7 +279,7 @@ nav ul ul{
                                                 <td class="cpr"><?php echo $json_array[5][15]; ?></td>
                                                 <td class="cpr"><?php echo $json_array[5][16]; ?></td>
                                                 <td class="cpr"><?php echo $json_array[5][17]; ?></td>
-                                                <td ><?php echo $json_array[5][18]; ?></td>
+                                                <td class="unmet"><?php echo $json_array[5][18]; ?></td>
                                                 <td class="knowledge"><?php echo $json_array[5][19]; ?></td>
                                                 <td class="knowledge"><?php echo $json_array[5][20]; ?></td>
                                                 <td class="knowledge"><?php echo $json_array[5][21]; ?></td>
@@ -318,7 +323,7 @@ nav ul ul{
                                                 <td class="cpr">'.$json_array[$i][15].'</td>
                                                 <td class="cpr">'.$json_array[$i][16].'</td>
                                                 <td class="cpr">'.$json_array[$i][17].'</td>
-                                                <td >'.$json_array[$i][18].'</td>
+                                                <td class="unmet" >'.$json_array[$i][18].'</td>
                                                 <td class="knowledge">'.$json_array[$i][19].'</td>
                                                 <td class="knowledge">'.$json_array[$i][20].'</td>
                                                 <td class="knowledge">'.$json_array[$i][21].'</td>
